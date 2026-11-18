@@ -51,10 +51,16 @@ def component_keepouts():
     def at(x, y, w, d, h):
         return Pos(x, y, z0 + h / 2) * Box(w, d, h)
 
+    # 06 U1: the switched VBUS screw terminal sits on the edge opposite the
+    # USB-C jack and is part of this module's height until someone decides to
+    # remove it and solder to the pads instead.
     rotopd = at(-float(B.pcb_x) / 4, 0,
-                float(B.rotopd_x), float(B.rotopd_y), float(B.rotopd_h))
+                float(B.rotopd_x), float(B.rotopd_y),
+                float(B.rotopd_h) + float(B.rotopd_screw_terminal_h))
+    # 06 U3: only 6.1 mm of the Pololu's 9.07 mm stack is above the board.
+    # The other 1.4 mm hangs below and is charged to standoff height instead.
     pololu = at(float(B.pcb_x) / 4, float(B.pcb_y) / 4,
-                float(B.pololu_x), float(B.pololu_y), float(B.pololu_h))
+                float(B.pololu_x), float(B.pololu_y), float(B.pololu_above))
     pico = at(float(B.pcb_x) / 4, -float(B.pcb_y) / 4,
               float(B.pico_x), float(B.pico_y),
               float(B.pico_stack) + float(B.pico_t))
@@ -62,7 +68,14 @@ def component_keepouts():
 
 
 def panel_keepouts():
-    """OLED + push encoder. 01: this box carries the only hardware UI in v1."""
+    """OLED + push encoder, if this box has a panel at all.
+
+    01 says it carries the only hardware UI in v1; 06 still lists "whether
+    Enclosure B has a front panel at all" as open. B.HAS_PANEL is the switch
+    until that is settled -- it changes box height and lid openings both.
+    """
+    if not B.HAS_PANEL:
+        return None
     z0 = float(B.standoff_h) + float(B.pcb_t)
     oled = Pos(-float(B.pcb_x) / 4, -float(B.pcb_y) / 4,
                z0 + float(B.oled_board_h) / 2) * Box(
@@ -108,9 +121,13 @@ def build():
         "enclosure-b-tray": body,
         "enclosure-b-lid": cover,
         "enclosure-b-keepout-components": component_keepouts(),
-        "enclosure-b-keepout-panel": panel_keepouts(),
         "enclosure-b-power-board": board,
     }
+    panel = panel_keepouts()
+    if panel is not None:
+        parts["enclosure-b-keepout-panel"] = panel
+    else:
+        print("  note: B.HAS_PANEL is False -- no OLED/encoder keep-out emitted.")
     if not is_real:
         print(f"  note: {PCB_STEP.name} not found -- using a placeholder board block.")
         print("        Draw the power board in KiCad, then `kicad-cli pcb export step`.")

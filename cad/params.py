@@ -207,11 +207,29 @@ class A:
 # =======================================================================
 class B:
     # -- CentyLab RotoPD Pro ----------------------------------------------
-    # 03: "Outline, height, and mounting pattern all unverified". The least
-    # knowable footprint in the build -- use the vendor PCB files or measure.
-    rotopd_x = D("rotopd_x", 40.0, "GUESS -- 03: outline unverified (vendor repo: CentyLab/RotoPD_Pro)")
-    rotopd_y = D("rotopd_y", 30.0, "GUESS -- 03: outline unverified (vendor repo: CentyLab/RotoPD_Pro)")
-    rotopd_h = D("rotopd_h", 12.0, "GUESS -- 03: height unverified")
+    # 06 narrowed this: the header pinout is now known from vendor artwork,
+    # but 06 "What is still open" is explicit that the outline, hole
+    # coordinates/diameter and tallest component remain unknown and "need the
+    # .kicad_pcb or the physical board, not another email."
+    rotopd_x = D("rotopd_x", 40.0, "GUESS -- 06: outline still blocking (vendor repo: CentyLab/RotoPD_Pro)")
+    rotopd_y = D("rotopd_y", 30.0, "GUESS -- 06: outline still blocking (vendor repo: CentyLab/RotoPD_Pro)")
+    rotopd_h = D("rotopd_h", 12.0, "GUESS -- 06: tallest component unknown")
+    #: 06 U1: switched VBUS leaves on a 2-position 5 mm SCREW TERMINAL on the
+    #: edge opposite the USB-C jack -- "an assembly and enclosure constraint,
+    #: not just a schematic one". Keep or remove is an open decision with a
+    #: height consequence, so it is modelled separately from the board height.
+    rotopd_screw_terminal_h = D(
+        "rotopd_screw_terminal_h", 10.0,
+        "GUESS -- 06: 2-pos 5 mm screw terminal; keep-or-remove still open",
+        note="If removed and wires soldered to the pads, this drops out of the "
+             "height budget entirely. Decide before drawing the carrier.",
+    )
+    rotopd_mount_holes = D(
+        "rotopd_mount_holes", 2.0,
+        "06 U1 -- two mounting holes at the top corners flanking the USB-C jack",
+        note="Count is confirmed from vendor artwork; positions and diameter "
+             "are not dimensioned anywhere published.",
+    )
 
     # -- Raspberry Pi Pico 2 (non-wireless) -------------------------------
     pico_x = D("pico_x", 51.0, "03 -- bare PCB", verified=True)
@@ -228,10 +246,25 @@ class B:
     )
 
     # -- Pololu D42V55F5 (#5571) ------------------------------------------
-    pololu_x = D("pololu_x", 25.4, "03 -- Pololu #5571 drawing", verified=True)
-    pololu_y = D("pololu_y", 25.4, "03 -- Pololu #5571 drawing", verified=True)
-    pololu_h = D("pololu_h", 9.0, "03 -- Pololu #5571 drawing", verified=True)
-    pololu_m2_hole = D("pololu_m2_hole", 2.2, "03 -- three M2 mounting holes", verified=True)
+    # Fully dimensioned in 06 from the Pololu family drawing (dev code reg34a).
+    # 03's "25.4 x 25.4 x 9 mm" is the rounded summary; these are the real
+    # numbers, and the 9 mm splits ABOVE and BELOW the board -- which matters,
+    # because the below-board part eats into standoff height, not headroom.
+    pololu_x = D("pololu_x", 25.4, "06 U3 -- Pololu family dimension drawing", verified=True)
+    pololu_y = D("pololu_y", 25.4, "06 U3 -- Pololu family dimension drawing", verified=True)
+    pololu_board_t = D("pololu_board_t", 1.57, "06 U3 -- board thickness", verified=True)
+    pololu_above = D(
+        "pololu_above", 6.1, "06 U3 -- height above board, items 5570-5577", verified=True,
+        note="Items 5578/5579 are 8.0 mm. If the part number changes to one of "
+             "those, the enclosure height changes with it.",
+    )
+    pololu_below = D("pololu_below", 1.4, "06 U3 -- height below board", verified=True)
+    pololu_total_h = pololu_above + pololu_board_t + pololu_below   # 9.07 mm
+    # 06 is precise here and 03 was not: 2.18 mm is the HOLE DIAMETER,
+    # 2.2 mm is the inset from each edge. They are different numbers.
+    pololu_hole_d = D("pololu_hole_d", 2.18, "06 U3 -- 3 holes, #2/M2", verified=True)
+    pololu_hole_pitch = D("pololu_hole_pitch", 21.1, "06 U3 -- 21.1 x 21.1 mm pattern", verified=True)
+    pololu_hole_inset = D("pololu_hole_inset", 2.2, "06 U3 -- 2.2 mm in from each edge", verified=True)
 
     # -- Power board (the one PCB) ----------------------------------------
     # Not yet drawn. Once it exists, do NOT retype it here:
@@ -243,7 +276,16 @@ class B:
     pcb_margin = D("pcb_margin", 3.0, "chosen assembly margin around the power board")
     standoff_h = D("standoff_h", 4.0, "chosen; clears through-hole lead length under the board")
 
-    # -- Panel: 03 says this box carries the only hardware UI --------------
+    # -- Panel ------------------------------------------------------------
+    # CONTRADICTION IN THE DOCS, surfaced rather than silently resolved:
+    #   01-architecture.md asserts "Enclosure B carries the only panel" and
+    #   lists OLED + encoder as settled by the v1 scope cut.
+    #   06-power-board-schematic.md "What is still open" lists "Whether
+    #   Enclosure B has a front panel at all -- decides whether J4 and J5
+    #   exist."
+    # Those cannot both be true. Until one doc wins, this is a switch, because
+    # it changes both the box height and whether the lid has openings.
+    HAS_PANEL = True
     oled_x = D("oled_x", 20.076, "01 -- Adafruit 5297 active area cited in the scope-cut reasoning")
     oled_y = D("oled_y", 20.076, "01 -- Adafruit 5297 active area cited in the scope-cut reasoning")
     oled_board_h = D("oled_board_h", 8.0, "GUESS -- module not selected")
@@ -251,7 +293,21 @@ class B:
 
     # -- Derived interior -------------------------------------------------
     pico_stack = pico_stack_socketed if PICO_MOUNT == "socketed" else pico_stack_castellated
-    tallest_part = dmax(rotopd_h, pololu_h, pico_stack + pico_t, encoder_h, oled_board_h)
+
+    #: Above-board height only. The Pololu's 1.4 mm below-board protrusion is
+    #: charged to standoff height, not to headroom.
+    _above_board = [
+        rotopd_h + rotopd_screw_terminal_h,
+        pololu_above,
+        pico_stack + pico_t,
+    ]
+    if HAS_PANEL:
+        _above_board += [encoder_h, oled_board_h]
+    tallest_part = dmax(*_above_board)
+
+    #: 06 U3: the regulator hangs 1.4 mm below its own board, so the standoffs
+    #: must clear that as well as through-hole lead length.
+    standoff_min = pololu_below + D("lead_protrusion", 1.5, "GUESS -- trimmed TH lead length")
 
     interior_x = pcb_x + 2 * pcb_margin
     interior_y = pcb_y + 2 * pcb_margin
@@ -267,6 +323,23 @@ class B:
 # =======================================================================
 def unverified() -> list[Dim]:
     return [d for d in _REGISTRY if not d.verified]
+
+
+def violations() -> list[str]:
+    """Constraints that are checkable today, regardless of what is unmeasured."""
+    out = []
+    if float(B.standoff_h) < float(B.standoff_min):
+        out.append(
+            f"B.standoff_h {float(B.standoff_h):.2f} mm < {float(B.standoff_min):.2f} mm "
+            "required to clear the Pololu's below-board protrusion (06 U3: 1.4 mm) "
+            "plus trimmed through-hole leads"
+        )
+    if float(A.ant_gnd_clearance) > float(A.interior_z):
+        out.append(
+            f"A antenna-to-groundplane target {float(A.ant_gnd_clearance):.1f} mm "
+            f"exceeds interior height {float(A.interior_z):.1f} mm"
+        )
+    return out
 
 
 def report() -> str:
@@ -301,8 +374,13 @@ def report() -> str:
         f"  TBD  B RotoPD Pro envelope  "
         f"{float(B.rotopd_x):.1f} x {float(B.rotopd_y):.1f} x {float(B.rotopd_h):.1f} mm",
         f"  TBD  mated USB-C + bend     {float(COMMON.usbc_plug_bend):>7.2f} mm",
-        "",
     ]
+
+    v = violations()
+    if v:
+        lines += ["", "CONSTRAINT VIOLATIONS (checkable now, not waiting on measurements):"]
+        lines += [f"  !! {x}" for x in v]
+    lines.append("")
     return "\n".join(lines)
 
 

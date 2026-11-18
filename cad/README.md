@@ -117,12 +117,40 @@ container. Per the project build rule that belongs on **fucina** in podman,
 alongside the existing ngspice container in [`sim/`](../sim/run.sh) — not on
 this Mac.
 
+## Open contradictions this model surfaces
+
+Two switches exist because the docs disagree with themselves. Neither is
+resolved here, because resolving it is a design decision, not a CAD one.
+
+- **`B.HAS_PANEL`** — [01](../docs/01-architecture.md) asserts Enclosure B
+  "carries the only panel" and treats the OLED + encoder as settled by the v1
+  scope cut. [06's "What is still open"](../docs/06-power-board-schematic.md)
+  still lists *"Whether Enclosure B has a front panel at all — decides whether
+  J4 and J5 exist."* Both cannot be true. The flag changes box height and
+  whether the lid has openings.
+- **`B.PICO_MOUNT`** — castellated or socketed, 11 mm apart in Z.
+  [03](../docs/03-enclosure-b-lower.md) says "pick one, it changes the
+  height"; 06 still lists it open.
+
+## What sets Enclosure B's height today
+
+Folding 06's verified numbers in produced a result worth stating: the tallest
+thing above the board is **not** the encoder. It is the RotoPD Pro's **2-position
+5 mm screw terminal** at ~22 mm total, which 06 flags as *"an assembly and
+enclosure constraint, not just a schematic one"*. Removing it and soldering to
+its pads is an open decision that is currently worth about 10 mm of box height.
+
 ## Next
 
-1. Measure the three dimensions nobody should guess, and flip them to
-   `verified=True` in `params.py`.
-2. Draw the power board in KiCad; export STEP; delete the placeholder block in
-   `enclosure_b.py`.
-3. Decide how Enclosure A opens for service — the geometry here assumes a
+1. **Decide the screw terminal** — keep or remove. Costs nothing to decide,
+   worth ~10 mm, and 06 says decide it *before* drawing the carrier.
+2. **Draw the power board in KiCad.** 06 is detailed enough to lay out — ref
+   designators, verified module pinouts, nets, Pico pin map, six passing sim
+   decks. Then `kicad-cli pcb export step` and delete the placeholder block in
+   `enclosure_b.py`. This is the only major step that needs no new measurement.
+3. **Measure the three dimensions nobody should guess** and flip them to
+   `verified=True`. This gates everything dimensional, and item 2 does not
+   depend on it.
+4. **Decide how Enclosure A opens for service** — the geometry here assumes a
    tray + lid, which is the open question in
    [02](../docs/02-enclosure-a-upper.md#open-questions), not a decision.
