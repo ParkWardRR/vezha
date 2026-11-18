@@ -184,7 +184,7 @@ Canonical copy, with the reasoning:
 
 ## Documents
 
-Nine live documents, numbered in reading order. Retired work is kept but moved
+Ten live documents, numbered in reading order. Retired work is kept but moved
 out of the path.
 
 | | Document | For | Contents |
@@ -198,6 +198,16 @@ out of the path.
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, JLCPCB codes, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Software & bring-up](docs/09-software-and-bringup.md) | **Software** | The only live software doc — captive portal, VPN, uplink recovery, and the bring-up order. **Nothing implemented** |
+| **10** | [Measurement protocol](docs/10-measurement-protocol.md) | Mechanical | How to take the three dimensions nobody should guess, and how to select the M.2 adapter that blocks the first of them |
+
+## Code
+
+Two generated models, both skeletons, both checked rather than eyeballed.
+
+| | For | Contents |
+|---|---|---|
+| **[cad/](cad/README.md)** | Mechanical | Parametric enclosures in build123d. Every dimension carries its source and a verified flag; `build.py --strict` fails while any is a guess |
+| **[pcb/](pcb/power_board.py)** | PCB | Netlist generated from 06 with SKiDL and checked back against it, plus a placement study that exports the board STEP the enclosure model consumes |
 
 **[docs/retired/](docs/retired/)** — the display, PCB 1 requirements, the PCB 1
 schematic, and the original project handoff. Complete work, kept so a v2 panel
