@@ -314,7 +314,7 @@ to take, not values to look up:
 
 1. **CentyLab RotoPD Pro mounting pattern** — and its outline and height
 2. **Underside adapter stack height** — adapter + card + mated antenna plugs
-3. **Mated power connector clearance** — connector *and* cable bend
+3. **Mated USB-C plug clearance** — plug *and* cable bend
 
 ## Decision status
 

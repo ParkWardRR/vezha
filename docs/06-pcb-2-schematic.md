@@ -9,7 +9,7 @@ are called out in [Corrections to 05](#corrections-to-05) and are the most
 important part of this file.
 
 Simulation decks are in [`sim/`](../sim/), results in
-[`sim/RESULTS-pcb2.txt`](../sim/RESULTS-pcb2.txt). They were run with ngspice 39 in a
+[`sim/RESULTS.txt`](../sim/RESULTS.txt). They were run with ngspice 39 in a
 podman container on `fucina`.
 
 > [!IMPORTANT]
@@ -29,9 +29,9 @@ working from wrong numbers.
 
 ### 1 · The buck does not default off — it defaults ON
 
-05 says "The buck defaults off at startup" and that this is "a layout
-requirement, not firmware", because "the Pico's GPIO is high-impedance at
-reset".
+05 **previously** said "The buck defaults off at startup", and that this was
+"a layout requirement, not firmware", because "the Pico's GPIO is
+high-impedance at reset". *(Corrected in 05 on 2026-11-18.)*
 
 The reasoning is right and the premise is wrong. **The D42V55F5's EN pin is
 pulled up to VIN through a 1 MΩ resistor on the module itself.** A bare
@@ -44,8 +44,8 @@ rail down before firmware runs, and **its value matters enormously**.
 
 ### 2 · PD VBUS reaches 48 V, not 20 V
 
-05 warns that VBUS "may be at 9, 12, 15 or 20 V depending on the negotiated
-contract". The RotoPD Pro is a **240 W** breakout built on the AP33772S with a
+05 **previously** warned that VBUS "may be at 9, 12, 15 or 20 V depending on
+the negotiated contract". *(Corrected in 05 on 2026-11-18.)* The RotoPD Pro is a **240 W** breakout built on the AP33772S with a
 100 V NMOS switch: its documented output range is **4.5 V to 48 V**, SPR/PPS
 to 21 V and EPR/AVS to 48 V.
 
@@ -61,7 +61,8 @@ Consequences:
 
 ### 3 · "Advertised 1.0 A" is not a legal Type-C advertisement
 
-05 proposes "Advertised: **5 V @ 1.0 A** — Rp for Default USB (56 kΩ ±20 %)".
+05 **previously** proposed "Advertised: **5 V @ 1.0 A** — Rp for Default USB
+(56 kΩ ±20 %)". *(Corrected in 05 on 2026-11-18.)*
 Those are two different things and neither gives 1.0 A. A Type-C source may
 advertise exactly three levels:
 
@@ -546,7 +547,7 @@ steady state: poll INA226 and RT1, service the console,
 
 ## Simulation results
 
-Decks and full output: [`sim/`](../sim/), [`sim/RESULTS-pcb2.txt`](../sim/RESULTS-pcb2.txt).
+Decks and full output: [`sim/`](../sim/), [`sim/RESULTS.txt`](../sim/RESULTS.txt).
 
 ### SIM-01 · Buck EN pull-down
 

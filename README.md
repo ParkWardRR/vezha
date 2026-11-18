@@ -15,8 +15,8 @@ there isn't one yet.
 [![Stage](https://img.shields.io/badge/stage-Rev%20A%20design-orange?style=flat-square)](#decision-status)
 [![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
 [![Enclosure A](https://img.shields.io/badge/enclosure%20A-headless-informational?style=flat-square)](docs/02-enclosure-a-upper.md)
-[![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%203%20dims-red?style=flat-square)](docs/03-enclosure-b-lower.md)
-[![PCB 1](https://img.shields.io/badge/PCB%201-retired%20in%20v1-lightgrey?style=flat-square)](docs/04-pcb-1-front-control.md)
+[![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%20RotoPD%20envelope-red?style=flat-square)](docs/03-enclosure-b-lower.md)
+[![PCB 1](https://img.shields.io/badge/PCB%201-retired%20in%20v1-lightgrey?style=flat-square)](docs/retired/pcb-1-front-control.md)
 [![PCB 2](https://img.shields.io/badge/PCB%202-spec%20ready-success?style=flat-square)](docs/05-pcb-2-power.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
@@ -25,7 +25,7 @@ there isn't one yet.
 [![Uplink](https://img.shields.io/badge/uplink-AX210%20·%20top%20E--key-0071C5?style=flat-square&logo=intel&logoColor=white)](docs/01-architecture.md#radio-topology)
 [![AP](https://img.shields.io/badge/AP-MT7922%20·%20M%E2%86%92E%20adapter-EC1C24?style=flat-square)](docs/01-architecture.md#radio-topology)
 [![Bands](https://img.shields.io/badge/5%20GHz-simultaneous%20up%20%2B%20down-success?style=flat-square)](#the-hard-requirement)
-[![Antennas](https://img.shields.io/badge/antennas-4%C3%97%20internal%20flex-blueviolet?style=flat-square)](docs/06-antennas.md)
+[![Antennas](https://img.shields.io/badge/antennas-4%C3%97%20internal%20flex-blueviolet?style=flat-square)](docs/04-antennas.md)
 
 [![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-pcb-2-power.md)
 [![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-pcb-2-power.md)
@@ -175,9 +175,12 @@ documents are retired with the board — see
 These decide **whether the two boxes actually close.** Measurements to take,
 not values to look up:
 
-1. **CentyLab RotoPD Pro** mounting pattern, outline, and height
-2. **Underside adapter stack height** — adapter + card + mated antenna plugs
-3. **Mated USB-C plug clearance** — plug *and* cable bend
+1. **CentyLab RotoPD Pro** mounting pattern, outline, and height — *Enclosure B*
+2. **Underside adapter stack height** — adapter + card + mated antenna plugs — *Enclosure A*
+3. **Mated USB-C plug clearance** — plug *and* cable bend — *both*
+
+Canonical copy, with the reasoning:
+[01 · The three dimensions](docs/01-architecture.md#the-three-dimensions-nobody-should-guess).
 
 ## Documents
 
@@ -206,31 +209,20 @@ window, and the 40-pin header map, which stays valid regardless.
 
 ## Decision status
 
-**Settled — design against these**
+**[01 · Decision status](docs/01-architecture.md#decision-status) is canonical** —
+edit it there, not here. The headlines:
 
-- **Two enclosures, one PCB** — power-only seam over USB-C
-- Both radios and all antennas in Enclosure A
-- AX210 top-side E-key; second radio on an underside M→E adapter
-- RotoPD Pro → Pololu → **USB-C seam** → Orange Pi
-- Pico 2 controller, powered from RotoPD auxiliary via VSYS
-- Four internal flex antennas, two per radio, inside the narrow walls
-- **Enclosure A is headless** — no display, no controls, no PCB 1.
-  [The v1 scope cut](docs/01-architecture.md#the-v1-scope-cut)
-- **The OLED and encoder live on PCB 2**, in the power box — the question that
-  previously blocked both front panels
+| | |
+|---|---|
+| **Settled** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on an underside M→E adapter. RotoPD Pro → Pololu → USB-C seam → Orange Pi, with the Pico beside that path gating EN. Enclosure A is headless. |
+| **Blocking** | **RotoPD Pro physical envelope** (blocks Enclosure B) · **which regulator**, `D42V55F5` vs `D42V55F5.3`, blocked on the Orange Pi's maximum input voltage · which M→E adapter, and whether it routes PCIe |
+| **Open** | Second radio part and height, antenna connector type, seam USB-C part, thermal solution, final antenna SKU, power source, how Enclosure A opens for service |
 
-**Open — do not design against these**
-
-- Second radio part and height; antenna connector type unconfirmed
-- Which M→E adapter (must route PCIe)
-- RotoPD Pro physical envelope — **blocks Enclosure B**
-- Seam USB-C part. **IR drop binds before the 3 A limit** — one mated pair is 30–40 mΩ against a 25 mΩ budget at the 5.0 V regulator's low corner
-- **Which regulator** — `D42V55F5` vs `D42V55F5.3`, blocked on the Orange Pi's
-  maximum input voltage. [01](docs/01-architecture.md#the-5-v-seam-problem)
-- Thermal solution, final antenna SKU
-- Power source: external bank vs. internal cell
-- **How Enclosure A opens for service** — lid, base plate, or seam split, now
-  driven only by assembly and MHF4 access
+> [!CAUTION]
+> **IR drop binds before the 3 A advertisement limit.** One USB-C mated pair is
+> 30–40 mΩ against a 25 mΩ budget at the 5.0 V regulator's low corner — so
+> "measure and hope it is under 3 A" does not settle the seam.
+> [01 · The 5 V seam problem](docs/01-architecture.md#the-5-v-seam-problem).
 
 ## Ground rules
 

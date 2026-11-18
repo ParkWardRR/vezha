@@ -1,0 +1,183 @@
+==============================================================
+ RETIRED — PCB 1 simulation results
+
+ These decks back the front control board, which was cut from v1
+ on 2026-11-18. Kept so a v2 panel inherits the work.
+
+ Regenerated on fucina 2026-11-18 from sim/retired/*.cir, after
+ SIM-13 was corrected in a4c5201. An earlier copy of these results
+ carried the SUPERSEDED SIM-13, which used the wrong pass criterion
+ (does the filter hide bounce entirely?) and concluded that RC
+ debounce cannot work. It does work, in a window: 47n and 100n pass,
+ 220n and 470n fail. The output below is the corrected run.
+
+ Context: docs/retired/README.md
+==============================================================
+
+==============================================================
+ SIM-11  PCB 1 shared I2C bus - pull-up sizing
+ Rise measured 0.3*Vdd (0.990 V) -> 0.7*Vdd (2.310 V)
+ Limits: 1000 ns @100 kHz, 300 ns @400 kHz, R_total >= 967 ohm
+==============================================================
+
+--- SIM-11a  rise time vs total pull-up and bus capacitance ---
+
+   R_total    C=50pF     C=100pF    C=150pF    C=250pF    C=400pF
+   10k   423.642 847.297 1270.94 2118.24 3389.19
+   4.7k   199.102 398.221 597.343 995.573 1592.92
+   3.3k   139.792 279.602 419.411 699.02 1118.43
+   2.2k   93.1633 186.39 279.601 466.013 745.62
+   1.8k   76.2572 152.503 228.768 381.285 610.052
+   1.5k   63.5489 127.065 190.632 317.731 508.38
+   1.0k   42.3628 84.7094 127.087 211.816 338.916
+
+--- SIM-11b  verdict per candidate value, at C=150 pF (realistic) ---
+
+   R_total   t_r(ns)   sink_mA   100kHz   400kHz   >=967ohm
+   10k    1270.94   0.29   fail   fail   ok
+   4.7k    597.343   0.617021   pass   fail   ok
+   3.3k    419.411   0.878788   pass   fail   ok
+   2.2k    279.601   1.31818   pass   pass   ok
+   1.8k    228.768   1.61111   pass   pass   ok
+   1.5k    190.632   1.93333   pass   pass   ok
+   1.0k    127.087   2.9   pass   pass   ok
+   820    104.194   3.53659   pass   pass   too low
+
+--- SIM-11c  what the as-drawn bus does (ANO 10k only, nothing else) ---
+
+   C_bus     t_r(ns)   100kHz   400kHz
+   50p     423.642   pass   fail
+   100p     847.297   pass   fail
+   150p     1270.94   fail   fail
+   250p     2118.24   fail   fail
+   400p     3389.19   fail   fail
+
+--- SIM-11d  stacking risk: ANO 10k || PCB1 Rx || OrangePi 2.2k ---
+ If the SBC turns out to fit 2.2k AND PCB 1 adds its own, the
+ parallel total can drop under the 967 ohm sink floor.
+
+   PCB1_R    R_total(ohm)   sink_mA   verdict
+   10k     1527.78   1.89818   ok
+   4.7k     1303.25   2.2252   ok
+   3.3k     1166.08   2.48697   ok
+   2.2k     990.991   2.92636   ok
+   1.8k     900.819   3.21929   BELOW 967 ohm FLOOR
+
+==============================================================
+ SIM-12  TLC59116 dissipation, 4 RGB indicators (12 channels)
+ 4 red + 8 green/blue. Tj target <= 100 C, abs max 125 C.
+==============================================================
+
+--- SIM-12a  driver dissipation vs per-channel current, 5 V anode ---
+ All 12 channels on at once = white at full brightness.
+
+   I/ch    V_red_pin  V_gb_pin   P_red(W)  P_gb(W)   P_total(W)
+   5m   3.4   2.59999   0.0679999   0.104   0.172
+   10m   3.39999   2.59999   0.136   0.207999   0.343999
+   15m   3.39999   2.59998   0.203999   0.311998   0.515997
+   20m   3.39998   2.59998   0.271998   0.415997   0.687995
+
+--- SIM-12b  junction temperature, no ballast, 20 mA/ch ---
+
+   theta_JA   Ta=25C    Ta=50C    Ta=60C    verdict@60C
+   (P_total = 0.687995 W)
+   60         66.2797   91.2797   101.28   OVER 100 C TARGET
+   80         80.0396   105.04   115.04   OVER 100 C TARGET
+   100         93.7995   118.8   128.8   OVER 100 C TARGET
+
+--- SIM-12c  ballast resistor on the RED channels only ---
+ Moves heat off the chip into a resistor JLC already places.
+ R chosen so the chip keeps >=0.8 V of output headroom at 20 mA.
+
+   R_bal   V_red_pin  P_red_chip(W)  P_red_res(W)  P_total(W)  headroom
+   0.001   3.39998   0.271998   1.6E-06   0.687995   ok
+   33   2.74   0.2192   0.0528   0.635197   ok
+   47   2.46   0.1968   0.0752   0.612797   ok
+   68   2.04   0.1632   0.1088   0.579197   ok
+   82   1.76   0.1408   0.1312   0.556797   ok
+   100   1.4   0.112   0.16   0.527997   ok
+   120   1   0.08   0.192   0.495997   ok
+
+--- SIM-12d  the cheap fix: cap global brightness in firmware ---
+ TLC59116 has 8-bit per-channel PWM plus a global current control.
+ Average dissipation scales with duty. No BOM change at all.
+
+   duty   P_avg(W)   Tj@Ta=60,theta=80   verdict
+   1.0    0.687995   115.04   OVER 100 C TARGET
+   0.75    0.515996   101.28   OVER 100 C TARGET
+   0.5    0.343998   87.5198   ok
+   0.25    0.171999   73.7599   ok
+   0.1    0.0687995   65.504   ok
+
+--- SIM-12e  worst realistic steady state: one indicator red, rest off
+ The actual duty cycle of a status panel is nothing like white-full.
+
+   single red indicator at full: P = 0.0679996 W, Tj@60C/80 = 65.44 C
+
+--- SIM-12f  THE DECISION: Rext, with the chosen LED worst-case Vf ---
+ IOUT = (1.25/Rext)*15, so Rext = 18.75/IOUT.
+ Tj at 60 C ambient, theta_JA 80 C/W, all 12 channels lit
+ (full white self-test = the worst state the panel can be in).
+
+   I/ch(mA)   Rext(ohm)   P_total(W)   Tj@60C    verdict
+   20.14   930.983   0.692811   115.425   OVER 100 C TARGET
+   15.625   1200   0.537497   103   OVER 100 C TARGET
+   12.5   1500   0.429998   94.3999   ok
+   10.03   1869.39   0.345031   87.6025   ok
+   8.52   2200.7   0.293087   83.447   ok
+   6.25   3000   0.215   77.2   ok
+
+==============================================================
+ SIM-13  Key input - pull-up and RC debounce  [CORRECTED]
+ Switch: C&K KSC221JLFS, datasheet bounce time <= 1 ms
+ Thresholds: V_IL 0.800 V, V_IH 2.000 V on a 3.3 V input
+ PASS = node reads a valid low AND never recovers to V_IH
+        again before the contact is solid.
+==============================================================
+
+--- SIM-13a  the real test: does the filter prevent a 2nd edge? ---
+ Rpu = 10k, Rs = 1k. V_peak is the highest the node reaches AFTER
+ it has already read a valid low, during the chatter.
+
+   Cf      V_min     V_peak_after_low   2nd edge?   verdict
+   1f    0.300246   3.30028   YES   FAIL spurious edge
+   1n    0.300232   3.29987   YES   FAIL spurious edge
+   10n    0.300273   2.19532   YES   FAIL spurious edge
+   47n    0.305812   1.08631   no    PASS
+   100n    0.357663   1.62688   no    PASS
+   220n    0.650202   2.31418   YES   FAIL spurious edge
+   470n    1.31234   2.77893   -   FAIL never reads low
+
+--- SIM-13b  steady-state low must be a valid low ---
+ V_low = 3.3 * Rs/(Rs+Rpu). Must be under V_IL 0.8 V.
+ This is what stops Rs being made large enough to filter on its own.
+
+   Rs      Rpu=10k: V_low    verdict
+   100    0.0326733   ok
+   470    0.148138   ok
+   1k    0.3   ok
+   2.2k    0.595082   ok
+   3.3k    0.818797   INVALID LOW - key never registers
+   10k    1.65   INVALID LOW - key never registers
+
+--- SIM-13c  release latency with the filter fitted ---
+ Rising back through V_IH after release at 60 ms.
+
+   Cf      t_rise_to_VIH(ms)   verdict
+   10n    0.08605   ok
+   47n    0.39543   ok
+   100n    0.83859   ok
+   220n    1.84198   ok
+   470n    3.93237   ok
+
+--- SIM-13d  why an EXTERNAL pull-up, not the SBC's internal one ---
+ Settle time from release, Cf = 100 nF. Also: an internal pull-up
+ is not active until pinmux runs, so the input floats before that.
+
+   Rpu      t_rise_to_VIH(ms)
+   80k     7.35542
+   50k     4.56111
+   20k     1.76787
+   10k     0.83859
+   4.7k     0.34952
+

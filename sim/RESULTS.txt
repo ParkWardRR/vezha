@@ -122,155 +122,167 @@
   Rp=12k one CC pin loaded by Rd: 192.982 uA
 
 ==============================================================
- SIM-11  PCB 1 shared I2C bus - pull-up sizing
- Rise measured 0.3*Vdd (0.990 V) -> 0.7*Vdd (2.310 V)
- Limits: 1000 ns @100 kHz, 300 ns @400 kHz, R_total >= 967 ohm
+ SIM-04  Router rail IR drop at the Orange Pi
+ Limits: 4.750 V = USB minimum.  4.500 V = brownout territory
 ==============================================================
 
---- SIM-11a  rise time vs total pull-up and bus capacitance ---
+--- SIM-04a  D42V55F5 (5.0 V part) at its -3% corner, 4.850 V ---
 
-   R_total    C=50pF     C=100pF    C=150pF    C=250pF    C=400pF
-   10k   423.642 847.297 1270.94 2118.24 3389.19
-   4.7k   199.102 398.221 597.343 995.573 1592.92
-   3.3k   139.792 279.602 419.411 699.02 1118.43
-   2.2k   93.1633 186.39 279.601 466.013 745.62
-   1.8k   76.2572 152.503 228.768 381.285 610.052
-   1.5k   63.5489 127.065 190.632 317.731 508.38
-   1.0k   42.3628 84.7094 127.087 211.816 338.916
+  Rloop     V(pi)@1A   V(pi)@2A   V(pi)@4A   drop@4A   verdict@4A
+  20m    4.83   4.81   4.77   0.08   PASS
+  60m    4.79   4.73   4.61   0.24   OUT OF USB SPEC
+  120m    4.73   4.61   4.37   0.48   BROWNOUT RISK
+  250m    4.6   4.35   3.85   1   BROWNOUT RISK
 
---- SIM-11b  verdict per candidate value, at C=150 pF (realistic) ---
+--- SIM-04b  D42V55F5 at its nominal 5.000 V ---
 
-   R_total   t_r(ns)   sink_mA   100kHz   400kHz   >=967ohm
-   10k    1270.94   0.29   fail   fail   ok
-   4.7k    597.343   0.617021   pass   fail   ok
-   3.3k    419.411   0.878788   pass   fail   ok
-   2.2k    279.601   1.31818   pass   pass   ok
-   1.8k    228.768   1.61111   pass   pass   ok
-   1.5k    190.632   1.93333   pass   pass   ok
-   1.0k    127.087   2.9   pass   pass   ok
-   820    104.194   3.53659   pass   pass   too low
+  Rloop     V(pi)@4A   verdict@4A
+  20m    4.92   PASS
+  60m    4.76   PASS
+  120m    4.52   FAIL - under 4.75 V
+  250m    4   FAIL - under 4.75 V
 
---- SIM-11c  what the as-drawn bus does (ANO 10k only, nothing else) ---
+--- SIM-04c  D42V55F5.3 (Pololu #5572) at its -3% corner, 5.141 V ---
+  Same family, same footprint. Trades IR-drop headroom for the risk
+  of overshooting the Pi's input at light load.
 
-   C_bus     t_r(ns)   100kHz   400kHz
-   50p     423.642   pass   fail
-   100p     847.297   pass   fail
-   150p     1270.94   fail   fail
-   250p     2118.24   fail   fail
-   400p     3389.19   fail   fail
+  Rloop     V(pi)@0A   V(pi)@4A   verdict@4A
+  20m    5.141   5.061   PASS
+  60m    5.141   4.901   PASS
+  120m    5.141   4.661   FAIL - under 4.75 V
+  250m    5.141   4.141   FAIL - under 4.75 V
 
---- SIM-11d  stacking risk: ANO 10k || PCB1 Rx || OrangePi 2.2k ---
- If the SBC turns out to fit 2.2k AND PCB 1 adds its own, the
- parallel total can drop under the 967 ohm sink floor.
+--- SIM-04d  D42V55F5.3 at its +3% corner, 5.459 V, light load ---
+  Checks the other end: does the 5.3 V part overshoot a 5 V input?
 
-   PCB1_R    R_total(ohm)   sink_mA   verdict
-   10k     1527.78   1.89818   ok
-   4.7k     1303.25   2.2252   ok
-   3.3k     1166.08   2.48697   ok
-   2.2k     990.991   2.92636   ok
-   1.8k     900.819   3.21929   BELOW 967 ohm FLOOR
+  Rloop     V(pi)@0A   V(pi)@0.5A  verdict
+  20m    5.459   5.449   OVER 5.25 V at light load
+  60m    5.459   5.429   OVER 5.25 V at light load
+  120m    5.459   5.399   OVER 5.25 V at light load
 
-==============================================================
- SIM-12  TLC59116 dissipation, 4 RGB indicators (12 channels)
- 4 red + 8 green/blue. Tj target <= 100 C, abs max 125 C.
-==============================================================
+--- SIM-04e  how much Rloop can each source afford, vs load? ---
+  Largest Rloop that still delivers 4.75 V at the stated current.
+  Reference: ONE USB-C mated contact pair is typically 30-40 mohm,
+  before any cable, trace or second connector.
 
---- SIM-12a  driver dissipation vs per-channel current, 5 V anode ---
- All 12 channels on at once = white at full brightness.
+  source      @4.0A    @3.0A    @2.5A    @2.0A   (mohm)
+  4.85 V      25    33.3333    40    50
+  5.0 V      62.5    83.3333    100    125
+  5.141 V      97.75    130.333    156.4    195.5
+  5.3 V      137.5    183.333    220    275
 
-   I/ch    V_red_pin  V_gb_pin   P_red(W)  P_gb(W)   P_total(W)
-   5m   3   1.89999   0.0599999   0.0759998   0.136
-   10m   2.99999   1.89999   0.12   0.151999   0.271999
-   15m   2.99999   1.89998   0.179999   0.227998   0.407997
-   20m   2.99998   1.89998   0.239998   0.303997   0.543995
+--- SIM-04f  does lowering the current rescue the 5.0 V part? ---
+  Testing the 4.850 V worst corner against a 35 mohm loop - one
+  mated USB-C pair plus a little wire. Sweep the load down.
 
---- SIM-12b  junction temperature, no ballast, 20 mA/ch ---
-
-   theta_JA   Ta=25C    Ta=50C    Ta=60C    verdict@60C
-   (P_total = 0.543995 W)
-   60         57.6397   82.6397   92.6397   ok
-   80         68.5196   93.5196   103.52   OVER 100 C TARGET
-   100         79.3995   104.4   114.4   OVER 100 C TARGET
-
---- SIM-12c  ballast resistor on the RED channels only ---
- Moves heat off the chip into a resistor JLC already places.
- R chosen so the chip keeps >=0.8 V of output headroom at 20 mA.
-
-   R_bal   V_red_pin  P_red_chip(W)  P_red_res(W)  P_total(W)  headroom
-   0.001   2.99998   0.239998   1.6E-06   0.543995   ok
-   33   2.34   0.1872   0.0528   0.491197   ok
-   47   2.06   0.1648   0.0752   0.468797   ok
-   68   1.64   0.1312   0.1088   0.435197   ok
-   82   1.36   0.1088   0.1312   0.412797   ok
-   100   1   0.08   0.16   0.383997   ok
-   120   0.6   0.048   0.192   0.351997   TOO LITTLE HEADROOM
-
---- SIM-12d  the cheap fix: cap global brightness in firmware ---
- TLC59116 has 8-bit per-channel PWM plus a global current control.
- Average dissipation scales with duty. No BOM change at all.
-
-   duty   P_avg(W)   Tj@Ta=60,theta=80   verdict
-   1.0    0.543995   103.52   OVER 100 C TARGET
-   0.75    0.407996   92.6397   ok
-   0.5    0.271998   81.7598   ok
-   0.25    0.135999   70.8799   ok
-   0.1    0.0543995   64.352   ok
-
---- SIM-12e  worst realistic steady state: one indicator red, rest off
- The actual duty cycle of a status panel is nothing like white-full.
-
-   single red indicator at full: P = 0.0599996 W, Tj@60C/80 = 64.8 C
+  load     V(pi) with Rloop = 35 mohm   verdict
+  4.0 A    4.71    FAIL - under 4.75 V
+  3.0 A    4.745    FAIL - under 4.75 V
+  2.5 A    4.7625    PASS
+  2.0 A    4.78    PASS
+  1.5 A    4.7975    PASS
 
 ==============================================================
- SIM-13  Key input - pull-up and debounce
- Thresholds: V_IL 0.800 V, V_IH 2.000 V on a 3.3 V input
+ SIM-05  Encoder RC debounce. Rpu = 10k, Rs = 1k, Cf swept
+ Decision levels at 3.3 V IOVDD: VIL 0.800 V, VIH 2.000 V
 ==============================================================
 
---- SIM-13a  NO filter (Cf=0): how dirty is the raw edge? ---
- Expect the GPIO to follow every bounce. This is the baseline.
+--- SIM-05a  time constants and derived timings ---
 
-   Rpu      edges_below_VIL   (count of separate low excursions)
-   20k   samples through the bounce burst (V):
-            t=10.2m 0.157293   t=10.8m 3.3   t=11.4m 0.157293   t=12.0m 3.3   t=13.6m 3.3
-   50k   samples through the bounce burst (V):
-            t=10.2m 0.0647693   t=10.8m 3.3   t=11.4m 0.0647693   t=12.0m 3.3   t=13.6m 3.3
-   80k   samples through the bounce burst (V):
-            t=10.2m 0.040781   t=10.8m 3.3   t=11.4m 0.040781   t=12.0m 3.3   t=13.6m 3.3
-   10k   samples through the bounce burst (V):
-            t=10.2m 0.300273   t=10.8m 3.3   t=11.4m 0.300273   t=12.0m 3.3   t=13.6m 3.3
+   Cf        tau_fall(us)  tau_rise(us)  t_rise_to_VIH(us)
+   1e-9    0.909    11    10.2497
+   10e-9    9.09    110    102.497
+   100e-9    90.9    1100    1024.97
+   220e-9    199.98    2420    2254.93
+   1e-6    909    11000    10249.7
 
---- SIM-13b  RC filter sizing, Rpu=10k external, Rs=1k ---
- Does the GPIO stay above V_IL through the whole bounce burst,
- i.e. does the filter hide the bounce completely?
+--- SIM-05b  do real closures get through? ---
+  sampled near the end of each clean closure
+  3 rev/s: closed 30.00-32.78 ms, sampled 32.70 ms
+  5 rev/s: closed 40.00-41.67 ms, sampled 41.60 ms
+  must fall below VIL = 0.800 V to be counted
 
-   Cf      V_min_during_bounce   t_fall_to_VIL(ms)   verdict
-   1f    0.300271    -0.0005    crosses V_IL
-   10n    0.300273    0.01561    crosses V_IL
-   47n    0.300273    0.07605    crosses V_IL
-   100n    0.300506    0.16254    crosses V_IL
-   220n    0.316097    0.35819    crosses V_IL
-   470n    0.406596    1.45194    crosses V_IL
+   Cf        V@32.70ms   3rev/s   V@41.60ms   5rev/s
+   1e-9    0.00164918   seen   0.00164918   seen
+   10e-9    0.00164918   seen   0.00164918   seen
+   100e-9    0.00164918   seen   0.00164958   seen
+   220e-9    0.00166527   seen   0.0038978   seen
+   1e-6    0.135745   seen   0.337557   seen
 
---- SIM-13c  release-edge latency with the filter in place ---
- Rising back through V_IH after the key is let go at t=60 ms.
- Must be far below ~50 ms or the key feels sticky.
+--- SIM-05c  is the bounce burst suppressed? ---
+  The question is NOT whether the node wobbles during the burst - it
+  always does, and early chatter pulses may be too short to assert at
+  all. A spurious edge means: once the GPIO has ALREADY read a valid
+  low (node crossed VIL = 0.8 V), does the node climb back above
+  VIH = 2.0 V before the closure genuinely ends at 20 ms?
+  So: find the first VIL crossing, then take the peak from there to
+  19.9 ms. Peak above VIH = a false release the decoder would count.
 
-   Cf      t_rise_to_VIH(ms)   verdict
-   1f    0.00049   ok
-   10n    0.08416   ok
-   47n    0.39349   ok
-   100n    0.83664   ok
-   220n    1.84003   ok
-   470n    3.93042   ok
+   Cf        t_first_assert(ms)  peak V after it   result
+   1e-9    10.001    3.29967    FAIL - false release, extra edges
+   10e-9    10.0138    2.96197    FAIL - false release, extra edges
+   100e-9    11.5003    1.30683    PASS - bounce suppressed
+   220e-9    11.8684    0.797069    PASS - bounce suppressed
+   1e-6    12.8654    0.798565    PASS - bounce suppressed
 
---- SIM-13d  the case for an external pull-up at all ---
- With only the SBC internal pull-up (and no external), the node is
- undriven until pinmux configures it. Compare settle time from 0 V.
+--- SIM-05d  rotation-rate ceiling each Cf imposes ---
+  The slow rise sets it: min edge spacing = t_rise_to_VIH
+  rev/s = 1 / (4 * 30 * min_edge_spacing)
+  For reference, a brisk hand flick is about 3 rev/s = 180 RPM.
 
-   Rpu      Cf=100n: t_rise_to_VIH(ms)
-   80k     7.35347
-   50k     4.55916
-   20k     1.76593
-   10k     0.83664
-   4.7k     0.34757
+   Cf        min edge spacing(us)  max rev/s   max RPM
+   1e-9    10.2497    813.033    48782
+   10e-9    102.497    81.3033    4878.2
+   100e-9    1024.97    8.13033    487.82
+   220e-9    2254.93    3.6956    221.736
+   1e-6    10249.7    0.813033    48.782
+
+==============================================================
+ SIM-06  Aux 5 V -> VSYS through a blocking Schottky
+ VSYS must stay inside 1.800 - 5.500 V (Pico 2 datasheet)
+==============================================================
+
+--- SIM-06a  VSYS vs total console load, normal operation ---
+  load = Pico 2 + OLED + pull-ups + CC Rp resistors
+
+  I_load    V(auxo)   V(vsys)   Vf_diode   headroom_to_5.5V  verdict
+  0.02 A    4.997   4.74546   0.251539   0.754539   PASS
+  0.05 A    4.9925   4.7136   0.278895   0.786396   PASS
+  0.10 A    4.985   4.68404   0.300957   0.815957   PASS
+  0.15 A    4.9775   4.66214   0.315364   0.837864   PASS
+  0.25 A    4.9625   4.62624   0.336257   0.873757   PASS
+  0.40 A    4.94   4.58046   0.359544   0.919544   PASS
+
+--- SIM-06b  no diode: VSYS tied straight to aux 5 V ---
+  Shows the margin that is given up at the top of the VSYS range.
+
+  I_load    V(vsys)   headroom_to_5.5V
+  0.02 A    4.99698   0.50302
+  0.15 A    4.97735   0.52265
+  0.40 A    4.9396   0.5604
+
+--- SIM-06c  BACK-FEED: laptop on the programming port, RotoPD dead
+  Pico VBUS 5 V reaches VSYS via the Pico's own D1, so VSYS ~4.7 V.
+  representative unpowered buck output, 10 ohm a harsh case.
+  I_aux < 0 means current flowing INTO the RotoPD aux pin.
+
+  config                aux sink   I_aux(mA)   verdict
+  series Schottky fitted   1k      -0.00200001      blocked
+  NO diode (direct tie)    1k      -4.99445      BACK-FEED
+  series Schottky fitted   100      -0.00200001      blocked
+  NO diode (direct tie)    100      -49.8951      BACK-FEED
+  series Schottky fitted   10      -0.00200001      blocked
+  NO diode (direct tie)    10      -494.065      BACK-FEED
+
+--- SIM-06d  aux 0.4 A budget, itemised ---
+  Pico 2 @ 150 MHz, both cores busy      ~ 55 mA  (measure, do not trust)
+  SSD1306/SH1107 OLED, most pixels lit   ~ 25 mA
+  3 x encoder pull-ups, 10k, worst case  ~  1 mA
+  2 x CC Rp, 36k to 3V3                  ~ 0.2 mA
+  PG + FAULT pull-ups                    ~ 0.1 mA
+  ------------------------------------------------
+  total                                  ~ 81 mA of 400 mA
+  The 0.4 A aux budget is NOT the binding constraint. The two real
+  constraints on this rail are the 5.5 V VSYS ceiling and the
+  back-feed path, and one Schottky addresses both.
 
