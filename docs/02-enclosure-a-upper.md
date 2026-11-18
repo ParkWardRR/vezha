@@ -28,6 +28,7 @@ Read [01-architecture.md](01-architecture.md) first.
 | **M-key → E-key adapter** | **Installed size unverified** | Male M-key edge into the Orange Pi's **underside** socket; second radio into the adapter's female E-key socket. The host accepting 2280 modules does **not** tell you the adapter's size or the installed stack height. Choose a specific adapter **that routes PCIe**, then measure it with card and antenna plugs installed. |
 | **4 × flex antennas** | 42 × 7 mm each, 100 mm MHF4 lead | Inside the narrow walls. Full placement in [06-antennas.md](04-antennas.md). |
 | **Storage** | eMMC discussed, unconfirmed | — |
+| **RTC backup cell** | 20 mm coin cell + holder, or a shrink-wrapped cell on a lead | On the Orange Pi's **2-pin 1.25 mm RTC header**. Placement is a thermal keep-out problem, not a space one — see [RTC backup cell](#rtc-backup-cell). |
 | ~~Display~~ | — | **Retired in v1.** Was a Waveshare 4.26" e-paper whose 107 × 64 mm driver board set the faceplate's minimum size. [10](retired/display-epaper.md) |
 | ~~Faceplate~~ | — | **Retired in v1.** No controls to carry, so no removable front part and no openings. |
 | ~~PCB 1~~ | — | **Retired in v1.** [04](retired/pcb-1-front-control.md) · [12](retired/pcb-1-schematic.md) |
@@ -122,6 +123,55 @@ Full rationale and the 3 A caveat:
 **No RF crosses the seam** — the power box must come off without disturbing
 any PCIe or antenna connection.
 
+## RTC backup cell
+
+**Added 2026-11-18.** The Orange Pi 5 Plus has an onboard RTC and a **2-pin
+1.25 mm backup-battery header**, so keeping time across a dead box costs a cell
+and a lead — there is no RTC module to design in and no board change.
+
+**Why a travel router cares, when a desk SBC does not:** Vezha is **fully dead
+between trips** (no internal cell is decided), and the power box detaching or
+the bank being unplugged means **hard power-cuts are the normal shutdown** — so
+`fake-hwclock`'s saved timestamp is routinely stale. The first thing the box
+does on arrival is join a strange network, and most of that work is
+clock-sensitive:
+
+| Depends on the clock | What a wrong one does |
+|---|---|
+| **Captive portal over HTTPS** | `certificate not yet valid` → the portal never renders → no uplink → **no NTP to fix the clock with** |
+| **WireGuard** | The handshake carries a TAI64N timestamp; a peer **silently drops** handshakes older than the last it saw. A clock that rolled backwards = a tunnel that never comes up, with no visible error |
+| **Tailscale** | TLS to the control plane fails; node key expiry is misjudged |
+| **DNSSEC** | Signature inception/expiry rejects every answer |
+| **Logs** | On a [headless v1](01-architecture.md#the-v1-scope-cut) with no at-rest status, timestamps are the only forensic surface left |
+
+Without the cell this is not fatal — `fake-hwclock` / `systemd-timesyncd`
+restore the last saved time and keep the clock monotonic, which covers the
+WireGuard case most of the time. **The cell buys "correct at power-on" instead
+of "usually recovers",** on a device that has to work on a hostile network
+before anyone can intervene.
+
+> [!WARNING]
+> **Chemistry is unresolved, and it is not a free choice.** Confirm whether the
+> header **trickle-charges** before fitting anything. These headers are
+> typically a plain *backup* input, in which case an ML/LIR rechargeable never
+> recharges — but if the board does charge it, a **primary CR2032 must not be
+> fitted to it.** Read the board's schematic, not the wiki table.
+
+**Mechanical consequences for this shell:**
+
+- **Thermal is the binding constraint, not volume.** Coin cells are commonly
+  rated to **60 °C**, inside a sealed box that already has an
+  [unmeasured thermal problem](#thermal). Keep it off the heatsink and clear of
+  the underside M.2 stack.
+- **Not in an [antenna zone](#antenna-zones).** A 20 mm metal disc against a
+  wall strip is the same keep-out the battery already had.
+- **Reachable at service**, like the MHF4 connectors — a cell that needs the
+  antennas disturbed to replace is a cell that never gets replaced.
+- The lead is short. Mock it up with the board where it actually sits.
+
+Verify with `cat /proc/driver/rtc` at
+[bring-up step 2](09-software-and-bringup.md#bring-up-order).
+
 ## Thermal
 
 Unresolved and untested. The stated preference is hardware that does not need
@@ -139,6 +189,9 @@ the RF test in [06-antennas.md](04-antennas.md) rather than by assumption.
 - Which M-key-to-E-key adapter, confirmed to route PCIe
 - Second radio part, form factor height, and antenna connector type
 - Heatsink size and whether active cooling is needed
+- **RTC cell chemistry** — primary or rechargeable, decided by whether the
+  Orange Pi's RTC header trickle-charges. Its mounting location is a thermal
+  keep-out, [above](#rtc-backup-cell)
 - **How the box opens for service** — lid, base plate, or seam split. Driven
   by assembly and MHF4 access, nothing else.
 - Whether a replaceable top cap survives as the fallback for swapping the

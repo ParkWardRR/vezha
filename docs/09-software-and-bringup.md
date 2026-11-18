@@ -89,6 +89,11 @@ Work through, explicitly:
   not an implementation detail
 - **How portal login works before the tunnel is established** — the portal
   must be reachable while the VPN is not yet up
+- **What the clock reads before NTP can run.** The portal is HTTPS, WireGuard
+  rejects a clock that moved backwards, and neither works until the uplink is
+  already up. Decide the ordering — RTC, `fake-hwclock` fallback, and when
+  `systemd-timesyncd` is allowed to step the clock.
+  [02 · RTC backup cell](02-enclosure-a-upper.md#rtc-backup-cell)
 
 ## Bring-up order
 
@@ -99,7 +104,10 @@ Each step depends on the one before it. Do not reorder.
    [01 · Radio topology](01-architecture.md#radio-topology).
 2. **Boot Armbian Minimal.** AX210 in client mode, MT7922 in AP mode, real
    client traffic with **both links on 5 GHz**. Record kernel, firmware,
-   country setting, channels, stability.
+   country setting, channels, stability. **Check the RTC in the same
+   session:** `cat /proc/driver/rtc` with the backup cell fitted, then cut
+   power for several minutes and confirm the date survives the dead box —
+   [02 · RTC backup cell](02-enclosure-a-upper.md#rtc-backup-cell).
 3. **Exercise travel conditions.** Captive-portal login, reconnect, VPN
    recovery. Verify the **private SSID stays up when the uplink drops.**
 4. **Measure.** Power at the board, battery runtime, and RF with the enclosure
