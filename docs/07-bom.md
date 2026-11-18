@@ -31,6 +31,7 @@ ordered.**
 | Antenna alt | TE/Linx ANT-W63WS1-SMA | 🔵 Candidate | $12.27 ea | Blade, needs MHF4→SMA bulkheads. Not pocketable. |
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
+| UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-pcb-2-power.md#telemetry-header). |
 | Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | 🟡 **Chosen** | $31.99 | 800 × 480 B/W, SPI. Active area 92.80 × 55.68 mm; driver board **107 × 64 mm**. Supersedes the 3.5" HDMI touchscreen. **Own bracket.** Full details and its refresh/temperature limits: [10-display.md](10-display.md). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
@@ -84,6 +85,32 @@ Notes:
 | Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved** | **5 V power only.** Advertise 5 V/3 A (10 kΩ Rp) if the Pi measures under 3 A — see [01](01-architecture.md#the-3-a-problem) |
 | Seam cable | Short USB-C to USB-C | 🔴 **Unresolved** | Captive or detachable, TBD |
 | USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
+
+### PCB 2 — measurement and debug hardware
+
+Added as cheap insurance: each is small money at design time and expensive or
+impossible once the boards are made and the boxes closed. Rationale and
+rankings in [05](05-pcb-2-power.md#cheap-insurance-worth-adding-now).
+
+| Part | PN | Status | Price | Notes |
+|---|---|---|---|---|
+| Current/voltage monitor | TI **INA226** | 🟡 **Chosen** | ~$1–2 | **High-side in the 5 V output**, between Pololu VOUT and the USB-C seam receptacle — measures what the Orange Pi actually receives. On **I²C bus 1** (rail-critical). Defaults to `0x40`, strappable `0x40`–`0x4F` — **verify no collision with the RotoPD Pro.** |
+| Sense resistor | **2 mΩ** shunt, ≥1 W, low TCR | 🔴 **Unresolved** | — | 8.0 mV at 4 A = 9.8 % of INA226 range · 1.25 mA resolution · 32 mW loss. ~10× headroom for inrush that a larger shunt would clip. Kelvin-connect it. |
+| Temperature sensor | NTC thermistor, 10 kΩ typical | 🔴 **Unresolved** | ~10 ¢ | Against the **Pololu's thermal pad**, to a Pico ADC. Measures sealed-box derating with the lid closed — the condition that cannot otherwise be probed. Enables thermal foldback. |
+| Telemetry header | 3-pin 2.54 mm, or **4-pos with one blanked** as a key | 🔴 **Unresolved** | ~5 ¢ | TX/RX/GND. **Populated but unwired in Rev A** — the seam carries no signal. Silkscreen `TX→RX`. |
+| Telemetry series R | 100–330 Ω ×2 | 🔴 **Unresolved** | ~2 ¢ | On TX and RX. Makes a reversed header survivable. |
+| SWD header | 3-pin 2.54 mm | 🔴 **Unresolved** | ~10 ¢ | SWCLK, SWDIO, GND. The only way in when firmware crashes before USB enumerates. |
+| Rail test points | Probe pads | 🔴 **Unresolved** | free | PD VBUS, Pololu VOUT, 3.3 V, several GND — **plus a pair at the USB-C seam output**, so "voltage at the Orange Pi under load" does not mean probing connector pins. |
+| Isolation jumpers | 0 Ω | 🔴 **Unresolved** | ~1 ¢ | On buck EN and each I²C bus, for sectioned bench bring-up. |
+| Pico reset | Pad or button on `RUN` | 🔴 **Unresolved** | ~5 ¢ | BOOTSEL is unreachable once enclosed. |
+
+> [!NOTE]
+> **The INA226 and the NTC are the two that matter.** They convert the
+> project's two largest unknowns — whether the Pi stays under USB-C's 3 A
+> limit at 5 V, and how far the Pololu derates in a sealed box — from
+> one-off bench measurements into continuous readings taken with the case
+> closed. They also give the Pico a basis for overcurrent shutdown and
+> thermal foldback alongside the PD contract check it already performs.
 
 ## Power source
 
