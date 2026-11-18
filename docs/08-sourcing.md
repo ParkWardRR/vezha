@@ -28,6 +28,14 @@ or free text.
 - **`keyword` is a general search.** A model number or description returns
   multiple hits. Match on the `componentCode` field rather than taking
   `list[0]`.
+- **The catalog contains mis-mapped placeholder rows.** Searching `6CJ1NOPR`
+  returns a second "APEM" hit (`C22408213`) whose `describe` is just
+  `- New Arrivals`. Rows priced at **$0.0398 with `minPurchaseNum` 441** and an
+  empty description are that junk signature — ignore them.
+- **`stockCount: 0` means it will not be placed.** The quote silently drops the
+  position. `canPresaleNumber` is the restock-order figure; `0` means no
+  pre-order either, and `-1` appears on some rows with meaning unclear — treat
+  it as unknown, not as "unlimited".
 - **Image and datasheet URLs are pre-signed and expire in ~30 minutes.** The
   `*AccessIdUrl` fields carry OSS STS tokens. Don't cache them; re-query, or
   keep the stable `lcscGoodsUrl` / `dataManualUrl` links instead.
@@ -47,6 +55,46 @@ or free text.
 | `lcscGoodsUrl`, `dataManualUrl` | Stable product page and datasheet links |
 
 ## Looked up so far
+
+Every part in [07-bom.md](07-bom.md) that could plausibly come off a JLCPCB
+reel, checked **2026-11-17** against the endpoint above. Stock figures move;
+re-check before ordering.
+
+| BOM part | LCSC code | Stock | Presale | Price @1 / @100 | Verdict |
+|---|---|---:|---:|---|---|
+| TI `TLC59116IPWR` LED driver | `C131194` | 3,611 | 3,463 | $1.79 / $1.11 | ✅ **Available**, TSSOP-28 |
+| GCT `USB4120-03-C` USB-C | `C3445864` | 1,253 | 896 | $1.37 / $0.87 | ✅ **Available** |
+| C&K `KSC221JLFS` switch *(alt)* | `C221726` | 16,623 | 15,660 | $0.76 / $0.46 | ✅ **Available**, 6.2 × 6.2 mm J-lead |
+| APEM/MEC `6CJ1NOPR` switch | `C5518654` | **0** | −1 (unclear) | $5.66 / $3.94 | ❌ Not placeable |
+| NKK `MN12LL4G01` toggle | `C20103999` | **0** | 0 | $15.13 / $15.13 | ❌ Not placeable |
+| MEC `10G09` keycap | `C5381950` | **0** | 0 | $1.18 (min 8) | ❌ Not placeable |
+| MEC `10G08` keycap | `C6063604` | **0** | 0 | $1.00 (min 10) | ❌ Not placeable |
+| Common-anode RGB LED | — | — | — | — | 🔴 No PN chosen yet |
+| Pololu `D42V55F5`, CentyLab RotoPD | — | — | — | — | Not catalogued — modules, hand-mounted |
+
+Three things this settles:
+
+1. **The electronics are all sourceable; the controls are not.** The driver and
+   the USB-C receptacle are in stock. Every tactile/mechanical part specified by
+   name — the 6C switch, both keycaps, the NKK toggle — is at zero stock with no
+   pre-order. That is the split the build already assumed: JLC assembles the
+   electronics, the controls go in by hand.
+2. **The C&K alternative is the only tactile switch actually in stock**, at
+   16,623 pieces and $0.46 in hundreds. Match the code exactly — the bare
+   `KSC221J` listing (`C19458559`) is a separate zero-stock row.
+3. **Nothing on this list is a `basic` part.** All are `expand`, so any
+   assembled board here pays the extended-part feeder fee per distinct part.
+
+Two notes on the 6C row: LCSC gives its actuation force as **3.7 N**, against
+the ~3.6 N quoted elsewhere in this repo; and JLC's price in hundreds ($3.94) is
+*above* the $3.07 DigiKey figure in the BOM. Even restocked, JLC is not the
+cheaper path for this switch.
+
+For the RGB LED, the catalog has a deep in-stock selection of explicitly
+common-anode parts — `C404275` (MHT194CRGBCT, 16,563) and `C389528`
+(MHS110RGBCT, 7,572) among them. Neither is validated or chosen; the LED still
+has to be picked **as a pair with its optic**, which is what sets standoff
+height.
 
 ### C3445864 — USB-C receptacle
 

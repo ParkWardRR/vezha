@@ -121,19 +121,36 @@ mechanical test below, before ordering the faceplate. Check it in a dark room
 *and* in daylight. The target is an even, readable dot with **no visible
 hotspot and no glow leaking around the keycap.**
 
-JLCPCB stock and pricing for the exact driver and RGB LED combination are
-**unverified** — check both in the assembly quote before locking footprints.
+The driver is in JLCPCB stock (see below); the RGB LED has no part number yet,
+so its stock and optic pairing are still open. Confirm both in the assembly
+quote before locking footprints.
 
 ## Before sending the board to JLCPCB
 
-**Assembly availability and switch choice are separate decisions.** There is no
-verified JLCPCB assembly-library listing for `6CJ1NOPR` — check the exact
-manufacturer part number in the assembly quote.
+**Assembly availability and switch choice are separate decisions.**
 
-If JLC cannot source it: leave those three positions unpopulated and install
-DigiKey parts with paste and hot air or a small reflow setup. The switch uses
-**J-leads**, so do not plan around hand-soldering with an iron. The ANO,
-keycaps, and toggle are final mechanical assembly items regardless.
+JLCPCB catalog check, 2026-11-17 — codes and price ladders in
+[08-sourcing.md](08-sourcing.md#looked-up-so-far):
+
+| Part | Code | JLC can place it? |
+|---|---|---|
+| TI `TLC59116IPWR` | `C131194` | ✅ Yes — 3,611 in stock |
+| APEM/MEC `6CJ1NOPR` | `C5518654` | ❌ No — 0 stock, no pre-order |
+| C&K `KSC221JLFS` *(alt)* | `C221726` | ✅ Yes — 16,623 in stock |
+| RGB LED | — | 🔴 No part number chosen |
+
+So the fallback is the live path, not a contingency: **leave the three switch
+positions unpopulated** and install DigiKey parts with paste and hot air or a
+small reflow setup. The switch uses **J-leads**, so do not plan around
+hand-soldering with an iron. The ANO, keycaps, and toggle are final mechanical
+assembly items regardless.
+
+Restocking does not change the economics — JLC quotes the 6C at $3.94 in
+hundreds against $3.07 at DigiKey. The one thing this check does change is the
+C&K alternative's standing: it is the only tactile switch here JLC can actually
+place, at $0.46 in hundreds. That makes it a genuine fork — a fully machine-
+assembled board at ~2 N, or hand-reflowed 6C switches at ~3.6 N. The test coupon
+decides it, not the catalog.
 
 ## Mechanical test coupon
 
@@ -169,8 +186,9 @@ the full printed wall.
 
 ## Open questions
 
-- JLCPCB assembly sourcing for `6CJ1NOPR`, the TLC59116IPWR driver, and the
-  RGB LEDs — all unverified.
+- ~~JLCPCB assembly sourcing for `6CJ1NOPR` and the TLC59116IPWR driver~~ —
+  checked 2026-11-17: driver in stock, switch not. RGB LED sourcing stays open
+  because no part number is chosen.
 - RGB LED part and its matching optic — must be chosen as a pair, and they set
   the standoff height.
 - I²C address strapping for the TLC59116 (must not collide with ANO `0x49`),

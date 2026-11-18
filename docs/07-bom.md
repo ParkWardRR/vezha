@@ -51,9 +51,23 @@ PCB assembly.
 
 Notes:
 - Populate **3 of 5** switches; keep 2 spare. 6C is firm at ~3.6 N — test one.
+  (LCSC's listing says 3.7 N.)
 - C&K alt is **not a drop-in**: different footprint, needs its own plunger.
 - **RGB LED and its optic must be chosen as a pair** — they set standoff height.
 - TLC59116 must be strapped to an address **not** colliding with the ANO's `0x49`.
+
+**JLCPCB assembly availability, checked 2026-11-17** — full results and codes in
+[08-sourcing.md](08-sourcing.md#looked-up-so-far):
+
+- ✅ `TLC59116IPWR` (`C131194`) in stock, 3,611 · $1.11 @100.
+- ❌ `6CJ1NOPR` (`C5518654`), NKK `MN12LL4G01` (`C20103999`), and both keycaps
+  are **zero stock with no pre-order** — JLC cannot place them. The three switch
+  positions get reflowed by hand; the toggle and caps were always manual
+  assembly.
+- ✅ The C&K alt `KSC221JLFS` (`C221726`) is in stock at 16,623 · $0.46 @100 —
+  the only tactile switch here JLC can actually place.
+- Every part checked is an `expand` (extended) library part, so each distinct one
+  adds a feeder fee to an assembly order.
 
 ## PCB 2 — power board
 
@@ -63,7 +77,7 @@ Notes:
 | Controller | Raspberry Pi Pico 2 (non-wireless) | 🟡 Chosen | 51 × 21 × 1 mm bare |
 | 5 V regulator | Pololu D42V55F5 (#5571) | 🟡 Chosen | 25.4 × 25.4 × 9 mm · 3 × M2 holes |
 | Seam connector | — | 🔴 **Unresolved** | Keyed, latching, 5 V/GND, full load |
-| USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability |
+| USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
 
 ## Power source
 
@@ -85,9 +99,10 @@ Outputs of design work, not catalogue items:
 1. **Buy one of each control first.** One NKK toggle, one 6C switch with cap,
    one ANO, one RGB LED with its optic. Print the test coupons in
    [04](04-pcb-1-front-control.md) before committing to a four-indicator board.
-2. **Confirm JLCPCB assembly sourcing in the quote**, not from a datasheet
-   link — the 6C switches, the TLC59116 and the RGB LEDs are **all unverified**
-   for assembly availability.
+2. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
+   search. The catalog check on 2026-11-17 says the TLC59116 is in stock and the
+   6C switch, toggle and keycaps are not; the RGB LED has no part number yet. A
+   catalog snapshot is not a commitment — the quote is.
 3. **Measure, don't look up**, the three dimensions in
    [01-architecture.md](01-architecture.md#the-three-dimensions-nobody-should-guess).
 
