@@ -1,7 +1,34 @@
-# 10 · Display — 4.26" e-Paper
+# 10 · Display — 4.26" e-Paper *(retired)*
 
-The chosen display for [Enclosure A](02-enclosure-a-upper.md). **Supersedes the
-Waveshare 3.5" HDMI touchscreen** discussed in
+> [!CAUTION]
+> **Retired 2026-11-18. Vezha v1 has no display.** Enclosure A is fully
+> headless: no panel, no keys, no wheel, no indicators, no front PCB. The
+> entire user interface is the web UI. See
+> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut).
+>
+> **Nothing in this document is a build instruction.** It is kept because the
+> analysis below is the reason the display went away, and because a v2 that
+> adds a panel should start from these findings rather than rediscover them.
+
+**If you are returning to this for v2, the four findings that still hold:**
+
+| Finding | Where |
+|---|---|
+| A 4 s full refresh and a ≥ 180 s minimum interval cannot drive a scroll wheel — any e-paper UI must be paged, not scrolled | [What this does to the UI](#what-this-does-to-the-ui) |
+| 0–50 °C operating was the narrowest environmental limit in the whole build; it will not display in a cold car | [Environment](#environment) |
+| The 107 × 64 mm driver board, not the glass, is what sets the faceplate's minimum size | [The consequence for Enclosure A](#the-consequence-for-enclosure-a) |
+| Leaving the panel powered in a static state destroys it — the `PWR` pin must be driven, and an unclean shutdown is a dead-display failure mode | [Refresh discipline](#refresh-discipline-is-a-hard-requirement) |
+
+A later comparison against monochrome OLED, run before the headless decision,
+is summarised in [the v1 scope cut](01-architecture.md#the-v1-scope-cut).
+
+---
+
+*Original document follows, unedited.*
+
+## Original: the chosen display for Enclosure A
+
+**Superseded the Waveshare 3.5" HDMI touchscreen** discussed in
 [09-background.md](09-background.md#enclosure-antenna-layout-and-controls).
 
 Part: **Waveshare 4.26inch e-Paper display HAT**, SKU **26376** — 800 × 480,

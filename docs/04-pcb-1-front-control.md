@@ -1,7 +1,34 @@
-# 04 · PCB 1 — Front Control Board
+# 04 · PCB 1 — Front Control Board *(retired)*
 
-The front panel of [Enclosure A](02-enclosure-a-upper.md). Read
-[01-architecture.md](01-architecture.md) first.
+> [!CAUTION]
+> **Retired 2026-11-18. PCB 1 does not exist in v1.** Enclosure A is fully
+> headless — no display, no keys, no wheel, no toggle, no indicators, no front
+> board at all. Vezha v1 ships **two enclosures and one PCB.** See
+> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut).
+>
+> **Do not order parts from this document** and do not lay the board out. The
+> schematic that followed from it, [12](12-pcb-1-schematic.md), is retired with
+> it.
+
+**What this cost, and what it saved.** The board was *finished* — every placed
+part sourced with an LCSC code, the host pin map resolved, three simulations
+closed. It was retired for scope, not for a defect. Anyone restoring a front
+panel in v2 inherits a complete design; the findings worth keeping:
+
+| Finding | Still true? | Where |
+|---|---|---|
+| The I²C bus **as originally drawn does not work** — ANO pull-ups alone give 1271 ns rise at 150 pF, failing even 100 kHz. Fit 2.2 kΩ. | Yes, for any I²C front panel | [SIM-11](12-pcb-1-schematic.md#sim-11--ic-pull-ups) |
+| Red is the hot channel on a 5 V anode — 3.0 V across the driver vs 1.9 V for green/blue, so four red channels make 44 % of the heat | Yes | [SIM-12](12-pcb-1-schematic.md#sim-12--led-driver-dissipation) |
+| Key RC debounce **does** work on a switch-to-ground input: 10 kΩ / 1 kΩ / 100 nF, and it is a *window* — 220 nF and 470 nF both fail | Yes — corrected in `a4c5201` | [SIM-13](12-pcb-1-schematic.md#sim-13--key-debounce) |
+| Printed plungers against 0.35 mm of travel were the highest-risk mechanical item, needing a coupon before any faceplate | Moot in v1 — no faceplate openings | [Plunger design](#plunger-design) |
+
+---
+
+*Original document follows, unedited.*
+
+## Original: the front panel of Enclosure A
+
+Read [01-architecture.md](01-architecture.md) first.
 
 **The net-by-net schematic is [12-pcb-1-schematic.md](12-pcb-1-schematic.md).**
 This document covers requirements, part choices and the reasoning; 12 covers the

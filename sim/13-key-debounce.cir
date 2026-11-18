@@ -1,5 +1,13 @@
 * SIM-13  Key input: pull-up and RC debounce
 *
+* RETIRED 2026-11-18 -- PCB 1 is not built in v1. There are no keys. See
+*   docs/01 "The v1 scope cut". Kept for v2, and worth keeping: this deck
+*   was CORRECTED in a4c5201 after its first pass asked the wrong question
+*   (whether the filter hides bounce entirely, rather than whether a second
+*   edge appears after the input has already read a valid low). The
+*   corrected answer -- 10k / 1k / 100 nF, a window and not a floor -- is
+*   the one that converges with PCB 2's encoder deck, sim/05.
+*
 * QUESTION
 *   docs/04 wires each key as "switch to ground" on an Orange Pi GPIO and
 *   does not say where the pull-up lives or whether anything filters bounce.

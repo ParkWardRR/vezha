@@ -60,6 +60,16 @@ Every part in [07-bom.md](07-bom.md) that could plausibly come off a JLCPCB
 reel, checked **2026-11-17** against the endpoint above. Stock figures move;
 re-check before ordering.
 
+> [!NOTE]
+> **Most of this table is now historical.** The LED driver, both switch
+> families, the toggle, the keycaps and the RGB LED all belonged to PCB 1,
+> which is [not built in v1](01-architecture.md#the-v1-scope-cut). **Only the
+> GCT USB-C receptacle and the two hand-mounted modules are live parts.**
+>
+> The table is kept because the *method* is the point — and because the
+> zero-stock findings are what settled the switch choice, which a v2 front
+> panel would otherwise rediscover.
+
 | BOM part | LCSC code | Stock | Presale | Price @1 / @100 | Verdict |
 |---|---|---:|---:|---|---|
 | TI `TLC59116IPWR` LED driver | `C131194` | 3,611 | 3,463 | $1.79 / $1.11 | ✅ **Available**, TSSOP-28 |

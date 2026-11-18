@@ -184,26 +184,30 @@ project most needs stop depending on someone remembering to take them.
 
 - Push encoder, **30 detents**.
 - **Keyed 4-pin harness: A, B, push switch, GND.**
-- **Debounce in firmware, not hardware.** Resolved by simulation — see below.
-- **10 kΩ external pull-up** on A, B and the switch, for a defined level before
-  pinmux. Not for bounce.
-- **Optional 10–100 nF for ESD only**, not as a filter.
+- **10 kΩ pull-up, 1 kΩ series, 100 nF to ground** on A, B and the switch.
+- **Plus a Gray-code decoder in firmware** — the RC filter handles contact
+  bounce; it does not handle an encoder turned quickly.
 
 > [!IMPORTANT]
-> **Hardware RC debounce cannot work on a switch-to-ground input.** This is
-> structural, not a sizing problem.
+> **Corrected 2026-11-18.** This section previously said *"hardware RC debounce
+> cannot work on a switch-to-ground input — do not reserve RC footprints."*
+> **That was wrong, and it contradicted both [11](11-pcb-2-schematic.md) and
+> the corrected deck.** Reserve the footprints and fit the parts.
 >
-> The series resistor has to sit well below the pull-up to give a valid low —
-> but that same resistor is what discharges the filter cap, so discharge is
-> forced much faster than charge. Sweeping 10 nF to 470 nF against a 5 ms
-> bounce burst moves `V_min` only from 0.300 V to 0.407 V, never near `V_IL`.
-> Raising `Rs` to 10 kΩ puts the closed-switch level at 1.65 V — **above
-> `V_IL`, so the key stops registering at all.**
+> The error was in the pass criterion, not the arithmetic. The original deck
+> asked whether the filter hides the bounce burst *entirely* — whether `V_min`
+> ever approaches `V_IL`. The question that matters is narrower: **whether a
+> second falling edge appears after the input has already read a valid low.**
+> It does not, with 10 kΩ / 1 kΩ / 100 nF.
 >
-> Source: `sim/13-key-debounce.cir`. The result was obtained for PCB 1's keys
-> and applies unchanged here — the EC11's contacts are the same topology.
+> **It is a window, not a floor.** 220 nF and 470 nF both *fail*, because the
+> cap stops discharging fully during short closures and the next press starts
+> from a level that never reaches `V_IL`. Do not treat a larger capacitor as
+> a safer capacitor.
 >
-> **Do not reserve RC footprints for debounce.**
+> Source: `sim/13-key-debounce.cir`, corrected in `a4c5201`. The deck is
+> retired along with PCB 1, but this result is why — it converges with PCB 2's
+> own encoder deck, `sim/05-encoder-debounce.cir`, which had it right.
 
 ## Accessory USB-C output port
 
@@ -397,7 +401,7 @@ INA226 defaults to `0x40` and is strappable across `0x40`–`0x4F`.
 | Pololu D42V55F5 | **6 A typical maximum** — unvalidated in enclosure |
 | RotoPD auxiliary | **0.4 A continuous** — Pico + OLED + encoder only |
 | Accessory port | **1.0 A proposed**, on its own regulator |
-| PCB 1 indicators | **~240 mA** worst case, drawn through the seam |
+| ~~PCB 1 indicators~~ | **0 mA** — [v1 is headless](01-architecture.md#the-v1-scope-cut). Previously charged at ~240 mA, then ~120 mA once `REXT` was set for 10 mA/channel |
 
 ## Measurement, before trusting any of this
 
@@ -423,14 +427,22 @@ device rather than its marketing copy.
 seam is USB-C, 5 V power only. The governing rule in
 [01](01-architecture.md) holds again as written.
 
-**2 · Two competing user interfaces** — **resolved**, as a side effect of the
-above. With no telemetry link, this board's OLED can only show power and PD
-state, so it cannot substitute for a router UI. The split is clean:
+**2 · Two competing user interfaces** — **resolved twice over.** First by
+dropping telemetry: with no link across the seam, this board's OLED can only
+show power and PD state, so it could never substitute for a router UI. Then by
+[the v1 scope cut](01-architecture.md#the-v1-scope-cut), which removed the
+competing interface altogether.
 
 | | Interface | Shows |
 |---|---|---|
-| **Enclosure A** | 4.26" e-paper, ANO wheel, three keys — see [10](10-display.md) | Router state |
-| **Enclosure B** | OLED + EC11 encoder | Input voltage, negotiated PD contract, rail status, fault reason |
+| **Enclosure A** | ⬜ **None — headless.** Web UI only | — |
+| **Enclosure B** | OLED + EC11 encoder — **the only panel in the product** | Input voltage, negotiated PD contract, rail status, fault reason |
+
+> [!IMPORTANT]
+> **This console is now the only thing that can tell you anything without a
+> network.** That raises its value and changes what belongs on it. Worth
+> revisiting what it shows on fault: when the router will not come up, this
+> display and the `PG` line are the entire diagnostic surface.
 
 ## Open questions
 

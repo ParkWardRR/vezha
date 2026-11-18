@@ -1,7 +1,29 @@
-# 12 · PCB 1 — Schematic
+# 12 · PCB 1 — Schematic *(retired)*
 
-Net-by-net schematic for the front control board. Requirements and the
-reasoning behind each part choice live in
+> [!CAUTION]
+> **Retired 2026-11-18. PCB 1 is not built in v1.** Enclosure A is fully
+> headless and this board has no contents left to carry. See
+> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut) and the
+> requirements document it came from, [04](04-pcb-1-front-control.md).
+>
+> The design is **complete and believed correct** — it was cut for scope, not
+> for a fault. Three simulation decks (`sim/11`, `sim/12`, `sim/13`) back it and
+> are retired alongside it; their results are preserved in
+> [Simulation results](#simulation-results) below.
+>
+> **The one section still worth reading in v1** is
+> [the Orange Pi 5 Plus 40-pin header](#the-orange-pi-5-plus-40-pin-header).
+> That pin map was derived from the vendor's own GPIO library rather than
+> assumed from Raspberry Pi compatibility, and it stays correct no matter what
+> is attached — including the finding that I²C lands on **I²C2, not `i2c-1`**.
+
+---
+
+*Original document follows, unedited.*
+
+## Original: net-by-net schematic for the front control board
+
+Requirements and the reasoning behind each part choice live in
 [04-pcb-1-front-control.md](04-pcb-1-front-control.md); this is the electrical
 design that follows from them.
 

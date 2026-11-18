@@ -30,7 +30,7 @@ free space, not performance in this enclosure.
 | Antenna | Gain 2.4 / 5 / 6 GHz | Mount and connector | Approx. USD | Role |
 |---|---|---|---|---|
 | **Taoglas FXP830.24.0100B** | 2.14 / 5.33 / 6.49 free space; 3.46 / 6.86 / 8.09 on 2 mm ABS | 42 × 7 mm internal adhesive strip, 100 mm MHF4 lead | $7.31 ea, ~$29 for four | **Default pick.** No holes, no pigtails, no protrusions. |
-| TE/Linx ANT-W63-WRT-MHF4 | 4.5 / 4.5 / 6.4 — **these are the WRT SMA variant's numbers; confirm the MHF4 datasheet before treating them as identical** | Fixed panel-mount dome, direct MHF4 lead. SMA version listed at 27.8 mm max height. | $15.31 ea, ~$31/pair | **Swap-in for the uplink** if grip, battery, or display compromise the internal pair. |
+| TE/Linx ANT-W63-WRT-MHF4 | 4.5 / 4.5 / 6.4 — **these are the WRT SMA variant's numbers; confirm the MHF4 datasheet before treating them as identical** | Fixed panel-mount dome, direct MHF4 lead. SMA version listed at 27.8 mm max height. | $15.31 ea, ~$31/pair | **Swap-in for the uplink** if grip or battery compromise the internal pair. |
 | TE/Linx ANT-W63WS1-SMA | 7.7 / 5.8 / 4.7 | 85.5 mm tilting blade, SMA male → needs MHF4-to-SMA bulkheads | $12.27 ea, ~$25/pair before pigtails | Better for tabletop use with adjustable orientation. Not pocketable. |
 | Octane SA-2400/5800 | 2.2 @ 2.45 GHz / 4.4 @ 5.65 GHz / **no full 6 GHz coverage** (spec stops at 6.0 GHz) | 67 mm rigid stub, SMA bulkhead → needs MHF4-to-SMA bulkheads | ~$79 ea on a GSA schedule; **not a verified retail price** | Ruggedness only. No demonstrated gain advantage and poor value here. |
 
@@ -93,7 +93,7 @@ faces stay clear.
 |---|---|
 | Landing pads | A flat pad of **plain plastic** for each 42 × 7 mm strip. 2 mm ABS is the reference wall because Taoglas publishes data for it. |
 | Ground plane | Aim for roughly **20 mm from the main ground plane** where practical — general guidance, **not a hard minimum** for this part. |
-| Keep clear of | Display, battery, heatsink. **No carbon-filled filament** in antenna zones. |
+| Keep clear of | Battery, heatsink. **No carbon-filled filament** in antenna zones. *(The display keep-out is gone — [v1 is headless](01-architecture.md#the-v1-scope-cut) — which frees the whole front face.)* |
 | Cable routing | Mock up all four **100 mm** leads **before** fixing board and antenna positions — they may not reach every corner, and the two radios sit on **opposite faces** of the Orange Pi. Avoid tight bends and loops. **Check the lid opens without tugging on the MHF4 connectors.** |
 
 ## Tri-band: what it changes and what it doesn't

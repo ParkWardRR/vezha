@@ -32,52 +32,51 @@ ordered.**
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
 | UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-pcb-2-power.md#telemetry-header). |
-| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | 🟡 **Chosen** | $31.99 | 800 × 480 B/W, SPI. Active area 92.80 × 55.68 mm; driver board **107 × 64 mm**. Supersedes the 3.5" HDMI touchscreen. **Own bracket.** Full details and its refresh/temperature limits: [10-display.md](10-display.md). |
+| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | **v1 is headless** — [the scope cut](01-architecture.md#the-v1-scope-cut). Chosen 2026-11-17, cut 2026-11-18. Analysis kept in [10](10-display.md). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
-## PCB 1 — front control board
+## PCB 1 — front control board ⬜ **Dropped entirely**
 
-| Part | PN | Qty | Status | Price |
+> [!CAUTION]
+> **Buy none of these.** PCB 1 is not built in v1 —
+> [the scope cut](01-architecture.md#the-v1-scope-cut). Every part below was
+> chosen and sourced before the cut; the table is kept so a v2 front panel does
+> not repeat the sourcing work. Stock figures are from 2026-11-17 and will have
+> moved.
+
+| Part | PN | Qty | Was | Price |
 |---|---|---:|---|---|
 | Nav wheel | Adafruit #6310 ANO I²C module | 1 | 🔵 Candidate | $13.95 |
-| Key switches | **C&K `KSC221JLFS`** · LCSC `C221726` | 5 | 🟡 **Chosen** | $0.76 ea · $0.46 @100 |
-| Plungers | Printed — no catalogue part | 3 | 🔴 **Design work** | — |
+| Key switches | C&K `KSC221JLFS` · LCSC `C221726` | 5 | 🟡 Chosen | $0.76 ea · $0.46 @100 |
+| Plungers | Printed — no catalogue part | 3 | 🔴 Design work | — |
 | Toggle | NKK `MN12LL4G01` | 1 | 🔵 Candidate | ~$11 |
-| LED driver | TI `TLC59116IPWR` · LCSC `C131194` | 1 | 🟡 **Chosen** | $1.79 ea · $1.11 @100 |
-| RGB LEDs | **MEIHUA `MHPA2525RGBDT-S`** · LCSC `C404285` | 4 | 🟡 **Chosen** | $0.091 ea |
-| LED current-set R | 1.87 kΩ 1% on `REXT` — sets 10 mA/ch | 1 | 🟡 **Chosen** | — |
-| Display connector | JST GH 9-pin `SM09B-GHS-TB` · LCSC `C265420` | 1 | 🟡 **Chosen** | $0.39 |
-| Diffuser windows | Printed into the faceplate — no catalogue part | 4 | 🔴 **Design work** | — |
+| LED driver | TI `TLC59116IPWR` · LCSC `C131194` | 1 | 🟡 Chosen | $1.79 ea · $1.11 @100 |
+| RGB LEDs | MEIHUA `MHPA2525RGBDT-S` · LCSC `C404285` | 4 | 🟡 Chosen | $0.091 ea |
+| LED current-set R | 1.87 kΩ 1 % on `REXT` — sets 10 mA/ch | 1 | 🟡 Chosen | — |
+| Display connector | JST GH 9-pin `SM09B-GHS-TB` · LCSC `C265420` | 1 | 🟡 Chosen | $0.39 |
+| Diffuser windows | Printed into the faceplate | 4 | 🔴 Design work | — |
 | Switch, rejected | APEM Ultramec 6C `6CJ1NOPR` | — | ⬜ Rejected | $3.07 DigiKey · 0 stock at JLC |
 | Switch, rejected | MEC Multimec 5G `5GTH935` | — | ⬜ Rejected | Through-hole, 0 stock at LCSC |
 
-**Controls subtotal ≈ $29–32** including spares, before cables, shipping, and
-PCB assembly. *(Down from ~$45–50: the switch went from $3.07 to $0.76 and the
-$1–2 keycaps became printed plungers.)*
+**≈ $29–32 of parts, plus a board and its assembly, removed from v1.** The
+larger saving is not the money: it is the fabrication of a second PCB, a
+removable faceplate with six opening types, and the plunger coupon that gated
+ordering it.
 
-Notes:
-- Populate **3 of 5** switches; keep 2 spare.
-- **The KSC has no cap system.** Three printed plungers replace the MEC 10G
-  caps, and **travel is only 0.35 mm nominal** (0.25-0.65 mm band) against the
-  6C's 2.5 mm. The plunger
-  stack is now the highest-risk mechanical item on the front panel — see
-  [04](04-pcb-1-front-control.md#plunger-design).
-- At ~2 N the keys are lighter than the 6C's ~3.6 N. `MAC` stays recessed.
-- **RGB LED and its optic must be chosen as a pair** — they set standoff height.
-- TLC59116 must be strapped to an address **not** colliding with the ANO's `0x49`.
+**Findings worth keeping for v2** — the reasoning, not just the part numbers:
 
-**JLCPCB assembly, checked 2026-11-17** — codes and price ladders in
-[08-sourcing.md](08-sourcing.md#looked-up-so-far):
-
-- ✅ Switch `C221726` — 16,623 in stock. ✅ Driver `C131194` — 3,611 in stock.
-- ✅ LED `C404285` — 8,253 in stock. ✅ Display connector `C265420` — 7,140.
-- **Every placed part on PCB 1 is now sourced.** The board can be quoted once
-  the footprints are confirmed.
-- Both chosen parts are `expand` (extended) library, so each carries a feeder
-  fee. Confirm in the quote, not from the catalog.
-- The rejected switches and both keycaps read **zero stock with no pre-order**
-  at LCSC, as do all the through-hole alternatives (Multimec 5G, C&K `PTS645`).
-  That is what settled the choice.
+- Every placed part was sourced with an LCSC code and in stock. Both chosen
+  parts are `expand` library, so each carries a feeder fee — confirm in the
+  quote, not the catalog.
+- The rejected switches and both keycap systems read **zero stock with no
+  pre-order**, as did all through-hole alternatives. That, not feel, is what
+  settled the switch choice.
+- **The KSC has no cap system**, and travel is **0.35 mm nominal** against the
+  6C's 2.5 mm. Printed plungers against that travel were the highest-risk
+  mechanical item in the build.
+- **RGB LED and optic must be chosen as a pair** — together they set standoff
+  height.
+- TLC59116 must be strapped clear of the ANO's `0x49`; `0x60` was chosen.
 
 ## PCB 2 — power board
 
@@ -129,21 +128,23 @@ feeder fee — worth weighing against placing them at all.
 
 Outputs of design work, not catalogue items:
 
-- Enclosure A shell + removable faceplate (3D printed)
+- Enclosure A shell, with service access (3D printed) — **no faceplate in v1**
 - Enclosure B shell (3D printed)
-- PCB 1 and PCB 2 fabrication and assembly
+- **PCB 2** fabrication and assembly — the only board in v1
 
 ## Before ordering anything
 
-1. **Buy one of each control first.** One NKK toggle, a few KSC switches, one
-   ANO, one RGB LED with its optic. Print the test coupons — including plungers
-   at two or three lengths — in [04](04-pcb-1-front-control.md) before
-   committing to a four-indicator board.
-2. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
-   search. As of 2026-11-17 the switch and driver are both in stock and the RGB
-   LED has no part number yet. A catalog snapshot is not a commitment — the
-   quote is.
-3. **Measure, don't look up**, the three dimensions in
+1. **Measure, don't look up**, the three dimensions in
    [01-architecture.md](01-architecture.md#the-three-dimensions-nobody-should-guess).
+   All three still gate Enclosure B and the underside stack; the scope cut
+   touched none of them.
+2. **Settle the regulator first.** `D42V55F5` vs `D42V55F5.3` is 🔴 **Reopened**
+   above and blocked on the Orange Pi's maximum input voltage. Do not order
+   either until that measurement exists —
+   [01](01-architecture.md#the-5-v-seam-problem).
+3. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
+   search. A catalog snapshot is not a commitment. This now applies only to
+   PCB 2's measurement and debug hardware, all four of which are `expand`
+   library and each of which adds a feeder fee.
 
 Lookup method and price checking: [08-sourcing.md](08-sourcing.md).

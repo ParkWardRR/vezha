@@ -48,8 +48,9 @@ and fallback policy have not been selected.
 ## Power and portability
 
 The complete build needs to power the SBC, two radios, storage, and some
-USB peripheral load. A touchscreen may add to that budget. *(The chosen
-e-paper display does not — `<35 mW` refreshing, `<0.01 µA` idle.)*
+USB peripheral load. A touchscreen may add to that budget. *(Moot as of
+2026-11-18 — [v1 has no display at all](01-architecture.md#the-v1-scope-cut),
+so nothing in Enclosure A draws power except the SBC and its peripherals.)*
 
 The previous bench supply target was a regulated 5 V / 5 A. This is a
 supply-sizing target, not measured system consumption. The portable
@@ -103,10 +104,19 @@ controls for radio enable/disable and restarting the hotel-login
 workflow were discussed, including changing the uplink MAC for a fresh
 login. No display, switch wiring, or button assignments are confirmed.
 
-**Superseded 2026-11-17:** the display is now the Waveshare 4.26-inch
+**Superseded 2026-11-17:** the display became the Waveshare 4.26-inch
 e-Paper HAT (SKU 26376), SPI rather than HDMI and with no touch layer.
-See [10-display.md](10-display.md). The touch load referenced in
-[Power and portability](#power-and-portability) above no longer applies.
+See [10-display.md](10-display.md).
+
+**Superseded again 2026-11-18 — and this one closes the thread.** Vezha v1
+has **no display and no physical controls.** The original ask above, "physical
+controls for radio enable/disable and restarting the hotel-login workflow,"
+is **not met in v1**; both move to the web UI. That is the one place the v1
+scope cut departs from the original brief rather than merely simplifying it —
+see [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut). Worth
+re-reading before v2, because this paragraph is the reason a front panel was
+specified in the first place.
+
 LiDAR-assisted Wi-Fi mapping is a stretch goal and should stay separate
 from the core router bring-up.
 

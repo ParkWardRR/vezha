@@ -1,5 +1,13 @@
 * SIM-11  PCB 1 shared I2C bus: pull-up sizing and rise time
 *
+* RETIRED 2026-11-18 -- PCB 1 is not built in v1. Enclosure A is headless,
+*   so there is no front-panel I2C bus to size. See docs/01 "The v1 scope
+*   cut". The deck still runs and the result below still holds for any
+*   future I2C front panel; it is kept for v2, not for v1 layout.
+*   NOTE for v2: this swept TWO devices at 150 pF. A third device plus its
+*   cable pushes C_bus toward 200 pF, where 2.2k gives ~305 ns and FAILS
+*   400 kHz. Re-run before adding a device.
+*
 * QUESTION
 *   docs/04-pcb-1-front-control.md lists as an open question: "combined bus
 *   pull-up value with both devices populated". The ANO module and the

@@ -2,7 +2,7 @@
 
 # Vezha — Fabrication Brief
 
-### Handheld travel router · two enclosures · two PCBs
+### Handheld travel router · two enclosures · one PCB
 
 **This repo is a design brief, not a product.**
 It exists so a mechanical designer and a PCB designer can build the
@@ -11,12 +11,12 @@ there isn't one yet.
 
 <br>
 
-[![Scope](https://img.shields.io/badge/scope-2%20enclosures%20%2B%202%20PCBs-0F766E?style=flat-square)](#scope-of-work)
+[![Scope](https://img.shields.io/badge/scope-2%20enclosures%20%2B%201%20PCB-0F766E?style=flat-square)](#scope-of-work)
 [![Stage](https://img.shields.io/badge/stage-Rev%20A%20design-orange?style=flat-square)](#decision-status)
 [![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
-[![Enclosure A](https://img.shields.io/badge/enclosure%20A-ready%20to%20design-success?style=flat-square)](docs/02-enclosure-a-upper.md)
+[![Enclosure A](https://img.shields.io/badge/enclosure%20A-headless-informational?style=flat-square)](docs/02-enclosure-a-upper.md)
 [![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%203%20dims-red?style=flat-square)](docs/03-enclosure-b-lower.md)
-[![PCB 1](https://img.shields.io/badge/PCB%201-spec%20ready-success?style=flat-square)](docs/04-pcb-1-front-control.md)
+[![PCB 1](https://img.shields.io/badge/PCB%201-retired%20in%20v1-lightgrey?style=flat-square)](docs/04-pcb-1-front-control.md)
 [![PCB 2](https://img.shields.io/badge/PCB%202-spec%20ready-success?style=flat-square)](docs/05-pcb-2-power.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
@@ -30,8 +30,8 @@ there isn't one yet.
 [![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-pcb-2-power.md)
 [![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-pcb-2-power.md)
 [![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-pcb-2-power.md)
-[![Controls](https://img.shields.io/badge/controls-toggle%20%2B%203%20keys%20%2B%20wheel-795548?style=flat-square)](docs/04-pcb-1-front-control.md)
-[![Indicators](https://img.shields.io/badge/indicators-4%C3%97%20RGB%20I%C2%B2C-FF6F00?style=flat-square)](docs/04-pcb-1-front-control.md#rgb-indicators)
+[![UI](https://img.shields.io/badge/router%20UI-web%20only-795548?style=flat-square)](docs/01-architecture.md#the-v1-scope-cut)
+[![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20box-FF6F00?style=flat-square)](docs/05-pcb-2-power.md)
 [![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/07-bom.md)
 
 [![Last commit](https://img.shields.io/github/last-commit/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
@@ -56,14 +56,22 @@ radio topology, and power path. Everything else assumes it.
 
 ## Scope of work
 
-A **two-piece** handheld router: two enclosures, two PCBs, designed together.
+A **two-piece** handheld router: two enclosures, one PCB, designed together.
 
 | | Deliverable | Contents | Status |
 |---|---|---|---|
-| **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, M→E adapter, four antennas, storage, display, removable faceplate | Ready to design |
+| **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, M→E adapter, four antennas, storage. **Headless — sealed shell, no panel** | Ready to design |
 | **B** | **Lower power box** | PCB 2 only — detachable | Blocked on 3 measurements |
-| **1** | **Front control board** | 3 key switches, 4 RGB indicators + TLC59116 driver, toggle landing, ANO header, harness to the Pi | Spec ready |
 | **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
+| ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#the-v1-scope-cut) | Design complete, not built |
+
+> [!NOTE]
+> **v1 has no display and no controls in the router box.** The e-paper panel,
+> three keys, nav wheel, toggle and RGB indicators were all specified, sourced
+> and simulated — then cut for scope on 2026-11-18. The router's entire UI is
+> the **web UI**; the only hardware panel in the product is PCB 2's OLED and
+> encoder, in the power box, and it can show **power and PD state only.**
+> Reasoning and what it buys: [01 · The v1 scope cut](docs/01-architecture.md#the-v1-scope-cut).
 
 **The governing rule:** both radios and all antennas stay in Enclosure A, so
 **the power box detaches without disturbing any PCIe or antenna connection.**
@@ -82,11 +90,9 @@ flowchart LR
     subgraph A["ENCLOSURE A · upper router box"]
         PI["<b>Orange Pi 5 Plus</b><br/>RK3588"]:::core
         RAD["<b>AX210</b> · top-side E-key<br/><i>hotel uplink</i><br/><b>MT7922</b> · underside, via M→E adapter<br/><i>private AP</i><br/>4 × flex antennas, 2 per radio"]:::rf
-        PCB1["<b>PCB 1</b> · front control board<br/>3 keys · 4 RGB · ANO wheel · toggle"]:::ctl
-        DISP["4.26-inch e-paper<br/>over SPI"]:::ctl
+        HL["<i>headless — no display,<br/>no controls, no PCB 1</i>"]:::ghost
         PI === RAD
-        PI ---|keyed harness| PCB1
-        PCB1 --- DISP
+        PI -.- HL
     end
 
     CHG ==>|USB-C| PCB2
@@ -97,6 +103,7 @@ flowchart LR
     classDef ctl  fill:#dcfce7,stroke:#16a34a,color:#0f172a
     classDef core fill:#dbeafe,stroke:#2563eb,color:#0f172a
     classDef rf   fill:#ffedd5,stroke:#ea580c,color:#0f172a
+    classDef ghost fill:#f8fafc,stroke:#cbd5e1,color:#64748b
 ```
 
 Everything that transmits lives in **A**. **B** only makes 5 V and hands it
@@ -148,18 +155,7 @@ over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 > exists yet, and nothing here has been built or measured.** Where the drawing
 > and the document disagree, the document wins.
 
-### PCB 1 — front control board
-
-![PCB 1 block schematic: three C&K key switches to ground with RC debounce, an NKK toggle on a dedicated GPIO, a TLC59116 driver at 0x60 feeding four frosted common-anode RGB indicators, the ANO wheel on STEMMA QT, and a JST GH connector out to the e-paper, all gathered onto one 2 by 20 ribbon to the Orange Pi](docs/img/pcb-1-block-schematic.svg)
-
-Schematic: **[12-pcb-1-schematic.md](docs/12-pcb-1-schematic.md)** ·
-requirements: **[04-pcb-1-front-control.md](docs/04-pcb-1-front-control.md)**.
-Every placed part now has an LCSC code, and the Orange Pi's 40-pin map is
-resolved, so the board is layout-ready. The display's control pins land on
-Raspberry Pi positions — but the bus is **I²C2, not `i2c-1`**, which is a
-software trap rather than a wiring one.
-
-### PCB 2 — power board
+### PCB 2 — power board — *the only board in v1*
 
 ![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/pcb-2-block-schematic.svg)
 
@@ -169,6 +165,10 @@ drawing exists to make unmissable: the bare buck **defaults on** — the module
 pulls EN to VIN through 1 MΩ, so **R1 at 1.5 kΩ** has to impose off — and
 **the accessory port never sees raw VBUS_PD**, which on a 240 W EPR part
 reaches 48 V.
+
+*PCB 1's block schematic (`docs/img/pcb-1-block-schematic.svg`) and its
+documents are retired with the board — see
+[the v1 scope cut](docs/01-architecture.md#the-v1-scope-cut).*
 
 ## The three dimensions nobody should guess
 
@@ -186,15 +186,15 @@ not values to look up:
 | **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, decision status. **Read first.** |
 | **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the double-sided board problem, antenna zones, faceplate, seam, thermal |
 | **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, USB-C input |
-| **04** | [PCB 1 — front control](docs/04-pcb-1-front-control.md) | PCB + mechanical | Switches, caps, toggle, ANO wheel, RGB indicators and driver, assembly caveats, test coupons |
+| **04** | [PCB 1 — front control](docs/04-pcb-1-front-control.md) | *Retired* | ⬜ **Not built in v1.** Switches, caps, toggle, ANO wheel, RGB indicators. Kept for v2 |
 | **05** | [PCB 2 — power](docs/05-pcb-2-power.md) | PCB | Carrier wiring, the three rules that must survive layout, headroom, measurement plan |
 | **06** | [Antennas](docs/06-antennas.md) | RF + mechanical | Four placements with orientation, candidates and gain, tri-band clarification, RF bench test |
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, price, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Background](docs/09-background.md) | Context | Original handoff. Partly superseded — kept for the *why* |
-| **10** | [Display](docs/10-display.md) | Mechanical + software | 4.26" e-paper: dimensions, SPI wiring, refresh discipline, what it does to the UI |
+| **10** | [Display](docs/10-display.md) | *Retired* | ⬜ **No display in v1.** 4.26" e-paper: refresh discipline, temperature limits, what it did to the UI |
 | **11** | [PCB 2 — schematic](docs/11-pcb-2-schematic.md) | PCB | Net-by-net power board, every passive calculated or simulated, Pico 2 pin map |
-| **12** | [PCB 1 — schematic](docs/12-pcb-1-schematic.md) | PCB | Net-by-net front panel, reference designators, host interface, simulation results |
+| **12** | [PCB 1 — schematic](docs/12-pcb-1-schematic.md) | *Retired* | ⬜ **Not built in v1.** Net-by-net front panel. **Its 40-pin header map is still correct and still useful** |
 
 ## Decision status
 
@@ -206,9 +206,10 @@ not values to look up:
 - RotoPD Pro → Pololu → detachable connector → Orange Pi
 - Pico 2 controller, powered from RotoPD auxiliary via VSYS
 - Four internal flex antennas, two per radio, inside the narrow walls
-- Controls: locking `AIRPLANE` toggle, three keys, ANO wheel, one RGB
-  indicator per control lit through the faceplate
-- Display: Waveshare 4.26" e-paper over SPI, no touch — [10](docs/10-display.md)
+- **Enclosure A is headless** — no display, no controls, no PCB 1.
+  [The v1 scope cut](docs/01-architecture.md#the-v1-scope-cut)
+- **The OLED and encoder live on PCB 2**, in the power box — the question that
+  previously blocked both front panels
 
 **Open — do not design against these**
 
@@ -216,27 +217,31 @@ not values to look up:
 - Which M→E adapter (must route PCIe)
 - RotoPD Pro physical envelope — **blocks Enclosure B**
 - Seam USB-C part; whether the Pi stays under USB-C's 3 A limit at 5 V
+- **Which regulator** — `D42V55F5` vs `D42V55F5.3`, blocked on the Orange Pi's
+  maximum input voltage. [01](docs/01-architecture.md#the-5-v-seam-problem)
 - Thermal solution, final antenna SKU
 - Power source: external bank vs. internal cell
-- **Key switch termination** — SMD 6C (hot air) vs through-hole Multimec 5G
-  (iron, new caps, +3.9 mm stack) vs C&K (machine-placed, lighter touch).
-  [04](docs/04-pcb-1-front-control.md#why-this-switch)
-- RGB LED part and optic — the last unsourced part on PCB 1
+- **How Enclosure A opens for service** — lid, base plate, or seam split, now
+  driven only by assembly and MHF4 access
 
 ## Ground rules
 
-1. **Coupons before parts.** Print a faceplate coupon with the wheel opening,
-   two cap openings (flush and recessed), and one light pipe. Check optics in
-   a dark room *and* daylight before ordering the real faceplate.
-2. **Drawings, not nominals.** The NKK toggle's Ø6.5 mm and the 6C's
-   8 × 8 × 2.5 mm body are **not** cutout dimensions.
-3. **Choose optics and LED together** — they set standoff height.
-4. **Measure mated hardware.** Size both boxes around connectors *with* their
+1. **Measure mated hardware.** Size both boxes around connectors *with* their
    cables, not around PCB footprints.
-5. **Confirm sourcing in the assembly quote**, not from a datasheet link.
-6. **Freeze the enclosures last.** The RF test in
+2. **Drawings, not nominals.** A published body size is never a cutout
+   dimension.
+3. **Confirm sourcing in the assembly quote**, not from a datasheet link.
+4. **Freeze the enclosures last.** The RF test in
    [06](docs/06-antennas.md) can still move antenna positions, and antenna
    positions move walls.
+5. **Scope cuts go in the docs, not the bin.** Retired work keeps its document
+   with a banner saying what was learned —
+   [04](docs/04-pcb-1-front-control.md), [10](docs/10-display.md) and
+   [12](docs/12-pcb-1-schematic.md) are the worked examples.
+
+*Rules about faceplate coupons, plunger lengths and LED optics retired with
+PCB 1. They are preserved in [04](docs/04-pcb-1-front-control.md) should a
+front panel return.*
 
 ## License
 

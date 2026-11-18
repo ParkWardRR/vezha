@@ -13,20 +13,67 @@ A compact **two-piece** travel router.
 
 |  | Enclosure | Holds | Detachable? |
 | --- | --- | --- | --- |
-| **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, the M-key→E-key adapter, all four antennas, storage, display, faceplate with controls and indicators | No — this is the router |
+| **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, the M-key→E-key adapter, all four antennas, storage. **No display, no controls, no front PCB.** | No — this is the router |
 | **B** | **Lower power box** | PCB 2: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
 
 **The governing rule:** both radios and all antennas stay in the upper
 enclosure, so **the power box comes off without disturbing any PCIe or
 antenna connection.** **Only 5 V power crosses the seam**, over USB-C.
 
-> [!WARNING]
-> **Enclosure B also carries a console.** PCB 2 drives an OLED and a push
-> encoder, and the Pico boots before the Orange Pi so that console is live
-> first. Whether that console is *additional to* or *replaces* the controls in
-> Enclosure A is **unresolved** — see
-> [05 · Unresolved conflicts](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved).
-> Do not lay out either front panel until it is settled.
+> [!NOTE]
+> **Enclosure A is headless; Enclosure B carries the only panel.** PCB 2 drives
+> an OLED and a push encoder, and the Pico boots before the Orange Pi, so that
+> console is live first *and* is the sole piece of hardware UI in the product.
+> This was an open question that blocked both front panels; **the v1 scope cut
+> settled it** — see below.
+
+## The v1 scope cut
+
+**2026-11-18. Vezha v1 has no display and no controls in Enclosure A.** The
+upper box is a sealed enclosure holding the SBC, the radios, the antennas and a
+USB-C power inlet. Its entire user interface is the web UI.
+
+This retired four documents' worth of settled design — the e-paper panel
+([10](10-display.md)), the front control board ([04](04-pcb-1-front-control.md))
+and its finished schematic ([12](12-pcb-1-schematic.md)), plus simulation decks
+`sim/11`, `sim/12` and `sim/13`. None of it was wrong. It was cut for scope.
+
+**How it got here**, briefly, because the reasoning constrains v2:
+
+1. The 4.26" e-paper was chosen for status-at-rest — it holds an image with
+   power removed at `<0.01 µA`. But a 4 s full refresh and a ≥ 180 s minimum
+   interval cannot drive a scroll wheel, so the UI had to be paged rather than
+   scrolled, and the RGB indicators became the only live layer.
+2. A monochrome OLED was considered **alongside** the e-paper, to be that live
+   layer: zero extra host pins on the existing I²C bus, and the two panels have
+   complementary failure modes — e-paper is damaged by dynamic use and by being
+   left energised, OLED by static images.
+3. Going **OLED-only** was then considered. It retires the e-paper's 0–50 °C
+   limit outright (the panel in Adafruit 5297 is rated −40 to +70 °C
+   operating), but costs 7–13× the active area, and a Wi-Fi join QR for a
+   strong passphrase needs ≥ 0.5 mm per module — marginal at the 5297's
+   20.076 × 20.076 mm.
+4. **v1 drops the panel entirely.** If the real interaction model is "configure
+   over the web UI", every one of the above is a cost with no matching benefit.
+
+**What the cut buys:**
+
+| | Before | v1 |
+|---|---|---|
+| Deliverables | 2 enclosures, 2 PCBs | **2 enclosures, 1 PCB** |
+| Enclosure A footprint driver | The display's 107 × 64 mm driver board | The Orange Pi's 100 × 75 mm and the antennas |
+| Enclosure A Z stack | Faceplate + plungers + PCB 1 + glass + driver board + SBC + underside M.2 stack | Shell + SBC + underside M.2 stack |
+| Host 40-pin header | 9 pins SPI + 2 I²C + 4–5 GPIO | **Nothing attached** |
+| Front-panel current across the seam | ~120 mA worst case | **0 mA** |
+| Highest-risk mechanical item | Printed plungers against 0.35 mm travel | *(gone — no faceplate openings)* |
+
+**What the cut costs:** no at-rest status indication of any kind — a wedged
+boot looks identical to a working one from outside the case. No hardware radio
+cut; `AIRPLANE` becomes software-only. The `★` key's Wi-Fi join QR has nowhere
+to live, so it becomes a printed label inside the case, or nothing.
+
+**For v2**, the retired documents are kept rather than deleted. Their findings
+are summarised in the banner at the top of each.
 
 ```mermaid
 flowchart TB
@@ -53,12 +100,12 @@ flowchart TB
         ADP["<b>M-key → E-key adapter</b><br/>underside M-key slot"]:::adp
         MT["<b>MT7922 / RZ616</b> · M.2 2230<br/>in adapter's E-key socket<br/><i>private AP</i>"]:::ap
         ANT["<b>4 × flex antennas</b> · 2 per radio<br/>inside the narrow walls"]:::ant
-        PCB1["<b>PCB 1</b> — front control board<br/>switches · RGB · ANO wheel"]:::ctl
+        HL["<i>no display, no controls,<br/>no front PCB — v1 is headless</i>"]:::ghost
         PI --- AX
         PI --- ADP --- MT
         AX --- ANT
         MT --- ANT
-        PCB1 -->|keyed harness| PI
+        PI -.- HL
     end
 
     CHG ==>|USB-C| ROTO
@@ -72,6 +119,7 @@ flowchart TB
     classDef ap fill:#ffedd5,stroke:#ea580c,color:#0f172a
     classDef adp fill:#ede9fe,stroke:#7c3aed,color:#0f172a
     classDef ant fill:#ffedd5,stroke:#ea580c,color:#0f172a
+    classDef ghost fill:#f8fafc,stroke:#cbd5e1,color:#64748b
 ```
 
 ## Radio topology
@@ -174,12 +222,15 @@ one.
 > **USB-C advertises at most 3 A at 5 V.** The Orange Pi 5 Plus is specified at
 > **5 V / 4 A**. A standards-compliant USB-C source cannot offer that.
 
-> [!WARNING]
-> **The indicators are not a rounding error.** PCB 1's four RGB indicators draw
-> **~240 mA worst case** with all 12 TLC59116 channels lit
-> (`sim/12-led-driver-thermal.cir`). They hang off the Orange Pi's 5 V, so that
-> current crosses the seam *on top of* the board's own draw — about **8 % of
-> the 3 A ceiling** before any USB peripheral is counted.
+> [!NOTE]
+> **The front panel no longer competes for this budget.** Earlier revisions
+> charged **~120 mA** against the seam for PCB 1's four RGB indicators — about
+> 4 % of the 3 A ceiling, on top of the board's own draw. With
+> [the v1 scope cut](#the-v1-scope-cut) that load is **zero**, and everything
+> crossing the seam now goes to the SBC and its USB peripherals.
+>
+> *(An earlier figure of ~240 mA appeared here. It assumed 20 mA per channel;
+> `REXT` was later set to 1.87 kΩ for 10 mA, halving it. Both are now moot.)*
 
 #### Constraint 2 — IR drop, which binds first
 
@@ -241,10 +292,17 @@ The Pico can no longer read router status, so **the PCB 2 OLED shows power and
 PD state only** — input voltage, negotiated contract, rail status, fault
 reason. It cannot show uplink or client information.
 
-That is an acceptable trade, and it has a useful side effect: it removes the
-overlap between the two user interfaces. The router UI lives in Enclosure A
-(e-paper display, ANO wheel, three keys — see [10](10-display.md)); the power
-console lives in Enclosure B and is clearly a power console.
+That was an acceptable trade when Enclosure A had its own UI to fall back on.
+**Under [the v1 scope cut](#the-v1-scope-cut) it is sharper than that:** the
+PCB 2 console is the product's *only* hardware interface, and it still cannot
+see anything the router knows. Input voltage, PD contract, rail status and
+fault reason are the complete set of things v1 can display.
+
+Everything about the router — uplink state, clients, throughput, radio
+configuration — is reachable only over the web UI, which means **only when the
+router is up and you are already associated with it.** That is the v1 bargain,
+and it is worth being deliberate about: the telemetry footprint below is what
+makes it reversible.
 
 **Reserve an unpopulated 3-pin footprint** on PCB 2 for TX/RX/GND. If
 telemetry is wanted later it is a cable, not a board respin.
@@ -271,6 +329,11 @@ to take, not values to look up:
 - Accessory USB-C output gets its **own regulator**, never raw PD VBUS
 - No signal crosses the seam; telemetry footprint reserved but unpopulated
 - Four internal flex antennas, two per radio, inside the narrow walls
+- **Enclosure A is headless in v1** — no display, no controls, no PCB 1. The
+  product ships **two enclosures and one PCB.** See
+  [the v1 scope cut](#the-v1-scope-cut).
+- **The OLED and encoder live on PCB 2, in Enclosure B** — previously the
+  open question that blocked both front panels
 
 **Open — do not design against these**
 
@@ -280,16 +343,14 @@ to take, not values to look up:
 - Specific M-key-to-E-key adapter
 - Power source: external bank vs. internal cell, and therefore whether
   Enclosure B ever contains a battery
-- **Which enclosure's front panel carries the OLED and encoder** — blocks both
-- 
-- ~~Display model~~ — **settled 2026-11-17:** Waveshare 4.26" e-paper, SKU
-  `26376`, SPI. See [10-display.md](10-display.md). Its 0–50 °C operating range
-  and 4 s refresh are now build constraints.
+- ~~Which enclosure's front panel carries the OLED and encoder~~ — **settled
+  2026-11-18:** Enclosure B, because Enclosure A no longer has a front panel.
+- ~~Display model~~ — **retired 2026-11-18.** There is no display in Enclosure
+  A. The Waveshare 4.26" e-paper (SKU `26376`) was chosen on 2026-11-17 and cut
+  the next day; [10](10-display.md) is kept for the analysis.
 - Thermal solution, final antenna SKU
-- ~~JLCPCB assembly sourcing for several PCB 1 parts~~ — checked 2026-11-17, see
-  [08](08-sourcing.md#looked-up-so-far). Driver yes, switch no. The switch's
-  SMD-vs-through-hole decision is the live one:
-  [04](04-pcb-1-front-control.md#why-this-switch).
+- ~~JLCPCB assembly sourcing for PCB 1 parts~~ — moot. PCB 1 is not built.
+  Sourcing work is preserved in [08](08-sourcing.md#looked-up-so-far).
 
 ## Where to go next
 
@@ -297,7 +358,7 @@ to take, not values to look up:
 | --- | --- |
 | Upper enclosure | [02](02-enclosure-a-upper.md) · [06](06-antennas.md) |
 | Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-pcb-2-power.md) |
-| Front control board | [04](04-pcb-1-front-control.md) |
-| Power board | [05](05-pcb-2-power.md) — requirements · [11](11-pcb-2-schematic.md) — schematic |
+| Power board — **the only PCB in v1** | [05](05-pcb-2-power.md) — requirements · [11](11-pcb-2-schematic.md) — schematic |
 | Ordering parts | [07](07-bom.md) · [08](08-sourcing.md) |
 | Project context | [09](09-background.md) |
+| *Retired — kept for v2* | [04](04-pcb-1-front-control.md) · [10](10-display.md) · [12](12-pcb-1-schematic.md) |

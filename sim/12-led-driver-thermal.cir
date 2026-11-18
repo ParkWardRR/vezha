@@ -1,5 +1,10 @@
 * SIM-12  TLC59116 power dissipation and junction temperature
 *
+* RETIRED 2026-11-18 -- PCB 1 is not built in v1. There are no RGB
+*   indicators and no LED driver. See docs/01 "The v1 scope cut".
+*   Kept for v2: the finding that red is the hot channel on a 5 V anode
+*   is a property of the part, not of this board.
+*
 * QUESTION
 *   docs/04-pcb-1-front-control.md puts four RGB indicators on a TLC59116 in
 *   TSSOP-28, with "LED anodes off the upper box's 5 V rail, driver logic on
