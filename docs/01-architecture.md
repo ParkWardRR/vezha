@@ -130,7 +130,27 @@ to the Orange Pi in **different ways on opposite faces of the board.**
 | Radio | Role | Socket | Path |
 | --- | --- | --- | --- |
 | **Intel AX210** | Hotel / public uplink | Orange Pi **top-side M.2 E-key** socket, directly | Wi-Fi over PCIe; Bluetooth over USB |
-| **MT7922 / RZ616** | Private AP | **Underside M-key** slot → **M-key-to-E-key adapter** → adapter's E-key socket | PCIe, through the adapter |
+| **MT7922 / RZ616** | Private AP | **Underside M-key** slot → **M-key-to-E-key adapter** → adapter's E-key socket | PCIe, through the adapter. **Bluetooth does not come with it** — see below |
+
+> [!IMPORTANT]
+> **Two consequences of putting a radio in the M-key slot**, added
+> 2026-11-18 once the socket specs were confirmed:
+>
+> - **It forecloses NVMe storage.** The Orange Pi has exactly one M-key
+>   socket and this uses it, so eMMC is a requirement rather than a
+>   preference.
+> - **Bluetooth does not travel over an M-key adapter.** The M.2 M-key
+>   connector carries no USB 2.0 — that is an E-key signal — so adapters
+>   bring it out on a separate flying cable. For v1 that is acceptable,
+>   because this radio is the private AP and the AX210 in the native E-key
+>   socket handles Bluetooth. But the second radio's Bluetooth will not work
+>   unless that cable is routed somewhere, and the cable itself lands inside
+>   the enclosure whose thickness already binds.
+>
+> Also counter-intuitive: the **adapter path is the faster slot.** The M-key
+> socket is PCIe 3.0 ×4 and the native E-key is PCIe 2.0 ×1, so the private
+> AP sits behind the better link. Neither limits Wi-Fi 6E. Details in
+> [10](10-measurement-protocol.md#what-the-board-actually-provides).
 
 Consequences for Enclosure A:
 
@@ -261,30 +281,46 @@ Neither fixed part is clean:
 
 | Part | Low corner | High corner | Problem |
 |---|---|---|---|
-| **D42V55F5** (#5571) — 5.0 V | 4.85 V → **25 mΩ** | 5.15 V | Cannot make the loop budget at 4 A |
-| **D42V55F5.3** (#5572) — 5.3 V | 5.141 V → **97.8 mΩ** | **5.459 V** no-load | Above the 5.25 V some sinks tolerate |
+| **D42V55F5** (#5571) — 5.0 V ← **chosen** | 4.85 V → **25 mΩ** | 5.15 V | Cannot make the loop budget at 4 A — but it is the only part the Pi's input allows |
+| ~~**D42V55F5.3** (#5572) — 5.3 V~~ **ruled out** | 5.141 V → **97.8 mΩ** | **5.459 V** no-load | The Orange Pi's USB-C input is fixed 5 V; the vendor warns above 5 V damages the board |
 
 Same family, same footprint, same pinout — so this is a part-number decision,
 not a layout one.
 
-**Leaning toward the 5.3 V part (#5572)**, on this reasoning: USB-C `vSafe5V`
-is specified as **4.75–5.5 V**, so a *compliant* USB-C sink must tolerate
-5.459 V. The risk is narrow and specific — that the Orange Pi's USB-C input is
-a plain 5 V rail wearing a USB-C connector rather than a compliant sink.
+**Decided 2026-11-18: the 5.0 V part (#5571).** This document previously
+leaned toward the 5.3 V #5572, reasoning that USB-C `vSafe5V` is specified as
+**4.75–5.5 V**, so a compliant sink must tolerate 5.459 V. It then named the
+exact risk that would overturn that:
 
-> [!IMPORTANT]
-> **Two measurements now gate this, not one:**
->
-> 1. **Peak current at the Orange Pi** — board **plus** indicators plus USB load
-> 2. **The Orange Pi 5 Plus's absolute maximum input voltage** — this decides
->    whether 5.459 V is safe, and therefore which regulator is correct
->
-> Until both exist, do not order either regulator.
+> *"that the Orange Pi's USB-C input is a plain 5 V rail wearing a USB-C
+> connector rather than a compliant sink."*
 
-**If both fail**, the honest fallback is that a USB-C seam cannot carry 4 A
-within spec, and the power seam goes back to a connector with lower contact
-resistance and fatter conductors. That reopens a decision this simplification
-closed — worth knowing before the shells are cut.
+**That is what it is.** The Orange Pi wiki states the board's USB-C power port
+**does not negotiate PD and accepts a fixed 5 V only**, and warns that *an
+adapter with an output above 5 V will damage the board*. `vSafe5V` does not
+apply, because the port is not a USB sink. The 5.3 V part is out — its
+no-load high corner of 5.459 V goes into an input the vendor says 5 V damages
+above.
+
+> [!CAUTION]
+> **This settles the part and not the problem.** With U3 fixed at 5.0 V, the
+> 25 mΩ loop budget is fixed with it — and one USB-C mated pair is 30–40 mΩ
+> on its own. **The seam is now the binding constraint**, and the "if both
+> fail" fallback below is no longer hypothetical.
+
+One of the two gating measurements is also retired by this. The Orange Pi's
+maximum input voltage is answered — it is 5 V, full stop. What remains worth
+measuring is **peak current at the Orange Pi**, because the budget scales
+directly with it and 4 A is a vendor maximum rather than an observed figure.
+
+**The fallback is now live.** A USB-C seam carrying 4 A within spec was
+already marginal; with the regulator pinned it is over budget as specified.
+The levers, with their costs — from paralleling all four VBUS and GND
+contacts, through a short captive cable, to moving the regulator into
+Enclosure A and sending PD voltage across the seam instead — are laid out in
+[06 · What is actually left to pull on](06-power-board-schematic.md#what-is-actually-left-to-pull-on).
+The last of those reopens the "5 V only" rule this simplification closed, and
+is worth knowing about before the shells are cut.
 
 ### What dropping telemetry costs
 
@@ -307,14 +343,25 @@ makes it reversible.
 **Reserve an unpopulated 3-pin footprint** on the power board for TX/RX/GND. If
 telemetry is wanted later it is a cable, not a board respin.
 
-## The three dimensions nobody should guess
+## The dimensions nobody should guess
 
-These determine **whether the two boxes actually close.** They are measurements
-to take, not values to look up:
+These determine **whether the two boxes actually close.** They are
+measurements to take, not values to look up — with one exception, below.
 
-1. **CentyLab RotoPD Pro mounting pattern** — and its outline and height
+1. ~~**CentyLab RotoPD Pro mounting pattern**, outline and height~~ —
+   **resolved 2026-11-18 without measuring.** CentyLab publish the KiCad
+   board and a STEP assembly, so the outline, hole pattern, connector
+   positions and every component height came out of the files.
+   [06 · U1 mechanical](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo)
 2. **Underside adapter stack height** — adapter + card + mated antenna plugs
 3. **Mated USB-C plug clearance** — plug *and* cable bend
+
+> [!TIP]
+> **Check the vendor's repository before scheduling a measurement.** This
+> document had concluded the RotoPD figures needed "the `.kicad_pcb` or the
+> physical board, not another email." That was correct — and the
+> `.kicad_pcb` was public the whole time. Procedure for the remaining two:
+> [10 · Measurement protocol](10-measurement-protocol.md).
 
 ## Decision status
 
@@ -333,14 +380,46 @@ to take, not values to look up:
   product ships **two enclosures and one PCB.** See
   [the v1 scope cut](#the-v1-scope-cut).
 - **The OLED and encoder live on the power board, in Enclosure B** — previously the
-  open question that blocked both front panels
+  open question that blocked both front panels. **Confirmed 2026-11-18**: the
+  console stays, so J4 and J5 exist and Enclosure B's lid needs a display
+  window and a shaft opening.
+  [03 · The console](03-enclosure-b-lower.md#the-console--decided)
+- **U3 is the 5.0 V Pololu `D42V55F5` (#5571).** Decided 2026-11-18, forced by
+  the Orange Pi's fixed-5 V USB-C input rather than chosen on merit. It does
+  **not** settle the seam — see [below](#the-5-v-seam-problem).
+  [06 · U3 is the 5.0 V part](06-power-board-schematic.md#u3-is-the-50-v-part)
+- **The RotoPD's VBUS screw terminal is removed**, with heavy wire soldered to
+  its pads. It was the tallest item on the module at 11.60 mm.
+  [03 · The VBUS screw terminal](03-enclosure-b-lower.md#the-vbus-screw-terminal)
+- **Enclosure A opens as a perimeter band with both broad faces as separate
+  plates**, the SBC mounted to the base plate. The narrow walls, which carry
+  all four antenna zones, are never opened.
+  [02 · How it opens](02-enclosure-a-upper.md#how-it-opens--decided)
+- **Accessory port runs config A** — 36 kΩ / 22.6 kΩ, 1.06–1.23 A. Promoting to
+  config B after the thermal measurement is three 0603 swaps on identical
+  footprints, so it does not gate ordering.
+- **RotoPD Pro geometry is known**: 24.40 × 35.80 mm, 2 × M2.5 18.00 mm apart.
+  Taken from the vendor's published KiCad and STEP files, not measured.
+  [06 · U1 mechanical](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo)
 
 **Open — do not design against these**
 
 - Second radio: MT7922/RZ616 in 2230 is a *candidate*, height unconfirmed.
   Verify its antenna connector type and 5 GHz AP operation on the target Linux
   image first.
-- Specific M-key-to-E-key adapter
+- **The seam loop resistance.** This is now the binding technical problem,
+  and it is a decision rather than a measurement. With U3 fixed at 5.0 V the
+  budget is 25 mΩ for the whole round trip, and one USB-C mated pair is
+  30–40 mΩ on its own. Levers and their costs:
+  [06 · What is actually left to pull on](06-power-board-schematic.md#what-is-actually-left-to-pull-on)
+- Specific M-key-to-E-key adapter — **candidate proposed 2026-11-18**, the
+  Sintech M-key to A/E-key card. Routes PCIe ×1, but brings USB 2.0 out on a
+  separate flying cable, so the second radio's Bluetooth needs that cable
+  routed or it does not work.
+  [10 · Candidate](10-measurement-protocol.md#candidate-sintech-m-key-to-ae-key-adapter)
+- **Pico mounting: castellated or socketed** — worth revisiting now. With the
+  screw terminal gone and the RotoPD at 4.70 mm, the encoder sets Enclosure
+  B's height, so socketing the Pico may cost nothing
 - Power source: external bank vs. internal cell, and therefore whether
   Enclosure B ever contains a battery
 - ~~Which enclosure's front panel carries the OLED and encoder~~ — **settled
@@ -349,6 +428,8 @@ to take, not values to look up:
   A. The Waveshare 4.26" e-paper (SKU `26376`) was chosen on 2026-11-17 and cut
   the next day; [10](retired/display-epaper.md) is kept for the analysis.
 - Thermal solution, final antenna SKU
+- ~~How Enclosure A opens for service~~ — **settled 2026-11-18**, see the
+  settled list above
 - ~~JLCPCB assembly sourcing for PCB 1 parts~~ — moot. PCB 1 is not built.
   Sourcing work is preserved in [08](08-sourcing.md#looked-up-so-far).
 

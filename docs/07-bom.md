@@ -85,11 +85,11 @@ ordering it.
 
 | Part | PN | Status | Dimensions |
 |---|---|---|---|
-| PD negotiation | CentyLab RotoPD Pro | 🟡 Chosen | **Outline, height, mounting pattern all unverified** |
+| PD negotiation | CentyLab RotoPD Pro | 🟢 **Resolved** | **24.40 × 35.80 mm** · 2 × M2.5 (⌀2.7 mm), **18.00 mm apart** · assembly spans 13.00 mm, **4.70 mm with the screw terminal removed**. From the [vendor repo](https://github.com/CentyLab/RotoPD_Pro), not a measurement — [geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) |
 | Controller | Raspberry Pi Pico 2 (non-wireless) | 🟡 Chosen | 51 × 21 × 1 mm bare |
-| 5 V regulator | Pololu D42V55F5 (#5571) **or D42V55F5.3 (#5572)** | 🔴 **Reopened** | 25.4 × 25.4 × 9 mm · 3 × M2 holes. Same family/footprint/pinout. **The 5.0 V part's −3 % corner cannot make the seam loop budget** — see [01](01-architecture.md#the-5-v-seam-problem). Blocked on the Pi's max input voltage. |
-| Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved** | **5 V power only.** Advertise 5 V/3 A (10 kΩ Rp) if the Pi measures under 3 A — see [01](01-architecture.md#the-5-v-seam-problem) |
-| Seam cable | Short USB-C to USB-C | 🔴 **Unresolved** | Captive or detachable, TBD |
+| 5 V regulator | Pololu **D42V55F5 (#5571)** | 🟢 **Decided 2026-11-18** | 25.4 × 25.4 mm, **1.57 mm** board · **6.1 mm above, 1.4 mm below** (9.07 mm total — the 9 mm figure is the *whole stack*, not height above board) · 3 holes ⌀2.18 mm on a 21.1 × 21.1 mm pattern. **The 5.3 V #5572 is ruled out**: the Orange Pi's USB-C input is fixed 5 V and the vendor warns above 5 V damages the board. This leaves the **seam loop over budget** — [06](06-power-board-schematic.md#u3-is-the-50-v-part) |
+| Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved — now the binding item** | **5 V power only.** No longer an independent part choice: a 6-pin power-only receptacle brings out **two** VBUS and two GND contacts where a 16-pin part brings out **four of each**, and paralleling them is one of the few levers on the loop-resistance budget — [06](06-power-board-schematic.md#u3-is-the-50-v-part) |
+| Seam cable | Short USB-C to USB-C | 🔴 **Unresolved — now the binding item** | Captive or detachable. Cable conductor resistance is a large share of the loop, and a 5 A-rated cable is still specified to drop up to 250 mV — [06](06-power-board-schematic.md#u3-is-the-50-v-part) |
 | USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
 
 ### Power board — measurement and debug hardware
@@ -137,14 +137,17 @@ Outputs of design work, not catalogue items:
 
 ## Before ordering anything
 
-1. **Measure, don't look up**, the three dimensions in
-   [01-architecture.md](01-architecture.md#the-three-dimensions-nobody-should-guess).
-   All three still gate Enclosure B and the underside stack; the scope cut
-   touched none of them.
-2. **Settle the regulator first.** `D42V55F5` vs `D42V55F5.3` is 🔴 **Reopened**
-   above and blocked on the Orange Pi's maximum input voltage. Do not order
-   either until that measurement exists —
-   [01](01-architecture.md#the-5-v-seam-problem).
+1. **Measure, don't look up** — but check the vendor's repository first.
+   What were three gating dimensions are now **two**: the RotoPD envelope came
+   out of CentyLab's published KiCad and STEP files on 2026-11-18 without a
+   physical part. See
+   [10 · Measurement protocol](10-measurement-protocol.md). The underside M.2
+   stack and the mated USB-C plug still need hardware in hand.
+2. ~~**Settle the regulator first.**~~ — **done 2026-11-18: the 5.0 V
+   #5571**, forced by the Orange Pi's fixed-5 V input rather than chosen on
+   merit. **Order that part number only.** What it did not settle is the seam
+   loop, which is now the open problem —
+   [06](06-power-board-schematic.md#u3-is-the-50-v-part).
 3. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
    search. A catalog snapshot is not a commitment. This now applies only to
    the power board's measurement and debug hardware, all four of which are `expand`

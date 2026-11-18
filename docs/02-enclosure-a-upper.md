@@ -27,7 +27,7 @@ Read [01-architecture.md](01-architecture.md) first.
 | **Second Wi-Fi card** (private AP) | 22 × 30 mm **if 2230** — height unconfirmed | Mounts in the **adapter's** E-key socket with its own retaining screw. MT7922/RZ616 is a candidate, **not a locked part.** Verify antenna connector type and 5 GHz AP operation on the target Linux image before committing. |
 | **M-key → E-key adapter** | **Installed size unverified** | Male M-key edge into the Orange Pi's **underside** socket; second radio into the adapter's female E-key socket. The host accepting 2280 modules does **not** tell you the adapter's size or the installed stack height. Choose a specific adapter **that routes PCIe**, then measure it with card and antenna plugs installed. |
 | **4 × flex antennas** | 42 × 7 mm each, 100 mm MHF4 lead | Inside the narrow walls. Full placement in [06-antennas.md](04-antennas.md). |
-| **Storage** | eMMC discussed, unconfirmed | — |
+| **Storage** | **eMMC — now a requirement, not a preference** | The Orange Pi has **one** M.2 M-key socket and the private-AP radio occupies it, so **there is no NVMe slot left**. If NVMe is ever wanted, the radio topology has to change. [10 · What the board provides](10-measurement-protocol.md#what-the-board-actually-provides) |
 | **RTC backup cell** | 20 mm coin cell + holder, or a shrink-wrapped cell on a lead | On the Orange Pi's **2-pin 1.25 mm RTC header**. Placement is a thermal keep-out problem, not a space one — see [RTC backup cell](#rtc-backup-cell). |
 | ~~Display~~ | — | **Retired in v1.** Was a Waveshare 4.26" e-paper whose 107 × 64 mm driver board set the faceplate's minimum size. [10](retired/display-epaper.md) |
 | ~~Faceplate~~ | — | **Retired in v1.** No controls to carry, so no removable front part and no openings. |
@@ -60,7 +60,7 @@ The single most important mechanical fact about this build:
 Standoff height has to account for the underside stack — adapter, plus card,
 plus mated antenna plugs, plus the bend radius of the coax leaving them. That
 figure is unmeasured and is one of the
-[three dimensions nobody should guess](01-architecture.md#the-three-dimensions-nobody-should-guess).
+[dimensions nobody should guess](01-architecture.md#the-dimensions-nobody-should-guess).
 
 ## Antenna zones
 

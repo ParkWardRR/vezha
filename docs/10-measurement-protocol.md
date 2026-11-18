@@ -1,4 +1,4 @@
-# 10 · Measurement Protocol — the three dimensions nobody should guess
+# 10 · Measurement Protocol — the dimensions nobody should guess
 
 **Added 2026-11-18.** Three measurements gate every enclosure dimension, and
 all three need physical parts in hand. This document exists so that when the
@@ -10,9 +10,10 @@ matters.
 > **No measurement in this document has been taken.** It is the procedure,
 > not the result.
 
-## Why these three and not others
+## Why these and not others
 
-[01 · The three dimensions nobody should guess](01-architecture.md) names them.
+[01 · The dimensions nobody should guess](01-architecture.md#the-dimensions-nobody-should-guess)
+names them. One of the original three is already retired.
 They are not the only unknowns — they are the ones where a wrong guess is only
 discovered after a case has been printed or a board fabricated:
 

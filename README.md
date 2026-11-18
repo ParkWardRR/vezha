@@ -61,7 +61,7 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 | | Deliverable | Contents | Status |
 |---|---|---|---|
 | **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, M→E adapter, four antennas, storage. **Headless — sealed shell, no panel** | Ready to design |
-| **B** | **Lower power box** | Power board only — detachable | Blocked on the RotoPD envelope |
+| **B** | **Lower power box** | Power board **plus the OLED + encoder console** — detachable | Ready to design |
 | **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
 | ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#the-v1-scope-cut) | Design complete, not built |
 
@@ -170,17 +170,20 @@ reaches 48 V.
 documents are retired with the board — see
 [the v1 scope cut](docs/01-architecture.md#the-v1-scope-cut).*
 
-## The three dimensions nobody should guess
+## The dimensions nobody should guess
 
-These decide **whether the two boxes actually close.** Measurements to take,
-not values to look up:
+These decide **whether the two boxes actually close.** Two left of the
+original three:
 
-1. **CentyLab RotoPD Pro** mounting pattern, outline, and height — *Enclosure B*
+1. ~~CentyLab RotoPD Pro mounting pattern, outline and height~~ — **resolved
+   2026-11-18 from the vendor's published KiCad and STEP files**, no physical
+   part needed
 2. **Underside adapter stack height** — adapter + card + mated antenna plugs — *Enclosure A*
 3. **Mated USB-C plug clearance** — plug *and* cable bend — *both*
 
 Canonical copy, with the reasoning:
-[01 · The three dimensions](docs/01-architecture.md#the-three-dimensions-nobody-should-guess).
+[01 · The dimensions](docs/01-architecture.md#the-dimensions-nobody-should-guess).
+Procedure: [10 · Measurement protocol](docs/10-measurement-protocol.md).
 
 ## Documents
 
@@ -198,7 +201,7 @@ out of the path.
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, JLCPCB codes, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Software & bring-up](docs/09-software-and-bringup.md) | **Software** | The only live software doc — captive portal, VPN, uplink recovery, and the bring-up order. **Nothing implemented** |
-| **10** | [Measurement protocol](docs/10-measurement-protocol.md) | Mechanical | The three dimensions that need physical parts, how to take them, and how to select the M.2 adapter that blocks the first |
+| **10** | [Measurement protocol](docs/10-measurement-protocol.md) | Mechanical | The two dimensions still needing physical parts, how to take them, and the M.2 adapter assessment that gates the first |
 
 **[docs/retired/](docs/retired/)** — the display, PCB 1 requirements, the PCB 1
 schematic, and the original project handoff. Complete work, kept so a v2 panel
@@ -217,15 +220,24 @@ edit it there, not here. The headlines:
 
 | | |
 |---|---|
-| **Settled** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on an underside M→E adapter. RotoPD Pro → Pololu → USB-C seam → Orange Pi, with the Pico beside that path gating EN. Enclosure A is headless. |
-| **Blocking** | **RotoPD Pro physical envelope** (blocks Enclosure B) · **which regulator**, `D42V55F5` vs `D42V55F5.3`, blocked on the Orange Pi's maximum input voltage · which M→E adapter, and whether it routes PCIe |
-| **Open** | Second radio part and height, antenna connector type, seam USB-C part, thermal solution, final antenna SKU, power source, how Enclosure A opens for service |
+| **Settled** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on an underside M→E adapter. RotoPD Pro → Pololu → USB-C seam → Orange Pi, with the Pico beside that path gating EN. Enclosure A is headless; **Enclosure B keeps the OLED + encoder.** |
+| **Settled 2026-11-18** | **U3 = Pololu `D42V55F5` #5571** (the 5.0 V part) · **RotoPD screw terminal removed** · **Enclosure A opens as a band with two removable broad faces**, SBC on the base plate · **accessory port config A** · **RotoPD geometry resolved** from the vendor repo, 24.40 × 35.80 mm |
+| **Blocking** | **The seam loop resistance.** A decision, not a measurement — see the caution below |
+| **Open** | Second radio part and height, antenna connector type, seam USB-C receptacle and cable, Pico mounting, thermal solution, final antenna SKU, power source |
 
 > [!CAUTION]
-> **IR drop binds before the 3 A advertisement limit.** One USB-C mated pair is
-> 30–40 mΩ against a 25 mΩ budget at the 5.0 V regulator's low corner — so
-> "measure and hope it is under 3 A" does not settle the seam.
-> [01 · The 5 V seam problem](docs/01-architecture.md#the-5-v-seam-problem).
+> **The seam is over budget as specified, and the regulator can no longer
+> absorb it.** The 5.3 V part would have bought 97.8 mΩ of headroom, but the
+> Orange Pi's USB-C port takes a **fixed 5 V** and its vendor warns that above
+> 5 V damages the board — so U3 is pinned at 5.0 V and the budget is pinned at
+> **25 mΩ** for the entire round trip. One USB-C mated pair is **30–40 mΩ on
+> its own.**
+>
+> This is the project's biggest open technical item. The levers, with costs —
+> paralleling all four VBUS and GND contacts, a short captive cable, measuring
+> the Pi's real peak draw, questioning the 4.75 V target, or moving the
+> regulator into Enclosure A — are in
+> [06 · What is actually left to pull on](docs/06-power-board-schematic.md#what-is-actually-left-to-pull-on).
 
 ## Ground rules
 
