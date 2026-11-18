@@ -14,7 +14,8 @@ there isn't one yet.
 [![Scope](https://img.shields.io/badge/scope-2%20enclosures%20%2B%202%20PCBs-0F766E?style=flat-square)](#scope-of-work)
 [![Stage](https://img.shields.io/badge/stage-Rev%20A%20design-orange?style=flat-square)](#what-is-decided-vs-open)
 [![Mechanical](https://img.shields.io/badge/mechanical-not%20started-red?style=flat-square)](#scope-of-work)
-[![PCB](https://img.shields.io/badge/PCB-not%20started-red?style=flat-square)](#scope-of-work)
+[![PCB 1](https://img.shields.io/badge/PCB%201-spec%20ready-success?style=flat-square)](docs/controls.md)
+[![PCB 2](https://img.shields.io/badge/PCB%202-blocked%20on%20measurement-red?style=flat-square)](docs/power.md)
 [![Prototype](https://img.shields.io/badge/prototype-coupons%20first-yellow?style=flat-square)](#ground-rules)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
@@ -64,10 +65,11 @@ depend on the lower box being attached** beyond power.
 | **2** | **Power board** | USB-C PD sink and negotiation, conversion to regulated 5 V, box-to-box power interconnect | Enclosure **B** |
 
 > [!NOTE]
-> Board 1 is specified in detail in [controls.md](docs/controls.md). Board 2's
-> requirements are **not yet written up** — the PD profile, converter module,
-> and current budget are still open. See
-> [handoff.md](docs/handoff.md#power-and-portability).
+> Board 1 is specified in detail in [controls.md](docs/controls.md) and is
+> ready to design against. Board 2 is scoped in [power.md](docs/power.md) but
+> **blocked** — its design cannot start until the system's actual current draw
+> is measured. Enclosure B's dimensions are an output of that work, not an
+> input.
 
 ## What the device does
 
@@ -127,6 +129,7 @@ design, so they are called out rather than left in the detail docs.
 |---|---|---|
 | **[controls.md](docs/controls.md)** | **PCB + mechanical** | The most complete spec here. Faceplate concept, control BOM with exact part numbers, switch/cap/toggle mounting, RGB indicator design and driver, JLCPCB assembly caveats, test coupons. |
 | **[antennas.md](docs/antennas.md)** | **Mechanical** | Antenna candidates with published gain, the four-position internal layout with a sketch, wall/clearance rules, and the RF bench test that must pass before the enclosure is frozen. |
+| **[power.md](docs/power.md)** | **PCB 2 + mechanical** | What the power board must do, what it has to power, why its design is blocked on measurement, and the box-to-box interconnect requirements. |
 | **[handoff.md](docs/handoff.md)** | Background | Project-wide state: hardware status, power budget, software plans, open questions. Start here for *why*, not *what to build*. |
 | **[parts-sourcing.md](docs/parts-sourcing.md)** | Procurement | How to query JLCPCB/LCSC for availability and price, and parts checked so far. |
 
