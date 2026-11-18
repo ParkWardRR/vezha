@@ -16,6 +16,12 @@ One radio joins the hotel Wi-Fi. The other broadcasts your own private
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 [![SPDX](https://img.shields.io/badge/SPDX-BlueOak--1.0.0-0F766E?style=flat-square)](https://spdx.org/licenses/BlueOak-1.0.0.html)
 
+[![Last commit](https://img.shields.io/github/last-commit/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
+[![Issues](https://img.shields.io/github/issues/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/issues)
+[![Repo size](https://img.shields.io/github/repo-size/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha)
+[![Stars](https://img.shields.io/github/stars/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/stargazers)
+
 [![SBC](https://img.shields.io/badge/SBC-Orange%20Pi%205%20Plus-F47B20?style=flat-square)](#hardware)
 [![SoC](https://img.shields.io/badge/SoC-Rockchip%20RK3588-0E7C7B?style=flat-square)](#hardware)
 [![Uplink](https://img.shields.io/badge/uplink-Intel%20AX210-0071C5?style=flat-square&logo=intel&logoColor=white)](#hardware)
