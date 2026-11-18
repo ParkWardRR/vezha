@@ -1,0 +1,68 @@
+* SIM-02  Can the Pico still drive EN high through a 1.5k pull-down?
+*
+* SIM-01 drives the pull-down down to 1.5 kohm to beat the module's 1 Mohm
+* pull-up to 48 V plus RP2350-E9 leakage. The obvious objection is that a
+* pull-down that strong might stop the Pico asserting EN at all. Check it.
+*
+* Pololu EN needs > 1.0 V to leave shutdown.
+* RP2350 pad: modelled as a 3.3 V supply behind a pad resistance. Drive
+* strength 4 mA is the default; 50 ohm is an optimistic pad Ron and 200 ohm a
+* pessimistic one for a 3.3 V IOVDD pad at the 2 mA setting.
+*
+* The 1 Mohm to VIN HELPS here: at 48 V it sources 48 uA into the node.
+* Worst case for driving high is therefore VIN low (5 V), so the pull-up
+* contributes almost nothing.
+*
+* PASS CRITERION  V(en) > 1.0 V with good margin, and pad current within the
+* GPIO's rating.
+
+.title SIM-02 EN drive high
+
+.param RPD  = 1.5k
+.param RPAD = 50
+
+Vin   vin  0   DC 5
+Vgpio gpio 0   DC 3.3
+Rpad  gpio en  {RPAD}
+Rpu   vin  en  1MEG
+Rpd   en   0   {RPD}
+
+.control
+option noinit
+
+echo "### SIM-02  V(en) and GPIO source current when the Pico asserts EN"
+echo "### VIN = 5 V (worst case for driving high). EN must exceed 1.000 V"
+echo ""
+echo "Rpd     Rpad    V(en)      I_gpio(mA)  verdict"
+foreach rpd 1k 1.5k 2.2k 4.7k
+  alterparam RPD = $rpd
+  foreach rpad 50 100 200
+    alterparam RPAD = $rpad
+    reset
+    op
+    let ven = v(en)
+    let ipad = (3.3 - v(en)) / $rpad * 1000
+    if $&ven > 1.0
+      echo "$rpd    $rpad    $&ven   $&ipad    PASS"
+    else
+      echo "$rpd    $rpad    $&ven   $&ipad    FAIL"
+    end
+  end
+end
+
+echo ""
+echo "### Power burned in the pull-down while EN is asserted"
+echo "Rpd     P(mW)"
+foreach rpd 1k 1.5k 2.2k 4.7k
+  alterparam RPD = $rpd
+  alterparam RPAD = 50
+  reset
+  op
+  let p = v(en)*v(en)/$rpd*1000
+  echo "$rpd    $&p"
+end
+
+quit
+.endc
+
+.end

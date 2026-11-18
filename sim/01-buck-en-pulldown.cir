@@ -1,0 +1,126 @@
+* SIM-01  Pololu D42V55F5 EN pull-down sizing
+*
+* QUESTION
+*   docs/05-pcb-2-power.md asserts "the buck defaults off at startup" and that
+*   EN "needs a pull-down to ground". It does not give a value. Pick one.
+*
+* WHAT THE MODULE ACTUALLY DOES (pololu.com/product/5571)
+*   EN is pulled up to VIN through 1 Mohm ON THE MODULE, so the bare module
+*   defaults ON, not off. The pull-down is not belt-and-braces: it is the only
+*   thing holding the router rail down before firmware runs.
+*   Disable: EN below 0.5 V = shutdown. Enable: above 1.0 V.
+*   The 0.5-1.0 V band is undefined, so 0.5 V is the hard ceiling.
+*
+* WORST-CASE VIN
+*   RotoPD Pro output range is 4.5 V to 48 V (240 W, EPR/AVS). NOT the
+*   "9, 12, 15 or 20 V" assumed in docs/05. Sweep to 48 V.
+*
+* SECOND CURRENT SOURCE: RP2350-E9
+*   RP2350 A2 erratum E9: a Bank-0 pad configured as an input and sitting in
+*   the undefined logic region sources ~120 uA from an effective 2.2 V source.
+*   RPi's stated fix is an external pull-down of 8.2 kohm or less.
+*   E9 does NOT apply right after PoR/RUN reset (pad input enable is initially
+*   clear) but DOES apply if firmware sets the pin to an input and then hangs.
+*   Modelled as a Thevenin source: 2.2 V behind Req = 2.2 / I_leak.
+*     120 uA -> 18.333 k      200 uA (pessimistic) -> 11.0 k
+*     E9OFF: 1e12 ohm = absent
+*
+* PASS CRITERION
+*   V(en) < 0.5 V in every corner.
+
+.title SIM-01 buck EN pull-down
+
+.param RPD  = 100k
+.param RE9  = 1e12
+
+Vin  vin   0  DC 48
+Rpu  vin   en     1MEG
+Rpd  en    0      {RPD}
+Ve9  e9s   0  DC 2.2
+Re9  e9s   en     {RE9}
+
+.control
+option noinit
+
+* ---------------------------------------------------------------
+echo "### SIM-01a  post-reset, E9 absent (pad input enable clear)"
+echo "### V(en) at the worst-case VIN corners. Ceiling = 0.500 V"
+echo ""
+echo "Rpd        V(en)@5V   V(en)@20V  V(en)@28V  V(en)@48V  verdict@48V"
+alterparam RE9 = 1e12
+foreach rpd 100k 47k 22k 10k 8.2k 4.7k 2.2k 1.5k
+  alterparam RPD = $rpd
+  reset
+  dc Vin 5 48 0.1
+  meas dc a FIND v(en) AT=5
+  meas dc b FIND v(en) AT=20
+  meas dc c FIND v(en) AT=28
+  meas dc d FIND v(en) AT=48
+  if $&d < 0.5
+    echo "$rpd      $&a    $&b    $&c    $&d    PASS"
+  else
+    echo "$rpd      $&a    $&b    $&c    $&d    FAIL - buck ENABLED"
+  end
+end
+
+* ---------------------------------------------------------------
+echo ""
+echo "### SIM-01b  firmware hung with pad as input, E9 active at 120 uA"
+echo "### V(en) at VIN = 48 V. Ceiling = 0.500 V"
+echo ""
+echo "Rpd        V(en)@48V  verdict"
+alterparam RE9 = 18.333k
+foreach rpd 100k 47k 22k 10k 8.2k 4.7k 3.3k 2.2k 1.5k 1k
+  alterparam RPD = $rpd
+  reset
+  dc Vin 5 48 0.1
+  meas dc d FIND v(en) AT=48
+  if $&d < 0.5
+    echo "$rpd      $&d    PASS"
+  else
+    echo "$rpd      $&d    FAIL - buck ENABLED"
+  end
+end
+
+* ---------------------------------------------------------------
+echo ""
+echo "### SIM-01c  candidate values, pessimistic E9 = 200 uA, VIN = 48 V"
+echo ""
+echo "Rpd        V(en)@48V  margin_to_0.5V  verdict"
+alterparam RE9 = 11.0k
+foreach rpd 8.2k 4.7k 3.3k 2.2k 1.5k 1k
+  alterparam RPD = $rpd
+  reset
+  dc Vin 5 48 0.1
+  meas dc d FIND v(en) AT=48
+  let m = 0.5 - d
+  if $&d < 0.5
+    echo "$rpd      $&d    $&m    PASS"
+  else
+    echo "$rpd      $&d    $&m    FAIL - buck ENABLED"
+  end
+end
+
+* ---------------------------------------------------------------
+echo ""
+echo "### SIM-01d  chosen value 1.5k 1%, resistor tolerance corners"
+echo "### E9 = 120 uA, VIN = 48 V"
+echo ""
+echo "Rpd        V(en)@48V  verdict"
+alterparam RE9 = 18.333k
+foreach rpd 1.485k 1.5k 1.515k
+  alterparam RPD = $rpd
+  reset
+  dc Vin 5 48 0.1
+  meas dc d FIND v(en) AT=48
+  if $&d < 0.5
+    echo "$rpd     $&d    PASS"
+  else
+    echo "$rpd     $&d    FAIL"
+  end
+end
+
+quit
+.endc
+
+.end

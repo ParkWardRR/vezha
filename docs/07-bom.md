@@ -85,7 +85,8 @@ Notes:
 | PD negotiation | CentyLab RotoPD Pro | 🟡 Chosen | **Outline, height, mounting pattern all unverified** |
 | Controller | Raspberry Pi Pico 2 (non-wireless) | 🟡 Chosen | 51 × 21 × 1 mm bare |
 | 5 V regulator | Pololu D42V55F5 (#5571) | 🟡 Chosen | 25.4 × 25.4 × 9 mm · 3 × M2 holes |
-| Seam connector | — | 🔴 **Unresolved** | Keyed, latching, 5 V/GND, full load |
+| Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved** | **5 V power only.** Advertise 5 V/3 A (10 kΩ Rp) if the Pi measures under 3 A — see [01](01-architecture.md#the-3-a-problem) |
+| Seam cable | Short USB-C to USB-C | 🔴 **Unresolved** | Captive or detachable, TBD |
 | USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
 
 ## Power source

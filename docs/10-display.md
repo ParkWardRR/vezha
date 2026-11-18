@@ -102,7 +102,7 @@ toggle and keys.
 > that list, and neither is the Pico.**
 
 The absent Pico support is a point in favour of the first reading of the
-[two-interfaces conflict](05-pcb-2-power.md#unresolved-conflicts): this panel is
+[two-interfaces conflict](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved): this panel is
 the **Orange Pi's** display. If the PCB 2 OLED survives, it is a separate
 power-box console, not a consolidation target.
 

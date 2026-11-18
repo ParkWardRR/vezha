@@ -18,7 +18,7 @@ Read [01-architecture.md](01-architecture.md) first.
 | **CentyLab RotoPD Pro** | **Outline, height, and mounting pattern all unverified** | **USB-C input at the enclosure wall.** Switched PD output to the Pololu's VIN/GND. Pico connects over 3.3 V I²C via Qwiic/STEMMA QT or the corresponding pins. Use the [vendor PCB files](https://github.com/CentyLab/RotoPD_Pro) or measure the actual board before drawing its carrier footprint. |
 | **Raspberry Pi Pico 2** (non-wireless) | 51 × 21 × 1 mm bare PCB | Two options — see below. |
 | **Pololu D42V55F5** (#5571) | 25.4 × 25.4 × 9 mm | Use [Pololu's drawing](https://www.pololu.com/product/5571) for the 2.54 mm through-hole pattern and the **three M2 mounting holes.** |
-| **Seam connector** | TBD by selection | Keyed, latching, 5 V/GND, rated for full load. |
+| **Seam output** | USB-C receptacle, part TBD | **5 V power only** to Enclosure A. Recessed contacts, so no exposed-metal hazard when detached. |
 
 ## Pico 2 mounting — pick one, it changes the height
 
@@ -46,7 +46,7 @@ find out what its real rating is.
 USB-C wall input
   → RotoPD Pro            negotiates PD, provides switched output
   → Pololu D42V55F5       regulated 5 V
-  → seam connector        keyed, latching
+  → USB-C receptacle      5 V power only
   → Enclosure A
 ```
 
@@ -65,8 +65,8 @@ Three measurements gate this box, and only one of them is about a PCB:
 
 1. **RotoPD Pro outline, height, and mounting pattern** — unverified, and it
    is the part whose footprint is least knowable from the datasheet
-2. **Mated seam connector clearance** — connector *and* cable bend, not the
-   footprint
+2. **Mated USB-C plug clearance** — plug *and* cable bend, not the
+   receptacle footprint
 3. **Pico mounting choice** — castellated vs. socketed changes the stack
 
 Draw this enclosure around the **mated** hardware. PCB footprints alone will
@@ -109,7 +109,7 @@ limit are in [05-pcb-2-power.md](05-pcb-2-power.md#accessory-usb-c-output-port).
 > [!WARNING]
 > **Unresolved:** whether this console is *additional to* the controls in
 > Enclosure A, or *replaces* them. See
-> [05 · Unresolved conflicts](05-pcb-2-power.md#unresolved-conflicts). Do not
+> [05 · Unresolved conflicts](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved). Do not
 > cut a front panel for either box until this is settled — it decides whether
 > Enclosure B has a user-facing face at all.
 
@@ -127,7 +127,7 @@ sustained load before closing the design.
 ## Open questions
 
 - RotoPD Pro physical envelope and mounting — **blocking**
-- Seam connector selection — pogo array vs. Micro-Fit cable for Rev A
+- Seam USB-C receptacle part, and whether the cable is captive
 - **Whether Enclosure B has a front panel at all** — blocking
 - Accessory port regulator, and its thermal contribution in this box
 - OLED bracket and encoder knob

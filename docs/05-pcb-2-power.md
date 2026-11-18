@@ -33,7 +33,9 @@ control wiring, a front-panel console, and the mechanical anchor.
 
 - **Keep the USB port accessible for programming.** Bring it to a wall opening
   or it is access in name only.
-- **Keyed 3-pin UART connector — TX, RX, GND** — for Orange Pi telemetry.
+- **Reserve an unpopulated 3-pin footprint (TX, RX, GND).** Telemetry across
+  the seam is **dropped** — the seam is USB-C power only. The footprint keeps
+  it a cable job rather than a respin if it is wanted later.
 - **The Pico and display boot before the Orange Pi.** This is a sequencing
   requirement, not a preference.
 - Powered from the **RotoPD auxiliary 5 V into VSYS** — see
@@ -177,32 +179,30 @@ power applied
   → Pico reads contract over I²C bus 1
   → contract adequate?  ── no ──→ report on OLED, leave EN low
             │ yes
-  → Enclosure A present? ── no ──→ report on OLED, leave EN low
-            │ yes                   (never energise exposed contacts)
   → Pico asserts buck EN
   → Pico checks PG                            ← confirms, not assumes
-  → 5 V reaches Orange Pi over the seam
-  → Orange Pi boots, telemetry over UART
+  → USB-C source: sink Rd detected?  ── no ──→ hold VBUS off
+            │ yes
+  → 5 V reaches Orange Pi over the USB-C seam
+  → Orange Pi boots independently              ← no telemetry link
 ```
 
 ## Connectors
 
 | Connector | Pins | Carries | Keyed |
 |---|---:|---|---|
-| **Seam — combined** | 7 | 2× GND, 2× +5 V, UART TX, UART RX, **DETECT** | **Yes**, staggered contact lengths |
+| **Seam output** | — | 5 V, GND over **USB-C** — power only | By the standard |
 | OLED | 4 | 3.3 V, GND, SDA, SCL (JST-SH STEMMA QT) | Yes, by type |
 | Encoder | 4 | A, B, push switch, GND | **Yes** |
 | RotoPD I²C | — | SDA, SCL to Pico bus 1 | — |
 
 > [!IMPORTANT]
-> **The UART changed the seam from a power lead into a hot-pluggable
-> interface.** It is now **one** combined 7-contact connector with staggered
-> lengths so ground makes first and breaks last, plus a DETECT contact that
-> gates the rail. Full specification in
-> [01 · Crossing the seam](01-architecture.md#crossing-the-seam).
+> **The seam is USB-C, 5 V power only.** No signal, no detect pin, no custom
+> contact array. USB-C source detection on the output — Rp on CC1/CC2, VBUS
+> only after a sink's Rd appears — does the gating a detect contact would have.
 >
-> **PCB 2 side:** series resistors on TX/RX, and DETECT routed to a Pico GPIO
-> with a pull-up — it reads low only when Enclosure A is attached.
+> **Caveat:** USB-C tops out at **3 A at 5 V** and the Orange Pi is specified
+> at 4 A. See [01 · The 3 A problem](01-architecture.md#the-3-a-problem).
 
 ## I²C bus allocation
 
@@ -238,52 +238,26 @@ charger. Cable and connector drop at several amps is the failure mode.
 Also confirm which PD profiles the chosen charger actually offers, from the
 device rather than its marketing copy.
 
-## Unresolved conflicts
+## Previously-flagged conflicts — both resolved
 
-> [!WARNING]
-> Two things in this specification contradict the rest of the repo and need a
-> decision before layout.
+**1 · Seam is no longer power-only** — **resolved.** The UART is dropped; the
+seam is USB-C, 5 V power only. The governing rule in
+[01](01-architecture.md) holds again as written.
 
-**1 · Seam is no longer power-only.** See the connector note above. The
-governing rule in [01](01-architecture.md) says only power crosses; UART
-telemetry now does too.
+**2 · Two competing user interfaces** — **resolved**, as a side effect of the
+above. With no telemetry link, this board's OLED can only show power and PD
+state, so it cannot substitute for a router UI. The split is clean:
 
-**2 · Two user interfaces are specified.** This board carries an OLED and a
-push encoder on a front panel. [PCB 1](04-pcb-1-front-control.md) carries an
-ANO navigation wheel, three keys, four RGB indicators, and assumes a separate
-display in Enclosure A. It is not stated whether:
-
-- the OLED and EC11 are a **separate power-box console**, additional to PCB 1; or
-- they **replace** PCB 1's wheel and the Enclosure A display, consolidating the
-  UI onto the Pico.
-
-The second reading is consistent with the UART telemetry link and with "the
-Pico and display boot before the Orange Pi" — a console that shows PD status
-before the router exists.
-
-> [!NOTE]
-> **The display choice of 2026-11-17 argues for the first reading.** Enclosure A
-> now has a committed display — a [4.26" SPI e-paper panel](10-display.md) — and
-> it **cannot** do this board's job. It hangs off the Orange Pi's SPI, Waveshare
-> documents no Pico support, and a 4 s refresh is useless for live PD reporting.
-> The [boot sequence](#boot-sequence) above requires a console that is live
-> *before* the Orange Pi and can report an inadequate contract while `EN` stays
-> low. Only the OLED can do that.
->
-> So the two are not substitutes serving one role; they serve different phases.
-> The OLED is the **power-box console**, the e-paper is the **router's display**.
-> That consolidation is off the table — but the ANO wheel versus EC11 encoder
-> overlap is still a real duplication, and still needs a decision.
-
-**Until this is resolved, do not lay out either front panel.**
+| | Interface | Shows |
+|---|---|---|
+| **Enclosure A** | 4.26" e-paper, ANO wheel, three keys — see [10](10-display.md) | Router state |
+| **Enclosure B** | OLED + EC11 encoder | Input voltage, negotiated PD contract, rail status, fault reason |
 
 ## Open questions
 
-- **Which enclosure's front panel** carries the OLED and encoder
-- Whether PCB 1's ANO wheel survives
 - RotoPD Pro mounting pattern, outline, height — still blocking
 - Dedicated accessory regulator part
-- Seam connector part — pogo array vs. Micro-Fit for Rev A
+- Seam USB-C receptacle part, and whether the Pi stays under 3 A
 - Encoder debounce: RC on board vs. firmware
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets

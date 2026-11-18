@@ -18,14 +18,14 @@ A compact **two-piece** travel router.
 
 **The governing rule:** both radios and all antennas stay in the upper
 enclosure, so **the power box comes off without disturbing any PCIe or
-antenna connection.** Only power and telemetry cross the seam — never RF.
+antenna connection.** **Only 5 V power crosses the seam**, over USB-C.
 
 > [!WARNING]
 > **Enclosure B also carries a console.** PCB 2 drives an OLED and a push
 > encoder, and the Pico boots before the Orange Pi so that console is live
 > first. Whether that console is *additional to* or *replaces* the controls in
 > Enclosure A is **unresolved** — see
-> [05 · Unresolved conflicts](05-pcb-2-power.md#unresolved-conflicts).
+> [05 · Unresolved conflicts](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved).
 > Do not lay out either front panel until it is settled.
 
 ```mermaid
@@ -62,8 +62,7 @@ flowchart TB
     end
 
     CHG ==>|USB-C| ROTO
-    POLOLU ==>|"5 V · keyed connector<br/>→ Orange Pi USB-C power input"| PI
-    PICO <-.->|"UART telemetry<br/>keyed 3-pin"| PI
+    POLOLU ==>|"5 V over USB-C<br/>→ Orange Pi power input"| PI
 
     classDef ext fill:#f1f5f9,stroke:#64748b,color:#0f172a
     classDef pwr fill:#fee2e2,stroke:#dc2626,color:#0f172a
@@ -104,7 +103,7 @@ One path, in one direction:
 external USB-C charger
    → RotoPD Pro (negotiates PD, switched output)
       → Pololu D42V55F5 (regulated 5 V)
-         → keyed 2-pin connector across the enclosure seam
+         → USB-C cable across the enclosure seam
             → Orange Pi dedicated USB-C power input
 ```
 
@@ -133,98 +132,73 @@ active, and with the intended USB load applied. See
 
 ## Crossing the seam
 
-> [!IMPORTANT]
-> **Revised twice.** The seam was originally power-only. PCB 2's UART
-> telemetry link means signal crosses too — and that changes the connector
-> from a power lead into a hot-pluggable interface with a sequencing problem.
+**5 V power only, over USB-C.** Nothing else.
 
-### One connector, not two
+| Crosses | Does not cross |
+|---|---|
+| 5 V, GND | UART, I²C, any signal, RF |
 
-**Use a single combined connector.** Two separate connectors on a box that
-detaches as a normal operation means a user can mate one and not the other,
-and gives the mechanical design two alignment problems instead of one.
+Enclosure B presents a **USB-C power output**. A short cable runs to the
+Orange Pi's **dedicated USB-C power input**. That is the entire interface
+between the two boxes.
 
-The signal here is low-speed telemetry. There is no crosstalk argument for
-separating it from the 5 V pins.
+> [!NOTE]
+> **Simplified deliberately.** An earlier revision ran UART telemetry across
+> the seam, which turned a power lead into a hot-pluggable interface needing a
+> custom 7-contact connector with staggered pin lengths and a detect
+> interlock. That is removed. The cost is stated under
+> [What dropping telemetry costs](#what-dropping-telemetry-costs).
 
-### Contact map
+### Why USB-C does the job
 
-**Seven contacts**, with **three different lengths** to force the mating order:
+Going to a standard connector removes three problems rather than solving them:
 
-| # | Signal | Length | Why |
-| --- | --- | --- | --- |
-| 1 | **GND** | **Long** | Mates first, breaks last |
-| 2 | +5 V | Medium |  |
-| 3 | +5 V | Medium | Two pins share the current |
-| 4 | UART TX | Short | Signal mates last, breaks first |
-| 5 | UART RX | Short |  |
-| 6 | **GND** | **Long** | Return current matches the two +5 V pins; a GND at each end survives angled separation |
-| 7 | **DETECT** | **Shortest** | Tied to GND inside Enclosure A. Breaks before anything else |
+- **No exposed-contact hazard.** A USB-C receptacle's contacts are recessed.
+  Separating the boxes does not leave 4 A on open metal, so no detect pin and
+  no contact interlock are needed.
+- **Source detection replaces DETECT.** Presenting Rp on CC1/CC2 and applying
+  VBUS only once a sink's Rd is seen is the standard doing the same job.
+- **No sequencing problem.** With no signal pins, there is no case where
+  ground opens while a logic line is still connected.
+- Keyed, latching and commodity by definition.
 
-An eighth contact as a spare costs little and is worth having.
+### The 3 A problem
 
-### Why the staggered lengths matter
-
-> [!CAUTION]
-> **Ground must make first and break last.** If GND opens while TX or RX is
-> still connected, return current finds its way through the UART pins' ESD
-> diodes. That damages both ends.
-
-Staggering gives the correct order automatically:
-
-```
-connect:     GND  →  +5 V  →  TX/RX  →  DETECT
-disconnect:  DETECT  →  TX/RX  →  +5 V  →  GND
-```
-
-### DETECT is a safety interlock, not a convenience
-
-This is the part that matters most.
-
-Enclosure B is the powered box. Without a detect contact, **separating the
-boxes leaves 4 A available on exposed metal** — a short across those contacts
-in a bag is a real hazard.
+This is the one thing the simplification does *not* make easier.
 
 > [!CAUTION]
-> **The Pico must not assert the buck's EN unless Enclosure A is detected
-> present.** The gate is now two conditions, not one: an adequate PD contract
-> **and** a present enclosure. See
-> [05 · Boot sequence](05-pcb-2-power.md#boot-sequence).
+> **USB-C advertises at most 3 A at 5 V.** The Orange Pi 5 Plus is specified
+> at **5 V / 4 A**. A standards-compliant USB-C source cannot offer that.
 
-Because DETECT is the shortest contact, it opens *before* the power pins on
-separation, so the rail is already shutting down as the boxes part.
+Three ways out, in order of preference:
 
-### Mating style
+1. **Measure actual peak draw.** If this build stays under 3 A, advertise
+   5 V / 3 A (**10 kΩ ±5 % Rp**) and the problem disappears. This is the
+   outcome to aim for.
+2. **Confirm what the Orange Pi's USB-C input actually expects.** If it is a
+   PD sink wanting a specific contract, PCB 2 has to source that contract —
+   which is more than a dumb 5 V rail.
+3. **Accept a non-compliant 5 V / 4 A source.** Vendor supplies do this
+   routinely, but it is outside the standard and should be a conscious
+   decision, not a default.
 
-| Option | Use | Trade-off |
-| --- | --- | --- |
-| **Spring-loaded (pogo) contact array** — *recommended* | Production intent | Blind-mates as the boxes stack; no dangling cable; pin length is how the staggering is achieved. Needs alignment features in both shells and good print tolerance. |
-| **Captive short cable + latching connector** — e.g. Molex Micro-Fit 3.0, 6–8 circuit | **Rev A prototype** | Tolerant of sloppy 3D-printed tolerances. **No contact sequencing** — all pins are the same length, so DETECT and series resistors carry the whole burden. Keyed by housing. |
+**Peak current at the Orange Pi is now the most important measurement on this
+project** — it decides whether the seam works as a plain USB-C link. See
+[05 · Measurement](05-pcb-2-power.md#measurement-before-trusting-any-of-this).
 
-Start on the cable for Rev A. Blind-mate alignment in a printed enclosure is
-genuinely hard, and discovering that after committing the shells is expensive.
+### What dropping telemetry costs
 
-**Put the spring pins on Enclosure A and the flat pads on Enclosure B.**
-Enclosure A has no power source of its own, so its pins are dead metal when
-detached; Enclosure B's pads are flush and de-energised by the DETECT
-interlock. Both sides fail safe.
+The Pico can no longer read router status, so **the PCB 2 OLED shows power and
+PD state only** — input voltage, negotiated contract, rail status, fault
+reason. It cannot show uplink or client information.
 
-### Electrical details
+That is an acceptable trade, and it has a useful side effect: it removes the
+overlap between the two user interfaces. The router UI lives in Enclosure A
+(e-paper display, ANO wheel, three keys — see [10](10-display.md)); the power
+console lives in Enclosure B and is clearly a power console.
 
-- **No level shifting.** Pico and Orange Pi UART are both 3.3 V.
-- **Series resistors, 100–330 Ω, on TX and RX.** If the Orange Pi is ever
-  powered directly through its own USB-C input while Enclosure B is detached,
-  its TX can backfeed into an unpowered Pico. The resistors cap that fault
-  current.
-- **TVS diodes on TX, RX and +5 V** at the Enclosure A entry. Exposed contacts
-  on a handheld are an ESD path.
-- **Mechanical retention is the enclosure latch, not the connector.** No
-  connector should be the thing holding the two boxes together.
-- Expect contact bounce during mating — firmware must resync rather than
-  assume a clean stream.
-
-**No RF crosses the boundary.** The detach rule still holds: the power box
-comes off without disturbing any PCIe or antenna connection.
+**Reserve an unpopulated 3-pin footprint** on PCB 2 for TX/RX/GND. If
+telemetry is wanted later it is a cable, not a board respin.
 
 ## The three dimensions nobody should guess
 
@@ -239,13 +213,14 @@ to take, not values to look up:
 
 **Settled — design against these**
 
-- Two enclosures, two PCBs, power-only seam
+- Two enclosures, two PCBs, **power-only seam over USB-C**
 - Both radios and all antennas in Enclosure A
 - AX210 in the top-side E-key socket; second radio on an adapter underneath
 - Power chain: RotoPD Pro → Pololu → detachable connector → Orange Pi
 - Pico 2 as controller, powered from RotoPD auxiliary via VSYS
 - Buck defaults off; Pico validates the PD contract, asserts EN, confirms PG
 - Accessory USB-C output gets its **own regulator**, never raw PD VBUS
+- No signal crosses the seam; telemetry footprint reserved but unpopulated
 - Four internal flex antennas, two per radio, inside the narrow walls
 
 **Open — do not design against these**
@@ -265,7 +240,7 @@ to take, not values to look up:
 - ~~JLCPCB assembly sourcing for several PCB 1 parts~~ — checked 2026-11-17, see
   [08](08-sourcing.md#looked-up-so-far). Driver yes, switch no. The switch's
   SMD-vs-through-hole decision is the live one:
-  [04](04-pcb-1-front-control.md#switch-options).
+  [04](04-pcb-1-front-control.md#why-this-switch).
 
 ## Where to go next
 

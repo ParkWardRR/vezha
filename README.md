@@ -67,7 +67,7 @@ A **two-piece** handheld router: two enclosures, two PCBs, designed together.
 
 **The governing rule:** both radios and all antennas stay in Enclosure A, so
 **the power box detaches without disturbing any PCIe or antenna connection.**
-Only 5 V and ground cross the seam.
+**Only 5 V power crosses the seam, over USB-C** — no signal, no telemetry.
 
 ## The hard requirement
 
@@ -97,7 +97,7 @@ published 100 × 75 mm figure excludes heatsink, adapter, and cable bends.
 external USB-C charger
   → RotoPD Pro        PD negotiation, switched output
   → Pololu D42V55F5   regulated 5 V
-  → seam connector    keyed, latching, 5 V + GND only
+  → USB-C seam        5 V power only
   → Orange Pi         dedicated USB-C power input
 ```
 
@@ -148,11 +148,12 @@ not values to look up:
 - Second radio part and height; antenna connector type unconfirmed
 - Which M→E adapter (must route PCIe)
 - RotoPD Pro physical envelope — **blocks Enclosure B**
-- Seam connector, thermal solution, final antenna SKU
+- Seam USB-C part; whether the Pi stays under USB-C's 3 A limit at 5 V
+- Thermal solution, final antenna SKU
 - Power source: external bank vs. internal cell
 - **Key switch termination** — SMD 6C (hot air) vs through-hole Multimec 5G
   (iron, new caps, +3.9 mm stack) vs C&K (machine-placed, lighter touch).
-  [04](docs/04-pcb-1-front-control.md#switch-options)
+  [04](docs/04-pcb-1-front-control.md#why-this-switch)
 - RGB LED part and optic — the last unsourced part on PCB 1
 
 ## Ground rules

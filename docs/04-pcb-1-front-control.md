@@ -39,54 +39,65 @@ contending for the same 40-pin header. Reserve the connector.
 | Qty | Part | Approx. USD | Where it mounts |
 |---:|---|---:|---|
 | 1 | [Adafruit #6310 — pre-soldered ANO I²C module](https://www.adafruit.com/product/6310) | $13.95 | Own standoffs or bracket behind the faceplate, wheel exposed. Short STEMMA QT cable to the front board. **This is the assembled I²C version**, not the bare wheel or the passive breakout. |
-| 5 | [APEM Ultramec 6C](https://www.apem.com/en-us/pcb-switches/tactile-switches/ultramec-6c), exact PN `6CJ1NOPR` | $3.07 ea | Top-actuated SMD switches on the faceplate-facing side of the front PCB. **Populate three, keep two spares.** |
-| 5 | APEM/MEC 10G caps — `10G09` black, `10G08` red | ~$1–2 ea (estimate) | Fit by hand after assembly. Black for `LINK` and `★`; red or recessed for `MAC`. The floating cap option helps align switch PCB to front panel. |
+| 5 | [C&K KSC series](https://www.ckswitches.com/products/switches/product-details/Tactile/KSC/) `KSC221JLFS` — LCSC `C221726` | $0.76 ea · $0.46 @100 | **JLCPCB places these.** SMD J-lead, 6.2 × 6.2 mm, on the faceplate-facing side of the front PCB. **Populate three, keep two spares.** |
+| 3 | **Printed plungers** — no catalogue part | — (printed) | **Design work, not a purchase.** The KSC has no cap system; a plunger bridges each faceplate opening to the switch. See [Plunger design](#plunger-design). |
 | 1 | [NKK locking toggle](https://www.nkkswitches.eu/products/Toggles/M/M2012LL4G01/), order `MN12LL4G01` | ~$11 | Clamps through the faceplate with its bushing and nut. Leads run to the front board — **do not mount it to the PCB.** Give the lever a protective recess with room to pull it. |
 
-**Budget ~$45–50** for controls including spares, before cables, shipping, and
-PCB assembly.
+**Budget ~$29–32** for controls including spares, before cables, shipping, and
+PCB assembly. *(Was ~$45–50 with the APEM 6C and its 10G caps.)*
 
-### Switch options
+### Why this switch
 
-Three live paths. The 6C is still the default, but it is the only one that
-cannot be machine-assembled *or* hand-soldered with an iron.
+Chosen 2026-11-17. The decisive factor is that **JLCPCB can actually place it** —
+16,623 in stock — which makes PCB 1 a fully machine-assembled board once the RGB
+LED is chosen. Nothing on it needs hand reflow.
 
-| | **APEM Ultramec 6C** `6CJ1NOPR` | **MEC Multimec 5G** `5GTH935` | **C&K** `KSC221JLFS` |
+| | **C&K `KSC221JLFS`** *(chosen)* | APEM Ultramec 6C `6CJ1NOPR` | MEC Multimec 5G `5GTH935` |
 |---|---|---|---|
-| Termination | **J-bend SMD** | **Through-hole** | SMD |
-| Body | 8 × 8 mm, h **2.5 mm** | 10 × 10 mm, h **6.4 mm** | 6.2 × 6.2 mm |
-| Force | ~3.6 N (LCSC lists 3.7 N) | 2.0 / **3.5** / 6.5 N options | ~2 N |
-| Rated life | 3,000,000 cycles | **10,000,000 cycles** | — |
-| Caps | **10G** series (`10G09`/`10G08`) | `1Z` / `1S` families — **not 10G** | None — needs a custom plunger |
-| JLC can place it | ❌ 0 stock | ❌ 0 stock (DigiKey instead) | ✅ 16,623 in stock |
-| Hand assembly | Paste + hot air only | **Iron** | Paste + hot air only |
+| Termination | SMD J-lead | SMD J-lead | Through-hole |
+| Body | **6.2 × 6.2 mm** | 8 × 8 mm, h 2.5 mm | 10 × 10 mm, h 6.4 mm |
+| Force | **~2 N** | ~3.6 N | 2.0 / 3.5 / 6.5 N |
+| Travel | **0.6 mm** | 2.5 mm | — |
+| Caps | **None — plunger** | 10G series | `1Z`/`1S` families |
+| JLC stock | ✅ **16,623** | ❌ 0 | ❌ 0 |
+| Price @100 | **$0.46** | $3.94 | — |
 
-**The through-hole path is real but it is not a swap.** Multimec 5G is the 6C's
-through-hole sibling and 3.5 N sits right on the 6C's ~3.6 N, so the *feel*
-carries over and rated life triples. What does not carry over:
+What this costs, stated plainly:
 
-- **The caps.** APEM lists the 10G series against the 6C and the `1Z`/`1S`
-  families against the 5G, **with no overlap.** `10G09` and `10G08` are not
-  listed as fitting the 5G. Going through-hole means reselecting both caps.
-- **The footprint**, 10 × 10 mm against 8 × 8 mm.
-- **The body height** — 6.4 mm against 2.5 mm. That is **+3.9 mm between the PCB
-  and the faceplate**, which feeds straight into standoff height and the test
-  coupon in [Mechanical test coupon](#mechanical-test-coupon).
+- **The MEC cap system is gone**, and with it the "buy two caps and you have a
+  premium panel" shortcut. Plungers are now a designed part.
+- **Travel drops from 2.5 mm to 0.6 mm.** This is the bigger change, more than
+  the force. A 0.6 mm throw is a short, crisp click with very little room for
+  tolerance in the plunger stack — see below.
+- **Lighter at ~2 N.** Fine for `LINK` and `★`; it makes accidental presses more
+  likely on `MAC`, which is why that key stays recessed.
 
-Neither APEM page states that the two series are mechanically interchangeable.
-Treat a 6C → 5G move as a footprint and faceplate change, not a part
-substitution. *(APEM's own 5G product page prints "35 N" where the series page
-says 3.5 N — a site glitch, but confirm the force on the datasheet.)*
+The two rejected paths stay on record in [07-bom.md](07-bom.md#pcb-1--front-control-board):
+the 6C needs hot air and is $3.94 against $0.46, and Multimec 5G is iron-solderable
+with a better 10 M-cycle life but is 10 × 10 × 6.4 mm with an incompatible cap
+family.
 
-The C&K alternative stays the only switch here JLC can actually place, at
-~$0.46 in hundreds. It is **not a drop-in** either: different footprint, and it
-needs a separate plunger design rather than the MEC cap system.
+### Plunger design
 
-So the choice is a three-way trade, not a fallback ladder: **6C** keeps the
-premium cap system and costs you a hot-air station; **5G** gets you an iron and
-longer life at the price of new caps, a new footprint and 3.9 mm more stack;
-**C&K** gets a fully machine-assembled board at a lighter 2 N with plunger
-design work. The test coupon decides it.
+Three plungers, printed with the faceplate. This is the part of the build that
+the catalogue no longer does for you, so it carries the risk.
+
+Constraints:
+
+- **0.6 mm of travel is the whole budget.** Print tolerance, plunger length and
+  standoff height all land in it. Too long and the switch is preloaded or dead;
+  too short and the key feels mushy and vague.
+- **No preload at rest.** The plunger must sit off the switch with the key
+  released, and it must return freely.
+- **Keep it captive.** It needs to be retained in the faceplate so it cannot
+  fall inward during service with the faceplate off.
+- **`MAC` sits lower** than the other two, for the same reason as before — at
+  2 N the distinction matters more, not less.
+- Opaque, like the old caps. Light still comes from the separate diffusers in
+  [RGB indicators](#rgb-indicators), never through the plunger.
+
+**Coupon this before the faceplate.** It is now the highest-risk mechanical item
+on the front panel — more than the wheel opening.
 
 ## Control behavior and wiring
 
@@ -190,7 +201,7 @@ For the switch, keeping the 6C means **leaving the three positions unpopulated**
 and installing DigiKey parts with paste and hot air or a small reflow setup. The
 6C uses **J-leads**, so do not plan around hand-soldering with an iron — that
 constraint is the strongest argument for the through-hole 5G in
-[Switch options](#switch-options), which an iron handles.
+[Switch options](#why-this-switch), which an iron handles.
 
 Restocking does not change the economics — JLC quotes the 6C at $3.94 in
 hundreds against $3.07 at DigiKey.
@@ -245,7 +256,7 @@ the full printed wall.
   because no part number is chosen.
 - **Switch termination: SMD 6C or through-hole 5G.** Decides the footprint, the
   cap series, and 3.9 mm of standoff height. See
-  [Switch options](#switch-options).
+  [Switch options](#why-this-switch).
 - Which cap replaces `10G09`/`10G08` if the 5G is chosen — the `1Z` and `1S`
   families are what APEM lists, none of them verified here.
 - Display connector on this board, and whether SPI is routed through it to the
