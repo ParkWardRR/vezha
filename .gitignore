@@ -4,3 +4,9 @@ cad/.venv/
 cad/build/
 __pycache__/
 *.pyc
+pcb/build/
+
+# SKiDL scratch output
+*.erc
+*.log
+*_sklib.py

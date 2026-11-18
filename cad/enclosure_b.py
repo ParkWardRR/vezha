@@ -123,6 +123,21 @@ def build():
         "enclosure-b-keepout-components": component_keepouts(),
         "enclosure-b-power-board": board,
     }
+    if is_real:
+        bb = board.bounding_box()
+        bx, by, bz = bb.size.X, bb.size.Y, bb.size.Z
+        ix, iy, iz = float(B.interior_x), float(B.interior_y), float(B.interior_z)
+        print(f"  board fit: {bx:.1f} x {by:.1f} x {bz:.1f} mm "
+              f"in {ix:.1f} x {iy:.1f} x {iz:.1f} mm interior")
+        for axis, got, have in (("X", bx, ix), ("Y", by, iy), ("Z", bz, iz)):
+            if got > have:
+                print(f"     !! board exceeds interior in {axis} by {got - have:.1f} mm")
+            else:
+                print(f"     {axis} clearance {have - got:.1f} mm")
+        print("     NOTE: this STEP contains the HEADERS for U1 and U3, not the\n"
+              "     RotoPD and Pololu module bodies that sit on them. Their\n"
+              "     heights are carried by component_keepouts() instead.")
+
     panel = panel_keepouts()
     if panel is not None:
         parts["enclosure-b-keepout-panel"] = panel
