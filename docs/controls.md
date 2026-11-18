@@ -66,9 +66,59 @@ disable, unless a verified hardware path is added. A Linux
 [`rfkill`](https://networkmanager.dev/docs/rfkill/) implementation can disagree
 with the switch position.
 
-Consequence: put one small LED beside `AIRPLANE` and drive it from **confirmed
+Consequence: the `AIRPLANE` indicator must be driven from **confirmed
 radio-off state**, not from switch position. That gives live feedback even when
-the display is showing a stale image.
+the display is showing a stale image. See
+[RGB indicators](#rgb-indicators) below.
+
+## RGB indicators
+
+**One independently programmable RGB indicator beside each control** —
+`AIRPLANE`, `LINK`, `MAC`, `★`.
+
+Keep the APEM 6C switches and their **opaque** caps. The light goes through a
+**separate flush diffuser above each label**, not through the keycap. This gives
+a readable panel without changing how the buttons feel.
+
+### Parts (Rev A)
+
+| Part | Choice |
+|---|---|
+| LED driver | [TI TLC59116IPWR](https://www.ti.com/product/TLC59116) — 16-channel I²C constant-current driver. Four RGB LEDs use 12 channels, leaving four spare. Independent 8-bit brightness per color channel, so the Orange Pi sets color *and* brightness per indicator. |
+| LEDs | Four **common-anode** SMD RGB LEDs on the **faceplate-facing side** of the PCB. Short frosted light pipe or diffuser each, with **opaque walls between indicators** so light does not bleed into the neighbouring opening. **Pick the LED and its optic together before finalizing standoff height.** |
+| Wiring | Shares the Orange Pi's 3.3 V I²C bus with the ANO, but **strapped to a distinct address** from the ANO's `0x49`. Switches stay separate GPIO inputs. LED anodes off the upper box's **5 V** rail, driver logic on **3.3 V**. Check combined I²C pull-ups on the assembled board. |
+| Brightness | Set the driver's current-set resistor for a modest peak current, then tune each color in software. Start from a **dim hotel-room preset**. Use short pulses for acknowledgements rather than constant blinking — the driver's group blink is shared, so per-key patterns must be done in software. |
+
+### What the lights mean
+
+| Control | Default behavior |
+|---|---|
+| `AIRPLANE` | Solid amber **only after the router confirms its radios are blocked.** Meaning is fixed — not user-assignable. |
+| `LINK` | Green online · amber captive portal or reconnecting · red uplink down. |
+| `MAC` | Normally dark. Pulse amber while the change is in progress, then briefly green on success or red on failure. Ongoing internet status stays with `LINK`. |
+| `★` | User-configurable. Default dim white while the Wi-Fi QR page is open, dark otherwise. |
+
+### Stale-indicator hazard
+
+If `AIRPLANE` means *confirmed*, that indicator needs a way to **go dark when
+the router stops reporting status.** An I²C driver retains its last setting
+while powered, so an Orange Pi crash would otherwise leave stale amber lit —
+the panel would claim the radios are off when nothing is confirming it.
+
+- **Reserve a footprint** for a watchdog-controlled reset on the driver.
+- **For Rev A without it:** treat the toggle as the *requested* state and the
+  LED as the *last software-confirmed* state. Neither is a hardware RF
+  guarantee.
+
+### Optical prototype
+
+Prototype **one key and one light pipe in the same printed coupon** as the
+mechanical test below, before ordering the faceplate. Check it in a dark room
+*and* in daylight. The target is an even, readable dot with **no visible
+hotspot and no glow leaking around the keycap.**
+
+JLCPCB stock and pricing for the exact driver and RGB LED combination are
+**unverified** — check both in the assembly quote before locking footprints.
 
 ## Before sending the board to JLCPCB
 
@@ -115,7 +165,13 @@ the full printed wall.
 
 ## Open questions
 
-- JLCPCB assembly sourcing for `6CJ1NOPR` — unverified.
+- JLCPCB assembly sourcing for `6CJ1NOPR`, the TLC59116IPWR driver, and the
+  RGB LEDs — all unverified.
+- RGB LED part and its matching optic — must be chosen as a pair, and they set
+  the standoff height.
+- I²C address strapping for the TLC59116 (must not collide with ANO `0x49`),
+  and combined bus pull-up value with both devices populated.
+- Whether Rev A carries the watchdog-reset footprint for the LED driver.
 - NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
   drawing (nominal is Ø6.5 mm).
 - ANO wheel opening diameter and standoff height — set from the test coupon.
