@@ -158,12 +158,13 @@ together with its optic, is the critical path to a quote.
 
 ### PCB 2 — power board
 
-![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, 5 V out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, driving EN with a pull-down and reading PG, with the OLED console on bus 2 and the accessory USB-C port on its own regulator](docs/img/pcb-2-block-schematic.svg)
+![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/pcb-2-block-schematic.svg)
 
 Full spec: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
-drawing exists to make unmissable: **EN needs a physical pull-down** so the
-buck is off while the Pico's GPIO is high-Z at reset, and **the accessory port
-never sees raw PD VBUS.**
+drawing exists to make unmissable: the bare buck **defaults on** — the module
+pulls EN to VIN through 1 MΩ, so a **1.5 kΩ pull-down** has to impose off — and
+**the accessory port never sees raw PD VBUS**, which on a 240 W EPR part
+reaches 48 V.
 
 ## The three dimensions nobody should guess
 
