@@ -181,7 +181,8 @@ flowchart LR
 | **RT1** | Murata NCP18XH103F03RB | `C13564` | 0603 | 261,587 | 10 kΩ NTC on U3 thermal pad |
 | **R16** | 10 kΩ 1 % | — | 0603 | — | NTC divider top leg to +3V3 |
 | **C1–C3** | **100 nF** X7R | — | 0603 | — | encoder RC — [SIM-05](#sim-05--encoder-debounce) |
-| **J1** | RotoPD I²C, 4-pin JST-SH | — | — | — | Qwiic to U1 |
+| **J1** | RotoPD I²C, 4-pin JST-SH | — | — | — | Qwiic to U1 — *or* U1's 1×8 header, not both |
+| **JP1** | 0 Ω jumper, **DNP in Rev A** | — | 0603 | — | U1 pin 6 (3.3V) ← +3V3 — [see the caution](#u1--rotopd-pro) |
 | **J2** | USB-C seam receptacle | — | — | — | 5 V to Orange Pi (owned by the seam spec) |
 | **J3** | 1×3 header 2.54 mm | `C2937625` | TH | 1,030,846 | telemetry, unwired in Rev A |
 | **J4** | OLED, 4-pin JST-SH | — | — | — | STEMMA QT to Adafruit 5297 |
@@ -197,6 +198,83 @@ feedback divider, U4 soft-start) are not enumerated here — they come from the
 TI datasheets' typical-application tables once the switching frequency and
 output capacitance are fixed, and they should be taken from the datasheet
 rather than invented.
+
+## Module pinouts — verified from vendor drawings
+
+Both of these were listed as blocking unknowns. They are now resolved from the
+vendor artwork, which is published only as images.
+
+### U1 · RotoPD Pro
+
+Source: [`Documents/RotoPD_Pro_pinout.png`](https://github.com/CentyLab/RotoPD_Pro/blob/main/Documents/RotoPD_Pro_pinout.png).
+The 1×8 2.54 mm header (J4 in the vendor schematic), top to bottom with the
+USB-C jack at the top:
+
+| Pin | Name | Use on PCB 2 |
+|---:|---|---|
+| 1 | USB_D− | not connected |
+| 2 | USB_D+ | not connected |
+| 3 | **INT** | → U2 GP11 |
+| 4 | **SDA** | → I²C1, U2 GP2 |
+| 5 | **SCL** | → I²C1, U2 GP3 |
+| 6 | **3.3V** | → see the jumper note below |
+| 7 | **GND** | → GND |
+| 8 | **5V** | → **aux rail**, into D1 → VSYS |
+
+Also on the board:
+
+- **The switched VBUS output is a 2-position 5 mm screw terminal**, not header
+  pins — `VBUS` and `GND`, on the edge opposite the USB-C jack. This is the
+  main power path to U3's VIN, and it is an **assembly and enclosure
+  constraint**, not just a schematic one: PCB 2 cannot simply reflow the
+  module down for the power path. Either land short heavy wire from the screw
+  terminal, or remove the terminal and solder to its pads. Decide before
+  drawing the carrier.
+- A Qwiic/STEMMA QT JST-SH connector carries the same SDA/SCL/3V3/GND — use it
+  *or* the header pins, not both.
+- **Two mounting holes**, at the top corners flanking the USB-C jack.
+  Positions and diameter are still not dimensioned anywhere published.
+- The artwork confirms the electrical range directly: *"Input and output
+  voltage range of 4.5-48V. Support PD3.1 EPR/AVS Up to 48V and SPR/PPS Up to
+  21V."*
+
+> [!CAUTION]
+> **Fit pin 6 (3.3V) through a 0 Ω jumper, and leave it UNPOPULATED in Rev A.**
+>
+> It is not documented whether this pin is an input or an output. The board
+> carries a TXS0102 level translator with separate `SDA_3V3`/`SDA_5V` nets,
+> which is the signature of a part whose low-side reference (VCCA) is supplied
+> by the host — in which case the Pico's +3V3 must drive it. But if it is
+> instead a 3.3 V rail the module *provides*, tying it to the Pico's 3V3(OUT)
+> puts two regulators in contention.
+>
+> A jumper footprint plus a test point costs nothing and settles it on the
+> bench: bring the board up with the link open and measure pin 6. Reads 0 V,
+> populate the jumper. Reads 3.3 V, leave it open forever.
+
+### U3 · Pololu D42V55F5 mechanical
+
+Source: [the family dimension drawing](https://www.pololu.com/file/0J2180/d42v55fx-step-down-voltage-regulators-dimensions.pdf)
+(dev code `reg34a`, items 5570–5579).
+
+| | |
+|---|---|
+| Board | 25.4 × 25.4 mm, 1.57 mm thick |
+| **Mounting** | **3 holes, ⌀2.18 mm, on a 21.1 × 21.1 mm pattern, 2.2 mm in from each edge** (#2 / M2) |
+| Pin holes | 12 × ⌀1.02 mm, two rows, first row 1.27 mm from the edge |
+| **Height above board** | **6.1 mm** for items 5570–5577, which includes #5571 and #5572 |
+| Height below board | 1.4 mm |
+| Drill tolerance | ±0.1 mm · board edge ±0.3 mm |
+
+Total stack is 9.07 mm, consistent with the 9 mm figure in
+[03](03-enclosure-b-lower.md) and [07](07-bom.md). **Items 5578 and 5579 are
+8.0 mm above board** — if the part number ever changes to one of those, the
+enclosure height changes with it.
+
+The exact left-to-right pin order within each row is still not legible at the
+published resolution. Take it from the physical board or the STEP model, and
+remember Pololu's own warning that **EN and PG are adjacent on different rows**
+and easy to short together.
 
 ## Nets
 
@@ -722,12 +800,18 @@ drives a laptop's USB rail into an unpowered regulator's output.
 
 Unchanged from 05 and [03](03-enclosure-b-lower.md):
 
-- **RotoPD Pro outline, mounting pattern and height.** Still blocking, and now
-  blocking twice over since its own jack is the PD input. The vendor documents
-  the pinout only as a PNG; the header pin functions could not be read from
-  the published KiCad schematic. **Confirm the pinout with CentyLab before
-  committing a footprint** — J1, the aux 5 V tap and the I²C net all depend on
-  it.
+- **RotoPD Pro outline and mounting-hole positions.** Still blocking, and
+  still blocking twice over since its own jack is the PD input. **Narrowed:**
+  the header pinout is now known from the vendor artwork — see
+  [U1 · RotoPD Pro](#u1--rotopd-pro) — and there are two holes at the USB-C
+  end. What remains unknown is the outline, the hole coordinates and diameter,
+  and the tallest component. Those need the `.kicad_pcb` or the physical board,
+  not another email.
+- **Whether U1 pin 6 (3.3V) is an input or an output.** Handled by making JP1
+  a DNP jumper, so this no longer blocks layout — but it must be measured
+  before the board is trusted.
+- **Whether to keep or remove U1's screw terminal** for the VBUS path. An
+  assembly decision with an enclosure-height consequence.
 - **Whether Enclosure B has a front panel at all** — decides whether J4 and J5
   exist.
 - Measured buck derating in the closed enclosure.
