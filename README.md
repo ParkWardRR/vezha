@@ -30,7 +30,8 @@ A travel router for taking your home network on the road.
 [![Enclosure](https://img.shields.io/badge/enclosure-3D%20printed%20STL-FF6F00?style=flat-square)](docs/antennas.md#enclosure-layout)
 [![Power](https://img.shields.io/badge/power-USB--C%20PD-333333?style=flat-square)](docs/handoff.md#power-and-portability)
 [![Battery](https://img.shields.io/badge/battery-runtime%20unmeasured-lightgrey?style=flat-square)](docs/handoff.md#power-and-portability)
-[![Controls](https://img.shields.io/badge/controls-AIRPLANE%20%2B%204%20keys-795548?style=flat-square)](docs/controls.md)
+[![Controls](https://img.shields.io/badge/controls-AIRPLANE%20%2B%203%20keys%20%2B%20ANO%20wheel-795548?style=flat-square)](docs/controls.md)
+[![Front board](https://img.shields.io/badge/front%20board-JLCPCB%20assembly-2E7D32?style=flat-square)](docs/controls.md#before-sending-the-board-to-jlcpcb)
 [![Form factor](https://img.shields.io/badge/form%20factor-handheld-9C27B0?style=flat-square)](docs/antennas.md#enclosure-layout)
 
 <!-- Software -->
@@ -45,7 +46,8 @@ A travel router for taking your home network on the road.
 <!-- Repo -->
 
 [![Repo](https://img.shields.io/badge/repo-private-black?style=flat-square&logo=github&logoColor=white)](https://github.com/ParkWardRR/vezha)
-[![License](https://img.shields.io/badge/license-not%20yet%20chosen-lightgrey?style=flat-square)](#license)
+[![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
+[![SPDX](https://img.shields.io/badge/SPDX-BlueOak--1.0.0-0F766E?style=flat-square)](https://spdx.org/licenses/BlueOak-1.0.0.html)
 [![Topics](https://img.shields.io/badge/topics-travel--router%20%C2%B7%20homelab%20%C2%B7%20self--hosted-informational?style=flat-square)](https://github.com/ParkWardRR/vezha)
 
 <!--
@@ -79,7 +81,7 @@ client and a 5 GHz downstream private AP running at the same time. A
 |---|---|
 | [handoff.md](docs/handoff.md) | Project handoff — goal, hardware status, power and software plans, enclosure notes, ordered next work |
 | [antennas.md](docs/antennas.md) | Antenna comparison with published dBi, enclosure layout sketch, and the bench test to run before freezing the STL |
-| [controls.md](docs/controls.md) | Front faceplate, `AIRPLANE` toggle and four-key layout, switch candidates, mounting |
+| [controls.md](docs/controls.md) | Front faceplate — `AIRPLANE` toggle, three action keys and ANO wheel, full control BOM, JLCPCB assembly caveats, mechanical test coupon |
 | [parts-sourcing.md](docs/parts-sourcing.md) | JLCPCB/LCSC part lookup method and components checked so far |
 
 ## Status
@@ -111,5 +113,12 @@ See [handoff.md](docs/handoff.md) for the full detail behind each step.
 
 ## License
 
-Not yet chosen. Until a `LICENSE` file is added, default copyright applies and
-no reuse rights are granted.
+[Blue Oak Model License 1.0.0](LICENSE.md) — SPDX `BlueOak-1.0.0`.
+
+A plain-language permissive license: do what you like with it, contributors
+get an explicit patent grant and a liability disclaimer. Comparable in effect
+to MIT or Apache-2.0, written to be readable.
+
+Note it covers *software*. If the enclosure STLs and PCB design files end up
+being the valuable part of this repo, a hardware license such as CERN-OHL-S or
+CERN-OHL-P would fit those better — the two can coexist, scoped by directory.

@@ -1,98 +1,125 @@
 # Vezha — Physical Controls and Faceplate
 
-Status: **design notes.** No switch, button, or faceplate geometry is
-confirmed. Prices are rough estimates, not verified quotes. Panel cutouts
-must come from the manufacturer's current drawing, never from a nominal
-bushing diameter.
+Status: **design settled enough to buy test parts; mechanics not frozen.**
+Buy the switches and wheel *before* committing the mechanical stack. Panel
+cutouts must come from the manufacturer's current drawing, never from a
+nominal bushing diameter.
+
+> **Revision note.** This supersedes an earlier four-key layout
+> (`LINK` / `MAC` / `F1` / `F2`). Adding the ANO navigation wheel makes two
+> general-purpose function keys redundant, so the front row drops to three
+> action keys and the wheel handles browsing and selection.
 
 ## Concept
 
 A **removable front faceplate** on the upper router box, carrying:
 
-- A locking `AIRPLANE` toggle on one shoulder, clamped directly to the faceplate
-- Four low-profile buttons — `LINK`, `MAC`, `F1`, `F2` — soldered to a small
-  daughterboard behind the faceplate, with only their caps coming through
+- A locking `AIRPLANE` toggle on one shoulder, clamped through the faceplate
+- Three action keys — `LINK`, `MAC`, `★` — on a custom front board
+- An **ANO navigation wheel** for scrolling, navigation, and selection
+
+Dedicated keys cover the actions worth a physical control; the wheel covers
+everything menu-shaped, without duplicating its five buttons as separate keys.
 
 Everything wires to the Orange Pi in the upper box. **Nothing mounts to the
-removable power box.**
+removable power box.** Keep the display opening separate from the control
+openings so a display change does not force a new button PCB.
 
-Keeping the display opening separate from the control openings means a display
-change does not force a new button PCB.
+## Bill of materials
 
-## What the controls do
+| Qty | Part | Approx. USD | Where it mounts |
+|---:|---|---:|---|
+| 1 | [Adafruit #6310 — pre-soldered ANO I²C module](https://www.adafruit.com/product/6310) | $13.95 | Own standoffs or bracket behind the faceplate, wheel exposed. Short STEMMA QT cable to the front board. **This is the assembled I²C version**, not the bare wheel or the passive breakout. |
+| 5 | [APEM Ultramec 6C](https://www.apem.com/en-us/pcb-switches/tactile-switches/ultramec-6c), exact PN `6CJ1NOPR` | $3.07 ea | Top-actuated SMD switches on the faceplate-facing side of the front PCB. **Populate three, keep two spares.** |
+| 5 | APEM/MEC 10G caps — `10G09` black, `10G08` red | ~$1–2 ea (estimate) | Fit by hand after assembly. Black for `LINK` and `★`; red or recessed for `MAC`. The floating cap option helps align switch PCB to front panel. |
+| 1 | [NKK locking toggle](https://www.nkkswitches.eu/products/Toggles/M/M2012LL4G01/), order `MN12LL4G01` | ~$11 | Clamps through the faceplate with its bushing and nut. Leads run to the front board — **do not mount it to the PCB.** Give the lever a protective recess with room to pull it. |
 
-| Control | Default action | Why it earns a spot |
+**Budget ~$45–50** for controls including spares, before cables, shipping, and
+PCB assembly.
+
+### If the 6C feels too firm
+
+The 6C is firm at about **3.6 N** — test one before committing to the panel.
+The lighter alternative is [C&K KSC series](https://www.ckswitches.com/products/switches/product-details/Tactile/KSC/)
+`KSC221J LFS`, roughly 2 N at about $0.52.
+
+It is **not a drop-in replacement**: different footprint, and it needs a
+separate plunger design rather than the MEC cap system. Start with the MEC —
+the switch-and-cap combination is what makes this a straightforward premium
+front panel.
+
+## Control behavior and wiring
+
+| Control | Default behavior | Connection |
 |---|---|---|
-| `AIRPLANE` | `RADIOS / OFF`: disable both Wi-Fi radios and Bluetooth if present. Leave Ethernet up. | A maintained switch gives a physical position checkable without the display. Read it before bringing up wireless. |
-| `LINK` | Tap: show uplink, management IP, portal status. Hold 2 s: retry the current uplink **without** changing its MAC. | The button most likely to get used when a hotel connection stalls. |
-| `MAC` | Hold 2 s: rotate the **uplink** MAC and reconnect. Tap: show current MAC without changing it. | Makes a connection-breaking action deliberate. Leaves the client-facing AP untouched. |
-| `F1` | Show/hide the Wi-Fi join QR code. | Harmless, useful default when adding a device. |
-| `F2` | Show management address and a captive-portal help page. Reassignable later to cycle saved uplink profiles or toggle a guest AP. | Keep the default read-only until real use shows what gets reached for. |
-| `RECOVERY` *(optional, hidden)* | Boot a known wired management profile. **No factory wipe.** | Reserve the footprint. Behind a pinhole by the Ethernet ports or inside the service cover — not on the front row. |
-
-"Restore previous MAC" and "restore factory MAC" belong in the web UI as
-separate actions, not on the front panel.
+| `AIRPLANE` | Maintained `RADIOS / OFF`. Read it before bringing up wireless; keep Ethernet available. | **Dedicated Orange Pi GPIO, independent of the ANO.** |
+| `LINK` | Tap: uplink / IP / portal status. Hold: retry the uplink. | One GPIO per key, switch to ground. |
+| `MAC` | Tap: show current uplink MAC. Hold 2 s: rotate it and reconnect. Factory-MAC restore stays in the menu. | Same switch as `LINK`, but **cap set lower** so it feels different and is harder to hit by accident. |
+| `★` | Wi-Fi join QR code; user-assignable later. | One GPIO. For a second shortcut, reserve a fourth footprint but **do not cut the first faceplate for it.** |
+| ANO wheel | Rotate to browse, center to select, left to go back. Leave the other directions unassigned until there is a real use. | 3.3 V, GND, SDA, SCL over STEMMA QT; default address `0x49`. An `INT` wire or test pad is optional for event-driven input — **it is not carried on the four-wire QT cable.** |
+| `RECOVERY` *(optional, hidden)* | Boot a known wired management profile. **No factory wipe.** | Reserve the footprint behind a pinhole by the Ethernet ports or inside the service cover — not on the front row. |
 
 ### rfkill is not an interlock
 
-A Linux [`rfkill`](https://networkmanager.dev/docs/rfkill/) implementation is a
-**software block, not a hardware interlock.** The switch position and the
-radios' actual state can disagree.
+`AIRPLANE` on a GPIO is a **software-controlled radio block**, not a hardware
+disable, unless a verified hardware path is added. A Linux
+[`rfkill`](https://networkmanager.dev/docs/rfkill/) implementation can disagree
+with the switch position.
 
-Consequence for the design: put one small LED beside `AIRPLANE` and drive it
-from **confirmed radio-off state**, not from the switch position. That gives
-live feedback even when the display is showing a stale image.
+Consequence: put one small LED beside `AIRPLANE` and drive it from **confirmed
+radio-off state**, not from switch position. That gives live feedback even when
+the display is showing a stale image.
 
-### Feel
+## Before sending the board to JLCPCB
 
-Give `MAC` a slightly recessed cap — it is the one control that breaks a
-working connection. Keep `LINK`, `F1`, and `F2` at the same height.
+**Assembly availability and switch choice are separate decisions.** There is no
+verified JLCPCB assembly-library listing for `6CJ1NOPR` — check the exact
+manufacturer part number in the assembly quote.
 
-## Hardware and mounting
+If JLC cannot source it: leave those three positions unpopulated and install
+DigiKey parts with paste and hot air or a small reflow setup. The switch uses
+**J-leads**, so do not plan around hand-soldering with an iron. The ANO,
+keycaps, and toggle are final mechanical assembly items regardless.
 
-| Part | Candidate | Where it mounts | Approx. USD |
-|---|---|---|---|
-| Airplane toggle | [NKK MN12LL4G01](https://www.nkkswitches.eu/products/Toggles/M/M2012LL4G01/) — gold contact, locking, two-position; replaces the older M2012LL4G01 | Through the **upper faceplate**, secured by its bushing hardware, solder lugs facing inward. Nominal panel cutout Ø6.5 mm — **check the current drawing** for full cutout and allowable panel thickness before machining. | ~$11 at [Mouser](https://www.mouser.com/ProductDetail/NKK-Switches/MN12LL4G01?qs=17ckDYBRdenkt/sbdVj6rg==) |
-| Four front keys | [APEM Ultramec 6C + 10G caps](https://www.apem.com/en-us/pcb-switches/tactile-switches/ultramec-6c) | Solder to a **front-panel daughterboard** on standoffs behind the faceplate; caps protrude through. Switch body is 8 × 8 × 2.5 mm — that is **not** the cap opening or the key spacing. | ~$4–7 per key with cap (estimate) |
-| No-PCB prototype alternative | [APEM IS ISR3SAD900](https://www.apem.com/en-us/panel-switches/pushbutton-switches/is/isr3sad900) | Each switch has its own threaded bushing, mounts straight to the faceplate, wires from behind. Easier one-off, bulkier than a shared key PCB. Use APEM's drawing for the cutout. | ~$10–15 each (estimate) |
-| If the display becomes menu-driven | [APEM Ultranavimec](https://www.apem.com/pcb-switches/mec-tactile-switches-and-accessories) five-way | Five switches on a PCB under one Ø22.14 mm nav cap. Use **instead of** `F1`/`F2` if the display gets real menus. Keep `AIRPLANE` and `MAC` separate. | Not verified |
+## Mechanical test coupon
 
-## Upper shell layout
+Buy the ANO and switches **before** freezing the mechanical stack. Print a small
+faceplate coupon with the wheel opening and **two cap openings — one flush, one
+recessed.** With the real parts mounted, check:
 
-**Outside.** `AIRPLANE` sits in a shallow pocket at one end of the faceplate —
-enough finger clearance to pull the locking lever, but below the surrounding
-case profile so it does not snag in a bag. Four keys in a single row below the
-display if there is room; otherwise a 2 × 2 cluster on the opposite shoulder.
+1. All four wheel directions and the center press without the wheel rubbing
+2. Caps return freely with no preload
+3. The recessed `MAC` position feels distinct from the flush keys
+4. The toggle pulls easily against its locking detent
 
-**Inside.** Key PCB parallel to the faceplate on four standoffs. Display on its
-**own bracket**, so pressing buttons does not flex the display mount or load its
-ribbon. Bring the toggle's solder-lug leads to the key PCB, then run one keyed,
-detachable harness from that PCB to the Orange Pi.
+Then set standoff height and PCB outlines.
+
+That test says more about how premium the finished controls feel than the
+switch force spec alone.
+
+## Shell layout
+
+**Outside.** `AIRPLANE` in a shallow pocket at one end of the faceplate — enough
+finger clearance to pull the locking lever, but below the surrounding case
+profile so it does not snag in a bag. Action keys in a row below the display;
+wheel positioned for thumb reach.
+
+**Inside.** Front PCB parallel to the faceplate on four standoffs. Display on
+its **own bracket**, so pressing buttons does not flex the display mount or load
+its ribbon. Toggle leads to the front board, then one keyed, detachable harness
+from that board to the Orange Pi.
 
 For a printed prototype, print the faceplate separately and use a thin mounting
 land or a small metal insert for the toggle rather than assuming its nut clears
 the full printed wall.
 
-## Order first
-
-One NKK toggle and **one** 6C switch with a 10G cap. Print a small test coupon
-with the toggle pocket and one key opening, then check:
-
-1. The toggle pulls easily against the locking detent
-2. The cap returns without rubbing
-3. The key feels right at the intended recess depth
-
-Commit to the four-key daughterboard only after that passes. These are the
-dimensions and tolerances that cannot be settled without the actual parts and
-final faceplate geometry.
-
 ## Open questions
 
-- NKK MN12LL4G01 full panel cutout and max panel thickness — from the current
-  drawing, not the nominal Ø6.5 mm.
-- Ultramec 6C cap opening and key pitch — the 8 × 8 mm body does not give these.
-- Whether the display gets real menus, which would swap `F1`/`F2` for the
-  five-way nav control.
+- JLCPCB assembly sourcing for `6CJ1NOPR` — unverified.
+- NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
+  drawing (nominal is Ø6.5 mm).
+- ANO wheel opening diameter and standoff height — set from the test coupon.
+- Whether 3.6 N is acceptable, or the build moves to the C&K KSC at ~2 N with a
+  new footprint and plunger.
 - How `AIRPLANE` is read and enforced in software, and what drives the
-  confirmed-off LED. Relates to the uplink recovery design in
-  [handoff.md](handoff.md).
+  confirmed-off LED. Relates to uplink recovery in [handoff.md](handoff.md).
