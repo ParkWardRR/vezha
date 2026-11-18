@@ -298,6 +298,6 @@ to take, not values to look up:
 | Upper enclosure | [02](02-enclosure-a-upper.md) · [06](06-antennas.md) |
 | Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-pcb-2-power.md) |
 | Front control board | [04](04-pcb-1-front-control.md) |
-| Power board | [05](05-pcb-2-power.md) |
+| Power board | [05](05-pcb-2-power.md) — requirements · [11](11-pcb-2-schematic.md) — schematic |
 | Ordering parts | [07](07-bom.md) · [08](08-sourcing.md) |
 | Project context | [09](09-background.md) |

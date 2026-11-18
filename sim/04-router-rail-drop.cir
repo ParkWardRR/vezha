@@ -134,16 +134,37 @@ foreach rl 20m 60m 120m
 end
 
 echo "@@"
-echo "@@--- SIM-04e  how much Rloop can the 5.0 V part actually afford? ---"
-echo "@@  Largest Rloop that still delivers 4.75 V at 4 A"
+echo "@@--- SIM-04e  how much Rloop can each source afford, vs load? ---"
+echo "@@  Largest Rloop that still delivers 4.75 V at the stated current."
+echo "@@  Reference: ONE USB-C mated contact pair is typically 30-40 mohm,"
+echo "@@  before any cable, trace or second connector."
 echo "@@"
-echo "@@  source       max allowable Rloop (mohm)"
+echo "@@  source      @4.0A    @3.0A    @2.5A    @2.0A   (mohm)"
 foreach vr 4.85 5.0 5.141 5.3
-  alterparam VREG = $vr
-  reset
-  op
-  let rmax = ($vr - 4.75) / 4 * 1000
-  echo "@@  $vr V        $&rmax"
+  let r40 = ($vr - 4.75) / 4.0 * 1000
+  let r30 = ($vr - 4.75) / 3.0 * 1000
+  let r25 = ($vr - 4.75) / 2.5 * 1000
+  let r20 = ($vr - 4.75) / 2.0 * 1000
+  echo "@@  $vr V      $&r40    $&r30    $&r25    $&r20"
+end
+
+echo "@@"
+echo "@@--- SIM-04f  does lowering the current rescue the 5.0 V part? ---"
+echo "@@  Testing the 4.850 V worst corner against a 35 mohm loop - one"
+echo "@@  mated USB-C pair plus a little wire. Sweep the load down."
+echo "@@"
+echo "@@  load     V(pi) with Rloop = 35 mohm   verdict"
+alterparam VREG = 4.85
+alterparam RLOOP = 35m
+reset
+dc Iload 0 5 0.01
+foreach il 4.0 3.0 2.5 2.0 1.5
+  meas dc pv FIND v(pi) AT=$il > /dev/null
+  if ($&pv >= 4.75)
+    echo "@@  $il A    $&pv    PASS"
+  else
+    echo "@@  $il A    $&pv    FAIL - under 4.75 V"
+  end
 end
 quit
 .endc

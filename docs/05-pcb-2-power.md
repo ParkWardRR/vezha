@@ -5,6 +5,14 @@ modules, drives a small console, and gates power to the router.
 
 Read [01-architecture.md](01-architecture.md) first.
 
+## Block schematic
+
+![PCB 2 block schematic](img/pcb-2-block-schematic.svg)
+
+Blocks and nets only — **not a captured schematic.** Module envelopes are
+unmeasured and no EDA file exists yet. If this drawing and the text below ever
+disagree, **the text wins.**
+
 ## What the board is
 
 A carrier plus a power-sequencing controller. It does not implement PD or
@@ -270,11 +278,37 @@ Four reasons:
 
 **Proposed figures for the dedicated regulator:**
 
-| Parameter | Value |
-|---|---|
-| Advertised | **5 V @ 1.0 A** — Rp for Default USB (**56 kΩ ±20 %** to 5 V on CC1 and CC2) |
-| Current limit | **~1.25 A** — trips *above* the advertised value, not at it |
-| Raise to 1.5 A? | Only with **22 kΩ ±5 % Rp** and after the thermal measurement below |
+> [!CAUTION]
+> **Corrected: "advertised 1.0 A" is not a legal Type-C advertisement.** A
+> source may advertise exactly three levels, and 56 kΩ *is* Default USB —
+> 0.5 A, not the 1.0 A previously written beside it.
+>
+> | Advertisement | Rp to 5 V | Rp to 3.3 V |
+> |---|---|---|
+> | **Default USB** (0.5 A) | 56 kΩ ±20 % | 36 kΩ ±20 % |
+> | 1.5 A | 22 kΩ ±5 % | 12 kΩ ±5 % |
+> | 3.0 A | 10 kΩ ±5 % | 4.7 kΩ ±5 % |
+>
+> The limit must also clear the advertised value **at its minimum**, or a
+> compliant sink drawing its full entitlement trips the limiter. A ~1.25 A
+> limit has a ~1.06 A minimum, so it pairs with Default USB and **cannot** be
+> paired with a 1.5 A advertisement.
+
+Two legal configurations, resolved in
+[11 · Accessory port](11-pcb-2-schematic.md#accessory-usb-c-output-port-j6):
+
+| | **A · Default USB** (recommended) | B · 1.5 A |
+|---|---|---|
+| Rp on CC1 and CC2 | **36 kΩ ±20 % to 3V3** | 12 kΩ ±5 % to 3V3 |
+| Limit min / nom / max | **1.06 / 1.14 / 1.23 A** | 1.51 / 1.55 / 1.68 A |
+| Sink may draw | 0.5 A | 1.5 A |
+| Gate | none | **needs the thermal measurement below first** |
+
+Rp references **3.3 V, not 5 V**: the 5 V accessory rail is the thing being
+decided, so it cannot be the reference before attach. The Type-C spec's 3.3 V
+resistor set exists for exactly this, and simulation
+(`sim/03-usbc-cc-detect.cir`) confirms the two sets are equivalent at the Rd
+node — 0.409 V against 0.417 V.
 
 **If a dedicated regulator is rejected** and the port must share the router
 rail: hard-limit it to **0.5 A**, advertise Default USB, and treat it as a
@@ -287,6 +321,15 @@ derated capacity in the closed enclosure has been measured.
 > **1 · Do not power the Pico from the Pololu rail.** The Pico brings that
 > rail up; a controller that depends on its own output cannot start the
 > system. Pico runs off the **RotoPD auxiliary 5 V into VSYS.**
+>
+> **Put a Schottky in that path — aux 5 V → D1 → VSYS.** Not optional. On a
+> Pico 2, VBUS from the programming jack reaches VSYS through the module's own
+> diode, which blocks VSYS → VBUS but **not** VBUS → VSYS → out to whatever
+> else is tied to VSYS. Since [03](03-enclosure-b-lower.md) brings that jack to
+> a wall opening, plugging in a laptop while the RotoPD is unpowered drives
+> **5–494 mA backwards into the RotoPD's unpowered aux regulator output**
+> (`sim/06-aux-rail-vsys.cir`). One SS14 blocks it to 2 µA and drops VSYS to a
+> more comfortable 4.6–4.75 V against the Pico's 5.5 V ceiling.
 
 > [!CAUTION]
 > **2 · The auxiliary output is 0.4 A continuous.** It powers the controller
@@ -391,13 +434,36 @@ state, so it cannot substitute for a router UI. The split is clean:
 
 ## Open questions
 
-- RotoPD Pro mounting pattern, outline, height — still blocking
-- Dedicated accessory regulator part
+- RotoPD Pro mounting pattern, outline, height — still blocking. The vendor
+  publishes its pinout only as an image, and the header pin functions are not
+  recoverable from the published KiCad schematic. **Confirm with CentyLab.**
+- **Whether the RotoPD's aux buck survives a contract above 36 V** — it is
+  reported to be an LMR51635 fed from VBUS. If so, requesting a 48 V EPR
+  contract could cut the Pico's own supply. Until answered, firmware caps
+  requested contracts at 20 V. See
+  [11 · Boot sequence](11-pcb-2-schematic.md#boot-sequence).
+- `U3` 5.0 V vs 5.3 V — see
+  [01 · The 5 V seam problem](01-architecture.md#the-5-v-seam-problem)
 - Seam USB-C receptacle part, and whether the Pi stays under 3 A
 - INA226 address vs. the RotoPD Pro's
-- NTC part and how it mounts against the regulator's thermal pad
 - Whether Rev A populates the telemetry header's series resistors
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets
+- Accessory port config **A** (Default USB) or **B** (1.5 A) — B is gated on
+  the thermal measurement
 
+**Answered in [11-pcb-2-schematic.md](11-pcb-2-schematic.md)**, with the
+simulations behind each:
+
+| Was open | Now |
+|---|---|
+| EN pull-down value | **1.5 kΩ** — [SIM-01](11-pcb-2-schematic.md#sim-01--buck-en-pull-down) |
+| Encoder debounce: RC or firmware | **Both** — 10 kΩ / 1 kΩ / **100 nF**, plus a Gray-code decoder. [SIM-05](11-pcb-2-schematic.md#sim-05--encoder-debounce) |
+| Dedicated accessory regulator part | **LMR38020FDDAR** (`C5149193`), 80 V in — needed because VBUS reaches 48 V |
+| Accessory current limiter | **TPS2553DBVR** (`C55266`) + 22.6 kΩ R_ILIM |
+| NTC part and mounting | **NCP18XH103F03RB** (`C13564`) in a 10 kΩ divider to ADC2 |
+| Accessory Rp reference and value | **36 kΩ to +3V3** — [SIM-03](11-pcb-2-schematic.md#sim-03--accessory-cc-detection) |
+
+Full net list, designators and Pico pin map:
+[11-pcb-2-schematic.md](11-pcb-2-schematic.md).
 Mechanical context in [03-enclosure-b-lower.md](03-enclosure-b-lower.md).
