@@ -93,13 +93,19 @@ Pin budget on the Orange Pi's 40-pin header is comfortable: 9 for the display,
 2 for the I²C bus shared by the ANO and the TLC59116, and 4–5 GPIO for the
 toggle and keys.
 
-> [!WARNING]
-> **These are Raspberry Pi pin numbers and a Raspberry Pi library.** The Orange
-> Pi 5 Plus is not pin-compatible by assumption, and Waveshare's examples target
-> `RPi.GPIO`-style access. Expect to port to `libgpiod` / `python-periphery` and
-> to confirm `spidev` is exposed on the Armbian image. Waveshare documents
-> Raspberry Pi, Jetson Nano, RDK X3, Arduino and STM32 — **Orange Pi is not on
-> that list, and neither is the Pico.**
+> [!NOTE]
+> **Checked 2026-11-18: these Raspberry Pi pin numbers do map onto the Orange
+> Pi 5 Plus, pin for pin.** SPI0 sits on physical 19/23/24 and all four control
+> pins (22, 11, 18, 12) are plain GPIO there. No rewiring — see the
+> [header table](12-pcb-1-schematic.md#the-orange-pi-5-plus-40-pin-header).
+>
+> **Software is a different matter.** The I²C bus on pins 3/5 is **I²C2**, not
+> the Raspberry Pi's i2c-1, so code opening `/dev/i2c-1` talks to the wrong
+> bus. Waveshare's examples also target `RPi.GPIO`-style access, so expect to
+> port to `libgpiod` / `python-periphery` and to confirm which `spidev` node
+> Armbian exposes. Waveshare documents Raspberry Pi, Jetson Nano, RDK X3,
+> Arduino and STM32 — **Orange Pi is not on that list, and neither is the
+> Pico.**
 
 The absent Pico support is a point in favour of the first reading of the
 [two-interfaces conflict](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved): this panel is

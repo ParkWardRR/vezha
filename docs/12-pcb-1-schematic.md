@@ -8,14 +8,11 @@ design that follows from them.
 Companion to [11-pcb-2-schematic.md](11-pcb-2-schematic.md). Simulation decks
 are `sim/11`, `sim/12`, `sim/13`.
 
-> [!CAUTION]
-> **The host pin map is not verified and this document does not invent one.**
-> Every attempt to obtain an authoritative Orange Pi 5 Plus 40-pin table failed:
-> the vendor page refuses connections, the OpenWrt page is behind an access
-> wall, and `wiringOP`'s only Rockchip table is for the **RK3399** Orange Pi 4,
-> not the RK3588. Assuming Raspberry Pi pin compatibility on an RK3588 board is
-> exactly the trap worth avoiding, so the interface below is specified **by
-> function**. See [Host interface](#host-interface-j1).
+> [!NOTE]
+> **The host pin map is now resolved** — see [Host interface](#host-interface-j1).
+> It came from the vendor's own GPIO library, not from assuming Raspberry Pi
+> compatibility. I²C and SPI do land on the Raspberry Pi positions, but **the
+> bus numbers differ**, which is the part that would have bitten in software.
 
 ## What the board is
 
@@ -80,39 +77,86 @@ the value TI's datasheet example uses — overheats the driver in this enclosure
 
 One 2×20 IDC ribbon from the Orange Pi's 40-pin header to PCB 1. PCB 1 fans out
 to the display, the ANO and the toggle. A point-to-point harness would have
-needed ~17 conductors; this uses one standard keyed cable instead and keeps the
-header fully occupied by a single connector.
+needed ~17 conductors; this uses one standard keyed cable instead.
 
-**Signals required, by function:**
+### The Orange Pi 5 Plus 40-pin header
 
-| Need | Count | Notes |
-|---|---:|---|
-| +3V3, +5V, GND | 3+ | multiple GND pins on the ribbon |
-| I²C `SDA`, `SCL` | 2 | one bus, shared by U1 and the ANO |
-| SPI `MOSI`, `SCLK`, `CS` | 3 | display, host is the only master |
-| Display `DC`, `RST`, `BUSY`, `PWR` | 4 | `BUSY` is an **input to the host** |
-| Keys `LINK`, `MAC`, `★` | 3 | plain GPIO in, active low |
-| `AIRPLANE` toggle | 1 | plain GPIO in |
-| U1 `RESET` | 1 | plain GPIO out, active low |
-| *(reserved)* `SW4`, `SW5`, ANO `INT` | 3 | routed to J1, unpopulated in Rev A |
+Source: the vendor's own GPIO library, [`orangepi-xunlong/wiringOP`](https://github.com/orangepi-xunlong/wiringOP)
+(`next` branch) — `physNames_5PLUS[]` in `gpio/readall.c` for the functions and
+`physToGpio_5PLUS[]` in `wiringPi/wiringPi.c` for the GPIO numbers. **The two
+tables are independent and they agree**: every function name matches the
+bank/pin derived from its GPIO number. That cross-check is why this is trusted.
 
-**17 signals plus power.** A 40-pin ribbon has ample room.
+| Pin | Function | GPIO | | Pin | Function | GPIO |
+|---:|---|---|---|---:|---|---|
+| 1 | 3.3 V | — | | 2 | 5 V | — |
+| **3** | **I²C2 SDA** | GPIO0_C0 (16) | | 4 | 5 V | — |
+| **5** | **I²C2 SCL** | GPIO0_B7 (15) | | 6 | GND | — |
+| 7 | PWM14 | GPIO1_D6 (62) | | 8 | GPIO1_A1 | 33 |
+| 9 | GND | — | | 10 | GPIO1_A0 | 32 |
+| **11** | GPIO1_A4 | 36 | | **12** | GPIO3_A1 | 97 |
+| **13** | GPIO1_A7 | 39 | | 14 | GND | — |
+| **15** | GPIO1_B0 | 40 | | **16** | GPIO3_B5 | 109 |
+| 17 | 3.3 V | — | | **18** | GPIO3_B6 | 110 |
+| **19** | **SPI0_TXD** | GPIO1_B2 (42) | | 20 | GND | — |
+| 21 | SPI0_RXD | GPIO1_B1 (41) | | **22** | GPIO1_A2 | 34 |
+| **23** | **SPI0_CLK** | GPIO1_B3 (43) | | **24** | **SPI0_CS0** | GPIO1_B4 (44) |
+| 25 | GND | — | | 26 | SPI0_CS1 | GPIO1_B5 (45) |
+| 27 | GPIO1_B7 | 47 | | 28 | GPIO1_B6 | 46 |
+| **29** | GPIO1_D7 | 63 | | 30 | GND | — |
+| **31** | GPIO3_A0 | 96 | | 32 | GPIO1_A3 | 35 |
+| **33** | GPIO3_C2 | 114 | | 34 | GND | — |
+| **35** | GPIO3_A2 | 98 | | 36 | GPIO3_A5 | 101 |
+| **37** | GPIO3_C1 | 113 | | 38 | GPIO3_A4 | 100 |
+| 39 | GND | — | | 40 | GPIO3_A3 | 99 |
 
-### What must be confirmed before layout
+**The good news, and the trap.** I²C sits on pins 3/5 and SPI0 on 19/21/23/24 —
+the same physical positions as a Raspberry Pi. So Waveshare's Raspberry Pi
+wiring for the e-paper HAT maps **pin-for-pin** onto this board, including all
+four control pins, which are plain GPIO here. No rewiring.
 
-1. **Which physical pins carry an I²C controller**, and which bus number.
-2. **Which physical pins carry an SPI controller**, with `CS`.
-3. **Which pins are plain GPIO** with no competing function and no boot-time
-   strapping role, for the four inputs and one output.
-4. **Which pins are unsafe** — strapping pins, pins driven at boot, pins with
-   onboard pull-ups.
+But the bus *numbers* are not the Raspberry Pi's: this is **I²C2**, not i2c-1.
+Code that opens `/dev/i2c-1` will talk to the wrong bus or nothing at all. That
+is the part that would have been missed by assuming compatibility.
 
-Authoritative sources, in order: the board's **device tree** (`rk3588-orangepi-5-plus.dts`
-and its pinmux nodes), the vendor schematic, then the RK3588 TRM. **Not** a
-Raspberry Pi pinout diagram, and not a wiringOP table for a different board.
+### Assignment
 
-> Until this is done, J1's pin assignment is the one genuinely blocking item on
-> this board. Everything else below is settled.
+| Function | Pin | GPIO | Notes |
+|---|---:|---|---|
+| +3V3 | 1 | — | |
+| +5V | 2 | — | LED anodes only |
+| GND | 6, 9, 14, 20, 25, 30, 34, 39 | — | use several on the ribbon |
+| I²C `SDA` | 3 | GPIO0_C0 | **I²C2**, shared U1 + ANO |
+| I²C `SCL` | 5 | GPIO0_B7 | |
+| Display `DIN` | 19 | SPI0_TXD | |
+| Display `CLK` | 23 | SPI0_CLK | |
+| Display `CS` | 24 | SPI0_CS0 | |
+| Display `DC` | 22 | GPIO1_A2 | matches Waveshare's RPi map |
+| Display `RST` | 11 | GPIO1_A4 | matches Waveshare's RPi map |
+| Display `BUSY` | 18 | GPIO3_B6 | **input to host** |
+| Display `PWR` | 12 | GPIO3_A1 | must be driven, not tied high |
+| `LINK` | 13 | GPIO1_A7 | active low |
+| `MAC` | 15 | GPIO1_B0 | active low |
+| `★` | 16 | GPIO3_B5 | active low |
+| `AIRPLANE` | 29 | GPIO1_D7 | active low |
+| U1 `RESET` | 31 | GPIO3_A0 | **output**, active low |
+| *(reserved)* `SW4` | 33 | GPIO3_C2 | footprint only |
+| *(reserved)* `SW5` | 35 | GPIO3_A2 | footprint only |
+| *(reserved)* ANO `INT` | 37 | GPIO3_C1 | test pad only |
+
+**Pin 7 is deliberately unused** — it defaults to PWM14 rather than plain GPIO.
+
+### Still to confirm
+
+- Run `gpio readall` on the actual board and diff it against the table above.
+  A library table is strong evidence, not a schematic.
+- Which `/dev/spidevX.Y` Armbian exposes for SPI0, and whether the overlay is
+  enabled by default.
+- **Whether any of these pins have onboard pull-ups or a boot-time strapping
+  role.** wiringOP does not say, and this is the one gap left. A key input tied
+  to a strapping pin would hold the board out of boot.
+- `libgpiod` addresses lines as chip + offset, not by these numbers. Translate
+  before writing firmware.
 
 ## Nets
 
@@ -355,8 +399,9 @@ double presses.
 
 ## Open items on this board
 
-- **J1 pin assignment** — blocked on the Orange Pi device tree. The only item
-  stopping layout.
+- ~~J1 pin assignment~~ — **resolved 2026-11-18** from the vendor's GPIO
+  library. Confirm with `gpio readall` on the board, and check none of the
+  chosen pins is a boot strapping pin.
 - **Measure** the SBC header's I²C pull-ups before fitting R2/R3.
 - **Read** Waveshare's 9-pin cable order off the HAT silkscreen before
   committing J2's footprint.
