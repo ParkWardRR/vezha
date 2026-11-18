@@ -59,6 +59,35 @@ will not exist.
 If programming access is wanted in situ, **leave room for the overhanging
 Micro-USB port** — and bring it to a wall opening or it is access in name only.
 
+## The console — decided
+
+**Decided 2026-11-18: Enclosure B keeps the OLED and the push encoder.**
+
+This was a live contradiction, not just an unknown.
+[01](01-architecture.md#the-v1-scope-cut) asserts that B "carries the only
+panel" and treats the console as settled by the v1 scope cut, while this
+document and [06](06-power-board-schematic.md) both still listed it as open
+and **blocking**. It is resolved in favour of 01.
+
+Consequences, all of which were already specified and are now simply live:
+
+- **J4 (OLED, 4-pin JST-SH) and J5 (encoder) exist** and stay populated.
+- **I²C0 is the OLED's bus.** 06 allocates it deliberately: I²C1 is
+  rail-critical and carries PD control plus the current measurement the
+  shutdown decision depends on, so a wedged display cannot stall it.
+- **The encoder RC is populated** — 10 kΩ / 1 kΩ / 100 nF per channel, the
+  values [SIM-05](06-power-board-schematic.md#sim-05--encoder-debounce)
+  fixes, plus a Gray-code decoder in firmware.
+- **This box's lid needs openings** for the display window and the encoder
+  shaft, and its height now has to clear the encoder — which, with the
+  [screw terminal removed](#the-vbus-screw-terminal), is the tallest thing
+  above the board.
+
+Still to choose: the OLED module itself, its bracket, and the encoder knob.
+[01](01-architecture.md) cites the Adafruit 5297's 20.076 × 20.076 mm active
+area in its scope-cut reasoning; that is a reference point, not a committed
+part.
+
 ## Pololu wiring rule
 
 The D42V55F5 duplicates its VIN, VOUT, and GND pins.
@@ -157,7 +186,11 @@ sustained load before closing the design.
 
 - RotoPD Pro physical envelope and mounting — **blocking**
 - Seam USB-C receptacle part, and whether the cable is captive
-- **Whether Enclosure B has a front panel at all** — blocking
+- ~~**Whether Enclosure B has a front panel at all**~~ — **decided
+  2026-11-18: YES.** The OLED and encoder stay. J4 and J5 exist, and this
+  box carries the only hardware UI in v1, as [01](01-architecture.md) always
+  assumed. The contradiction with 06's open list is resolved in favour of
+  01.
 - Accessory port regulator, and its thermal contribution in this box
 - OLED bracket and encoder knob
 - Pico mounting style

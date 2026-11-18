@@ -218,7 +218,11 @@ the RF test in [06-antennas.md](04-antennas.md) rather than by assumption.
 
 - Installed stack height on the underside (adapter + card + mated plugs) —
   **now the only thing setting this box's thickness**
-- Which M-key-to-E-key adapter, confirmed to route PCIe
+- Which M-key-to-E-key adapter, confirmed to route PCIe — **candidate
+  proposed 2026-11-18**, the Sintech M-key to A/E-key card. Routes PCIe ×1,
+  but carries USB 2.0 on a separate flying cable and its installed size is
+  still unmeasured. See
+  [10 · Candidate](10-measurement-protocol.md#candidate-sintech-m-key-to-ae-key-adapter)
 - Second radio part, form factor height, and antenna connector type
 - Heatsink size and whether active cooling is needed
 - **RTC cell chemistry** — primary or rechargeable, decided by whether the

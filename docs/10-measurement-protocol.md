@@ -55,6 +55,37 @@ Two consequences the architecture documents do not currently draw out:
 > AX210 on the native E-key gets PCIe 2.0 ×1. Neither is a bottleneck for
 > Wi-Fi 6E, but do not assume the adapter is the compromised path.
 
+### Candidate: Sintech M-key to A/E-key adapter
+
+**Proposed 2026-11-18.** "Sintech M.2 M-Key / M.2 A/E Key, NGFF Key-E Card
+to M.2 Key M Adapter Card, compatible with Intel 7260, 8260, 9260."
+
+What the listings support, and what they do not:
+
+| | Status |
+|---|---|
+| **Routes PCIe** | **Likely yes** — described as PCIe ×1 plus USB 2.0, and every card it names (7260, 8260, 9260) is a discrete PCIe part, not CNVi. That is the right signature |
+| **Accepts an E-key / A+E-key card** | Yes, that is the product's purpose |
+| **Works with MT7922 / RZ616** | **Unverified.** The named-compatibility list is Intel-only and retailer-written. The adapter is electrically generic, so it ought to, but nobody has said so |
+| **Installed dimensions** | **Still unknown.** The 11.4 × 8 × 1.7 cm figure in listings is the shipping box. Measurement 1 below is unchanged |
+
+> [!WARNING]
+> **USB 2.0 leaves on a separate 5-pin cable, not through the M-key edge.**
+> The M.2 M-key connector has no USB 2.0 pins — that is an E-key signal — so
+> an adapter must bring it out some other way.
+>
+> For this build that is probably acceptable: the card in this socket is the
+> **private AP**, which needs Wi-Fi only, and Bluetooth is handled by the
+> AX210 in the native top-side E-key socket. But it means **the second
+> radio's Bluetooth will not work unless that cable is routed to a USB
+> header**, and the cable itself is one more thing inside an enclosure whose
+> thickness is already the binding dimension.
+
+One caution on substitutions: a related Sintech listing claims AX200/AX201
+compatibility. **AX201 is CNVi** and cannot work on a generic PCIe adapter,
+so treat that listing's compatibility claims as unreliable and judge any
+card by whether it is discrete PCIe.
+
 ### Selection requirements
 
 1. **Must route PCIe.** [01](01-architecture.md) already warns "not all do."

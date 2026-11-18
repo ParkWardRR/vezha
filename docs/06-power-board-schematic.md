@@ -165,7 +165,7 @@ flowchart LR
 |---|---|---|---|---:|---|
 | **U1** | CentyLab RotoPD Pro | — | module | — | PD negotiation, switched VBUS, aux 5 V |
 | **U2** | Raspberry Pi Pico 2 | — | module | — | controller |
-| **U3** | Pololu D42V55F5 **or F5.3** (#5571 / #5572) | — | module | — | router rail — **part number open, see [SIM-04](#sim-04--router-rail-ir-drop)** |
+| **U3** | Pololu **D42V55F5** (#5571) | — | module | — | router rail — **decided 2026-11-18, the 5.0 V part. [Why](#u3-is-the-50-v-part)** |
 | **U4** | TI LMR38020FDDAR | `C5149193` | SO-PowerPAD-8 | 4,566 | accessory buck, **4.2–80 V in** |
 | **U5** | TI TPS2553DBVR | `C55266` | SOT-23-6 | 45,815 | accessory current limit + FAULT |
 | **U6** | TI INA226AIDGSR | `C49851` | VSSOP-10 | 56,084 | router rail V and I |
@@ -505,6 +505,47 @@ The ADC is the constraint worth noticing.
 > (`C473913`, 6,045 in stock), which does Rp, Rd detection and the load switch
 > in hardware and frees both channels.
 
+## U3 is the 5.0 V part
+
+**Decided 2026-11-18: Pololu D42V55F5 (#5571), the 5.0 V variant.**
+
+This is forced by the load, not won on merit. The Orange Pi wiki states that
+the board's **USB-C power port does not negotiate PD and accepts a fixed 5 V
+only**, and warns that *an adapter with an output above 5 V will damage the
+board*.
+
+That removes the 5.3 V D42V55F5.3 (#5572) outright. Its nominal output is
+already above the stated ceiling, and at its +3 % corner it reaches
+**5.46 V** into an input the vendor says 5 V damages above. No IR-drop
+headroom is worth that.
+
+> [!CAUTION]
+> **The decision does not solve the problem it was supposed to solve — it
+> relocates it.** [SIM-04](#sim-04--router-rail-ir-drop) shows the 5.0 V part
+> at its −3 % corner (4.850 V) needs the **entire round-trip loop under
+> 25 mΩ** to hold 4.75 V at the Pi at 4 A. This document separately notes
+> that **one USB-C mated pair is typically 30–40 mΩ on its own**, before any
+> cable or trace.
+>
+> So with the regulator now fixed, **the seam is the binding constraint** and
+> it is over budget as specified.
+
+### What is actually left to pull on
+
+Listed roughly by how much headroom each buys, not by preference:
+
+| Lever | Effect | Cost |
+|---|---|---|
+| **Use all four VBUS and all four GND contacts** | USB-C has 4 of each. Paralleling them divides the contact resistance, and this is normal practice for power-only ports | Rules out 6-pin power-only receptacles for **J2**, which only bring out 2 of each |
+| **Captive, very short seam cable** | Cable conductor resistance is a large share of the loop, and a 5 A-rated cable is still spec'd to drop up to 250 mV | [03](03-enclosure-b-lower.md) lists captive-vs-connectorised as open; this decides it |
+| **Measure the Pi's real peak draw** | 4 A is the vendor maximum, not a measured figure for this workload. The budget scales directly with it | Needs the board in hand |
+| **Question the 4.75 V target** | 4.75 V is the *USB* minimum. The Pi's USB-C port is not a USB device here, it is a fixed 5 V inlet, and its actual lower limit is unpublished. SIM-04 puts brownout at 4.5 V | Running between 4.5 and 4.75 V is undocumented territory; it needs a bench measurement, not an assumption |
+| **Move the regulator into Enclosure A** | Send PD voltage across the seam instead of 5 V. At 20 V the same power is a quarter of the current and IR drop stops mattering | Contradicts [01's](01-architecture.md#crossing-the-seam) "5 V only" rule and puts a switching regulator inside the sealed RF box. A real re-architecture, not a tweak |
+
+The first two are cheap and compatible with everything already decided. The
+last one has by far the most headroom and the highest cost — it is noted
+here so it is a considered option rather than a surprise later.
+
 ## Boot sequence
 
 Firmware-level, with the hardware state at each step.
@@ -830,20 +871,29 @@ Unchanged from 05 and [03](03-enclosure-b-lower.md):
   **Decided 2026-11-18: removed**, with heavy wire soldered to its pads.
   Reasoning and cost in
   [03 · The VBUS screw terminal](03-enclosure-b-lower.md#the-vbus-screw-terminal).
-- **Whether Enclosure B has a front panel at all** — decides whether J4 and J5
-  exist.
+- ~~**Whether Enclosure B has a front panel at all**~~ — **decided
+  2026-11-18: yes.** J4 and J5 exist and stay populated. See
+  [03 · The console](03-enclosure-b-lower.md#the-console--decided).
 - Measured buck derating in the closed enclosure.
 - Pico mounting: castellated or socketed.
 
 New, from this document:
 
-- **U3: 5.0 V or 5.3 V part.** Needs the Orange Pi's real peak draw and its
-  maximum input voltage. [SIM-04](#sim-04--router-rail-ir-drop).
+- ~~**U3: 5.0 V or 5.3 V part.**~~ — **decided 2026-11-18: the 5.0 V
+  #5571.** Forced by the board's input limit, not chosen on merit. It leaves
+  the seam loop over budget, which is now the open problem instead.
+  [See below](#u3-is-the-50-v-part).
 - **Whether the RotoPD's aux buck survives a >36 V contract.** A question for
   CentyLab. Until answered, firmware caps requests at 20 V.
 - **AP33772S and INA238 I²C addresses** — community-sourced, unverified.
-- **Accessory port config A or B.** A needs nothing; B needs the thermal
-  measurement first.
+- ~~**Accessory port config A or B.**~~ — **decided 2026-11-18: build Rev A
+  as config A**, and do not wait for hardware. The two configs differ only
+  in **three 0603 resistor values** — R3, R4 (36 kΩ → 12 kΩ) and R5
+  (22.6 kΩ → 16.2 kΩ) — on identical footprints. Promoting A to B after the
+  thermal measurement is three swaps on the bench, so the decision does not
+  need to be final before the board is ordered. Note the two columns
+  genuinely cannot share a resistor: config B's limit must exceed 1.5 A at
+  its *minimum*, which 22.6 kΩ does not satisfy.
 - **U4 and U5 support passives** from the TI datasheets' typical-application
   tables.
 - **Which RP2350 stepping the Pico 2 carries.** A2 has E9, A3 fixes it. R1 is
