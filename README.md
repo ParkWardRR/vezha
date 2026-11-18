@@ -142,28 +142,31 @@ over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 ## Block schematics
 
 > [!NOTE]
-> These are **block schematics, not captured schematics.** No EDA file exists
-> yet. They show blocks, nets and the rules that must survive layout — not
-> footprints, pin numbers or values. Where a part is unchosen the block says
-> so. Treat them as the brief a PCB designer works *from*, and the docs linked
-> under each as the authority if the two ever disagree.
+> These are **one-page views of the net-by-net schematic documents**, using the
+> same reference designators and values. They show blocks, nets and the rules
+> that must survive layout — not footprints or pin numbers. **No EDA file
+> exists yet, and nothing here has been built or measured.** Where the drawing
+> and the document disagree, the document wins.
 
 ### PCB 1 — front control board
 
-![PCB 1 block schematic: three C&K key switches to ground, an NKK toggle on a dedicated GPIO, a TLC59116 I²C driver feeding four common-anode RGB indicators, the ANO wheel on STEMMA QT, and a reserved e-paper connector, all gathered onto one keyed harness to the Orange Pi](docs/img/pcb-1-block-schematic.svg)
+![PCB 1 block schematic: three C&K key switches to ground with RC debounce, an NKK toggle on a dedicated GPIO, a TLC59116 driver at 0x60 feeding four frosted common-anode RGB indicators, the ANO wheel on STEMMA QT, and a JST GH connector out to the e-paper, all gathered onto one 2 by 20 ribbon to the Orange Pi](docs/img/pcb-1-block-schematic.svg)
 
-Full spec: **[04-pcb-1-front-control.md](docs/04-pcb-1-front-control.md)**.
-Every placed part is in JLCPCB stock **except the RGB LED** — choosing it,
-together with its optic, is the critical path to a quote.
+Schematic: **[12-pcb-1-schematic.md](docs/12-pcb-1-schematic.md)** ·
+requirements: **[04-pcb-1-front-control.md](docs/04-pcb-1-front-control.md)**.
+Every placed part now has an LCSC code. The one thing still blocking layout is
+the **Orange Pi 5 Plus 40-pin map**, which no authoritative source has yet
+produced — doc 12 specifies the host interface by function instead.
 
 ### PCB 2 — power board
 
 ![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/pcb-2-block-schematic.svg)
 
-Full spec: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
+Schematic: **[11-pcb-2-schematic.md](docs/11-pcb-2-schematic.md)** ·
+requirements: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
 drawing exists to make unmissable: the bare buck **defaults on** — the module
-pulls EN to VIN through 1 MΩ, so a **1.5 kΩ pull-down** has to impose off — and
-**the accessory port never sees raw PD VBUS**, which on a 240 W EPR part
+pulls EN to VIN through 1 MΩ, so **R1 at 1.5 kΩ** has to impose off — and
+**the accessory port never sees raw VBUS_PD**, which on a 240 W EPR part
 reaches 48 V.
 
 ## The three dimensions nobody should guess
