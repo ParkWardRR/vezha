@@ -826,8 +826,10 @@ Unchanged from 05 and [03](03-enclosure-b-lower.md):
 - **Whether U1 pin 6 (3.3V) is an input or an output.** Handled by making JP1
   a DNP jumper, so this no longer blocks layout — but it must be measured
   before the board is trusted.
-- **Whether to keep or remove U1's screw terminal** for the VBUS path. An
-  assembly decision with an enclosure-height consequence.
+- ~~**Whether to keep or remove U1's screw terminal** for the VBUS path.~~
+  **Decided 2026-11-18: removed**, with heavy wire soldered to its pads.
+  Reasoning and cost in
+  [03 · The VBUS screw terminal](03-enclosure-b-lower.md#the-vbus-screw-terminal).
 - **Whether Enclosure B has a front panel at all** — decides whether J4 and J5
   exist.
 - Measured buck derating in the closed enclosure.
