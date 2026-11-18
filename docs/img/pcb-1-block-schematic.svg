@@ -55,7 +55,7 @@
   <line class="ch" x1="920" y1="110" x2="920" y2="690"/>
 
   <!-- J1 harness -->
-  <rect x="948" y="112" width="232" height="528" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
+  <rect x="948" y="112" width="232" height="534" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
   <text class="ref" x="962" y="134">J1 · 2×20 shrouded header</text>
   <text class="bd" x="962" y="149">one IDC ribbon → Orange Pi 40-pin</text>
   <text class="bd" x="962" y="163">header. ~17 signals, so a custom</text>
@@ -75,15 +75,16 @@
   <text class="bd" x="962" y="442">PCB 1 is the single breakout</text>
   <text class="bd" x="962" y="456">point: one standard ribbon in,</text>
   <text class="bd" x="962" y="470">one GH cable out to the panel.</text>
-  <text class="warn" x="962" y="492">The 40-pin map is still the one</text>
-  <text class="warn" x="962" y="506">thing blocking layout — confirm</text>
-  <text class="warn" x="962" y="520">it from the board's device tree.</text>
-  <text class="bd" x="962" y="542">Per key and on the toggle:</text>
-  <text class="bd" x="962" y="556">R5–R8 10 kΩ · R9–R12 1 kΩ ·</text>
-  <text class="bd" x="962" y="570">C1–C4 100 nF. The RC is a</text>
-  <text class="bd" x="962" y="584">window, not a floor: 47–100 nF</text>
-  <text class="bd" x="962" y="598">passes, 10 nF and 220 nF fail.</text>
-  <text class="bd" x="962" y="612">100 nF is shared with PCB 2.</text>
+  <text class="bd" x="962" y="492">Pin map resolved from wiringOP:</text>
+  <text class="bd" x="962" y="506">I²C on 3/5, SPI0 on 19/23/24 —</text>
+  <text class="bd" x="962" y="520">Pi positions. But it is I²C2,</text>
+  <text class="warn" x="962" y="534">not i2c-1. A software trap.</text>
+  <text class="bd" x="962" y="556">Per key and on the toggle:</text>
+  <text class="bd" x="962" y="570">R5–R8 10 kΩ · R9–R12 1 kΩ ·</text>
+  <text class="bd" x="962" y="584">C1–C4 100 nF. The RC is a</text>
+  <text class="bd" x="962" y="598">window, not a floor: 47–100 nF</text>
+  <text class="bd" x="962" y="612">passes, 10 nF and 220 nF fail.</text>
+  <text class="bd" x="962" y="626">100 nF is shared with PCB 2.</text>
 
   <!-- AIRPLANE toggle path -->
   <path class="w" d="M218 170 H260"/>

@@ -154,9 +154,10 @@ over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 
 Schematic: **[12-pcb-1-schematic.md](docs/12-pcb-1-schematic.md)** ·
 requirements: **[04-pcb-1-front-control.md](docs/04-pcb-1-front-control.md)**.
-Every placed part now has an LCSC code. The one thing still blocking layout is
-the **Orange Pi 5 Plus 40-pin map**, which no authoritative source has yet
-produced — doc 12 specifies the host interface by function instead.
+Every placed part now has an LCSC code, and the Orange Pi's 40-pin map is
+resolved, so the board is layout-ready. The display's control pins land on
+Raspberry Pi positions — but the bus is **I²C2, not `i2c-1`**, which is a
+software trap rather than a wiring one.
 
 ### PCB 2 — power board
 
