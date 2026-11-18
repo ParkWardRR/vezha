@@ -404,7 +404,7 @@ question, device facts, pass criteria and result in its header.
 |---|---|---|
 | `11-i2c-pullups.cir` | Combined bus pull-up with ANO + TLC59116 | **Fit 2.2 kΩ on PCB 1.** The bus as drawn does not work. |
 | `12-led-driver-thermal.cir` | TLC59116 dissipation on a 5 V anode | **Cap full-white brightness at 75%** in firmware. |
-| `13-key-debounce.cir` | RC debounce on board or in firmware | **Firmware.** Hardware RC cannot work here. |
+| `13-key-debounce.cir` | RC debounce on board or in firmware | **Fit it:** 10 kΩ / 1 kΩ / 100 nF per key. |
 
 ### I²C: the bus as drawn does not work
 
@@ -466,31 +466,54 @@ driver's own headroom. A 3.3 V rail cannot guarantee full current into a 3.4 V
 blue die. 5 V is right for blue and wasteful for red, and that asymmetry is
 exactly what the ballast option addresses.
 
-### Keys: debounce in firmware, not hardware
+### Keys: fit the RC filter
 
-**Hardware RC debounce cannot work on these inputs**, and the reason is
-structural rather than a sizing mistake.
+> [!NOTE]
+> **Corrected 2026-11-18.** This section previously said hardware RC debounce
+> could not work here and told you not to fit the capacitors. That was wrong,
+> and it was wrong because of the **pass criterion**, not the arithmetic. The
+> deck asked whether the filter keeps the node above V_IL for the whole bounce
+> burst — whether bounce is hidden *entirely* — which is far stricter than
+> debounce requires. The right question, which the PCB 2 encoder work asked
+> correctly, is whether the input manufactures a **second edge** after it has
+> already read a valid low.
 
-On a switch-to-ground input, the series resistor must be much smaller than the
-pull-up or the closed switch cannot pull a valid low — with 1 kΩ against a
-10 kΩ pull-up the low already sits at 0.30 V. But that same small series
-resistor is what discharges the filter capacitor, so the discharge time constant
-is *forced* to be far shorter than the charge one. Sweeping 10 nF to 470 nF
-never masks a 5 ms bounce burst: the minimum only moves from 0.300 V to 0.407 V,
-still far below V_IL. Sizing the series resistor up to 10 kΩ would put the
-closed-switch level at 1.65 V — above V_IL, so the key would never register.
+**Fit 10 kΩ pull-up, 1 kΩ series, 100 nF to ground on each key.**
 
-So:
+The mechanism is the topology's **asymmetry**: the node discharges through Rs
+alone (fast, so the closure stays crisp) but charges through Rs + Rpu (slow, so
+a brief contact opening cannot climb back to V_IH). Against the C&K datasheet's
+**≤ 1 ms bounce time**:
 
-- **Debounce in firmware.** Do not fit debounce capacitors.
-- **Keep a 10 kΩ external pull-up** anyway — not for bounce, but so the input
-  has a defined level before pinmux runs. It also settles in 0.84 ms against
-  7.35 ms for an 80 kΩ internal pull-up.
-- An optional 10–100 nF to ground is defensible for **ESD/EMI only**. It buys
-  nothing for bounce and should not be labelled debounce.
+| Cf | Peak after first valid low | Verdict |
+|---|---|---|
+| 1 nF | 3.300 V | ❌ bounce passes straight through |
+| 10 nF | 2.195 V | ❌ spurious edge |
+| **47 nF** | **1.086 V** | ✅ best margin |
+| **100 nF** | **1.627 V** | ✅ **chosen** |
+| 220 nF | 2.314 V | ❌ |
+| 470 nF | never reaches a valid low | ❌ |
 
-This answers [PCB 2's identical open question](05-pcb-2-power.md#open-questions)
-about the EC11 encoder the same way, for the same reason.
+**It is a window, not a floor** — too much capacitance fails too. At 220 nF the
+cap stops discharging fully during the short closures, only reaches 0.650 V,
+and then wanders back over the threshold. That is the non-obvious part.
+
+100 nF is chosen over the slightly better 47 nF for commonality: it is the same
+value PCB 2 uses on the EC11 encoder, so one BOM line covers both boards, and
+PCB 2 validated it against a harder stimulus (30 µs chatter) than this switch
+produces. **Keep 47 nF in mind if the coupon shows double presses.**
+
+Two constraints worth stating because they bound the design:
+
+- **Rs cannot be grown to filter on its own.** At 3.3 kΩ against a 10 kΩ
+  pull-up, the closed-switch level is 0.819 V — already over V_IL, and the key
+  stops registering. That is why the capacitor is doing the work.
+- **Keep the 10 kΩ external pull-up regardless of bounce.** An internal pull-up
+  is not active before pinmux runs, so the input floats until then. It also
+  settles in 0.84 ms against 7.36 ms for an 80 kΩ internal pull-up.
+
+Still debounce in firmware as well — the RC covers a switch behaving to spec,
+firmware covers one that has worn.
 
 ### Running these
 

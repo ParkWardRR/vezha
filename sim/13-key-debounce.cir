@@ -1,55 +1,71 @@
-* SIM-13  Key input: pull-up, RC debounce, and whether hardware is needed
+* SIM-13  Key input: pull-up and RC debounce
 *
 * QUESTION
 *   docs/04 wires each key as "switch to ground" on an Orange Pi GPIO and
 *   does not say where the pull-up lives or whether anything filters bounce.
-*   docs/05 asks the same thing about the EC11 encoder ("Encoder debounce: RC
-*   on board vs. firmware"). Answer it once, the same way, for both boards.
+*   docs/05 asked the same about the EC11 encoder. Answer it once for both.
 *
-* WHAT CHANGED
-*   The switch is now the C&K KSC221JLFS (docs/07-bom.md), not the APEM 6C.
-*   C&K specifies bounce for its KSC tactiles at <= 5 ms. That figure is
-*   taken as the design input here; it has NOT been pulled from the
-*   KSC221JLFS datasheet specifically, so 10 ms is also swept.
+* CORRECTED 2026-11-18 - THIS DECK PREVIOUSLY REACHED THE WRONG ANSWER
+*   The first version of this deck concluded "hardware RC cannot work here".
+*   That conclusion came from the WRONG PASS CRITERION, not from bad numbers.
+*   It asked whether the filter keeps the node ABOVE V_IL for the whole bounce
+*   burst - i.e. whether bounce is hidden entirely. That is far stricter than
+*   debounce requires and essentially nothing passes it.
+*   The right question, which the PCB 2 encoder deck (sim/05) asked correctly:
+*     once the input has ALREADY read a valid low, does it climb back above
+*     V_IH and manufacture a SECOND edge?
+*   Credit where due: that framing came from the PCB 2 work.
+*
+*   The topology's asymmetry is what makes it work, and it is easy to miss:
+*     falling edge: discharge through Rs (fast)
+*     rising edge:  charge through Rs + Rpu (slow)
+*   So a closure stays crisp while a brief contact opening cannot recover to
+*   V_IH. Asymmetric time constants are the whole mechanism.
+*
+* IT ALSO USED THE WRONG BOUNCE FIGURE
+*   The first version invented a 5 ms burst with 500-900 us openings. The C&K
+*   datasheet for the KSC series states BOUNCE TIME <= 1 ms (page B-49).
+*   This version models chatter inside that 1 ms, which is what the chosen
+*   switch actually does.
 *
 * RK3588 INTERNAL PULL-UP
-*   Unverified. RK3588 GPIO internal pull-ups are in the tens of kohm; 50 k
-*   is the usual figure quoted and is swept against 20 k and 80 k. Note the
-*   internal pull-up cannot be relied on during boot before pinmux runs,
-*   which is the argument for an external one regardless of filtering.
+*   Still unverified; tens of kohm is the usual figure. Swept in SIM-13d.
+*   It also cannot be relied on before pinmux runs, which is an argument for
+*   an external pull-up independent of anything to do with bounce.
 *
 * TOPOLOGY
-*   3.3 V -- Rpu -- node gpio -- Rs -- switch -- GND,  Cf from gpio to GND.
-*   Rs in series with the switch limits the capacitor discharge current and
-*   is what makes an RC filter actually work on a grounding switch; without
-*   it the switch shorts Cf straight to 0 V and the falling edge is unfiltered.
+*   3.3 V -- Rpu -- gpio -- Rs -- switch -- GND,  Cf from gpio to GND.
+*
+* RESULT (run 2026-11-18 on fucina, corrected deck)
+*   FIT THE RC. The previous "firmware only, no capacitors" answer was wrong.
+*     Cf       V_peak after first low (V_IH = 2.0)      verdict
+*     1n       3.300                                     FAIL, bounce passes straight through
+*     10n      2.195                                     FAIL, spurious edge
+*     47n      1.086                                     PASS, best margin
+*     100n     1.627                                     PASS
+*     220n     2.314                                     FAIL - see below
+*     470n     never reaches a valid low                 FAIL
+*   There is a WINDOW, not a floor: too much capacitance fails too, because
+*   the cap stops discharging fully during the short closures. 220 nF only
+*   gets down to 0.650 V and then wanders back over V_IH.
+*   CHOSEN: Cf = 100 nF, Rpu = 10 k, Rs = 1 k. Same values as the PCB 2
+*   encoder, so one BOM line covers both boards, and PCB 2 validated 100 nF
+*   against a harder stimulus (30 us chatter) than this switch produces.
+*   47 nF is the higher-margin alternative if the coupon shows double presses.
+*   Rs cannot be grown to filter on its own: at 3.3 k the closed-switch level
+*   is 0.819 V, already over V_IL, and the key stops registering (SIM-13b).
+*   Keep the 10 k EXTERNAL pull-up regardless of bounce - an internal pull-up
+*   is not active before pinmux, and 10 k settles in 0.84 ms against 7.36 ms
+*   for an 80 k internal (SIM-13d).
 *
 * PASS CRITERIA
-*   1. A 5 ms bounce burst must produce exactly ONE clean crossing of each
-*      logic threshold (V_IL 0.8 V / V_IH 2.0 V for a 3.3 V CMOS input).
-*   2. Rise back to V_IH after release must stay well under the ~50 ms a
-*      human notices, so the key does not feel laggy.
-*   3. No hardware should be added if firmware debounce alone is sufficient.
-*
-* RESULT (run 2026-11-18 on fucina)
-*   HARDWARE RC DEBOUNCE DOES NOT WORK HERE, and the reason is structural,
-*   not a sizing miss. On a switch-to-ground input, Rs must be much smaller
-*   than Rpu or the closed switch cannot pull a valid low - with Rs 1 k and
-*   Rpu 10 k the low sits at 0.30 V, already a tenth of the rail. But that
-*   same small Rs is what discharges Cf, so the discharge time constant is
-*   forced to be far shorter than the charge one. Sweeping Cf from 10 nF to
-*   470 nF never masks the 5 ms bounce burst: V_min only moves 0.300 -> 0.407 V,
-*   still well under V_IL. Making Rs large enough to help (10 k) would put
-*   the closed-switch level at 1.65 V, above V_IL, so the key would never
-*   read as pressed at all.
-*   ACTION: debounce in FIRMWARE. Do not fit debounce capacitors.
-*   Keep a 10 k external pull-up anyway - not for bounce, but so the input
-*   has a defined level before pinmux runs. It also settles in 0.84 ms
-*   against 7.35 ms for an 80 k internal pull-up (SIM-13d).
-*   Optional 10-100 nF to ground is defensible for ESD/EMI only; it buys
-*   nothing for bounce and should not be described as debounce.
-*   This answers docs/05's "encoder debounce: RC on board vs firmware" the
-*   same way, for the same reason.
+*   1. NO SECOND EDGE: after the node first crosses below V_IL, it must not
+*      climb back above V_IH (2.0 V) for the rest of the bounce burst.
+*   2. The closure must actually register: node must reach below V_IL.
+*   3. Release must return above V_IH well inside ~50 ms or the key feels
+*      sticky.
+*   4. A valid low must be a valid low: the divider Rs/(Rs+Rpu) at steady
+*      closure must sit below V_IL.
 
 .title SIM-13 key input debounce
 
@@ -62,94 +78,97 @@ Rpu  vdd  gpio  {RPU}
 Cf   gpio 0     {CF}
 Rs   gpio sw    {RS}
 
-* Contact bounce: 5 bounces over ~5 ms, then solid closure, release at 60 ms.
-* ctl high = contact closed.
-Vctl ctl 0 PWL(0 0  9.999m 0  10m 3  10.4m 3  10.5m 0  11.0m 0
-+              11.1m 3  11.6m 3  11.7m 0  12.3m 0
-+              12.4m 3  13.1m 3  13.2m 0  14.0m 0
-+              14.1m 3  60m 3  60.001m 0  200m 0)
+* Contact closes at 10 ms. Chatter confined to <= 1 ms per the C&K spec:
+* closed 80us, open 70us, closed 150us, open 100us, closed 200us, open 50us,
+* then solid. Settled by 10.65 ms. Released at 60 ms.
+Vctl ctl 0 PWL(0 0  9.999m 0
++              10.000m 3  10.080m 3  10.085m 0  10.150m 0
++              10.155m 3  10.300m 3  10.305m 0  10.400m 0
++              10.405m 3  10.600m 3  10.605m 0  10.650m 0
++              10.655m 3  60.000m 3  60.005m 0  200m 0)
 Ssw  sw  0  ctl 0 swmod
 .model swmod sw vt=1.5 ron=1 roff=1e12
 
 .control
 echo "@@=============================================================="
-echo "@@ SIM-13  Key input - pull-up and debounce"
+echo "@@ SIM-13  Key input - pull-up and RC debounce  [CORRECTED]"
+echo "@@ Switch: C&K KSC221JLFS, datasheet bounce time <= 1 ms"
 echo "@@ Thresholds: V_IL 0.800 V, V_IH 2.000 V on a 3.3 V input"
+echo "@@ PASS = node reads a valid low AND never recovers to V_IH"
+echo "@@        again before the contact is solid."
 echo "@@=============================================================="
 
 echo "@@"
-echo "@@--- SIM-13a  NO filter (Cf=0): how dirty is the raw edge? ---"
-echo "@@ Expect the GPIO to follow every bounce. This is the baseline."
+echo "@@--- SIM-13a  the real test: does the filter prevent a 2nd edge? ---"
+echo "@@ Rpu = 10k, Rs = 1k. V_peak is the highest the node reaches AFTER"
+echo "@@ it has already read a valid low, during the chatter."
 echo "@@"
-echo "@@   Rpu      edges_below_VIL   (count of separate low excursions)"
-alterparam CF = 1f
-alterparam RS = 1k
-foreach rpu 20k 50k 80k 10k
-  alterparam RPU = $rpu
-  reset
-  tran 10u 80m
-  * count threshold crossings by sampling; a clean press gives 1
-  meas tran n1 FIND v(gpio) AT=10.2m > /dev/null
-  meas tran n2 FIND v(gpio) AT=10.8m > /dev/null
-  meas tran n3 FIND v(gpio) AT=11.4m > /dev/null
-  meas tran n4 FIND v(gpio) AT=12.0m > /dev/null
-  meas tran n5 FIND v(gpio) AT=13.6m > /dev/null
-  echo "@@   $rpu   samples through the bounce burst (V):"
-  echo "@@            t=10.2m $&n1   t=10.8m $&n2   t=11.4m $&n3   t=12.0m $&n4   t=13.6m $&n5"
-end
-
-echo "@@"
-echo "@@--- SIM-13b  RC filter sizing, Rpu=10k external, Rs=1k ---"
-echo "@@ Does the GPIO stay above V_IL through the whole bounce burst,"
-echo "@@ i.e. does the filter hide the bounce completely?"
-echo "@@"
-echo "@@   Cf      V_min_during_bounce   t_fall_to_VIL(ms)   verdict"
+echo "@@   Cf      V_min     V_peak_after_low   2nd edge?   verdict"
 alterparam RPU = 10k
 alterparam RS  = 1k
-foreach cf 1f 10n 47n 100n 220n 470n
+foreach cf 1f 1n 10n 47n 100n 220n 470n
   alterparam CF = $cf
   reset
-  tran 10u 80m
-  meas tran vmin MIN v(gpio) FROM=10m TO=14m > /dev/null
-  meas tran tf WHEN v(gpio)=0.8 FALL=1 > /dev/null
-  let tfms = (tf - 10m) * 1000
+  tran 2u 70m
+  meas tran vmin MIN v(gpio) FROM=10.0m TO=10.7m > /dev/null
+  meas tran vpk  MAX v(gpio) FROM=10.09m TO=10.65m > /dev/null
   if ($&vmin > 0.8)
-    echo "@@   $cf    $&vmin    (never crosses)    BOUNCE FULLY MASKED"
+    echo "@@   $cf    $&vmin   $&vpk   -   FAIL never reads low"
   else
-    echo "@@   $cf    $&vmin    $&tfms    crosses V_IL"
+    if ($&vpk >= 2.0)
+      echo "@@   $cf    $&vmin   $&vpk   YES   FAIL spurious edge"
+    else
+      echo "@@   $cf    $&vmin   $&vpk   no    PASS"
+    end
   end
 end
 
 echo "@@"
-echo "@@--- SIM-13c  release-edge latency with the filter in place ---"
-echo "@@ Rising back through V_IH after the key is let go at t=60 ms."
-echo "@@ Must be far below ~50 ms or the key feels sticky."
+echo "@@--- SIM-13b  steady-state low must be a valid low ---"
+echo "@@ V_low = 3.3 * Rs/(Rs+Rpu). Must be under V_IL 0.8 V."
+echo "@@ This is what stops Rs being made large enough to filter on its own."
+echo "@@"
+echo "@@   Rs      Rpu=10k: V_low    verdict"
+foreach rs 100 470 1k 2.2k 3.3k 10k
+  let vlow = 3.3 * $rs / ($rs + 10000)
+  if ($&vlow < 0.8)
+    echo "@@   $rs    $&vlow   ok"
+  else
+    echo "@@   $rs    $&vlow   INVALID LOW - key never registers"
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-13c  release latency with the filter fitted ---"
+echo "@@ Rising back through V_IH after release at 60 ms."
 echo "@@"
 echo "@@   Cf      t_rise_to_VIH(ms)   verdict"
-foreach cf 1f 10n 47n 100n 220n 470n
+alterparam RPU = 10k
+alterparam RS  = 1k
+foreach cf 10n 47n 100n 220n 470n
   alterparam CF = $cf
   reset
-  tran 10u 120m
+  tran 2u 120m
   meas tran trr WHEN v(gpio)=2.0 RISE=LAST > /dev/null
   let trms = (trr - 60m) * 1000
   if ($&trms < 50)
     echo "@@   $cf    $&trms   ok"
   else
-    echo "@@   $cf    $&trms   TOO SLOW - key feels laggy"
+    echo "@@   $cf    $&trms   TOO SLOW - key feels sticky"
   end
 end
 
 echo "@@"
-echo "@@--- SIM-13d  the case for an external pull-up at all ---"
-echo "@@ With only the SBC internal pull-up (and no external), the node is"
-echo "@@ undriven until pinmux configures it. Compare settle time from 0 V."
+echo "@@--- SIM-13d  why an EXTERNAL pull-up, not the SBC's internal one ---"
+echo "@@ Settle time from release, Cf = 100 nF. Also: an internal pull-up"
+echo "@@ is not active until pinmux runs, so the input floats before that."
 echo "@@"
-echo "@@   Rpu      Cf=100n: t_rise_to_VIH(ms)"
+echo "@@   Rpu      t_rise_to_VIH(ms)"
 alterparam CF = 100n
 foreach rpu 80k 50k 20k 10k 4.7k
   alterparam RPU = $rpu
   reset
-  tran 10u 120m
+  tran 2u 120m
   meas tran trr WHEN v(gpio)=2.0 RISE=LAST > /dev/null
   let trms = (trr - 60m) * 1000
   echo "@@   $rpu     $&trms"
