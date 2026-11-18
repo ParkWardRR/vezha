@@ -2,8 +2,8 @@
 
 ## Goal
 
-Build a compact, handheld travel router that extends my alpina.casa home
-network when I travel. Vezha joins the available uplink, and my devices
+Build a compact, handheld travel router that extends my home network when
+I travel. Vezha joins the available uplink, and my devices
 connect to one familiar private SSID instead of being set up individually
 on each hotel's network.
 
