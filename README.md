@@ -69,6 +69,40 @@ A **two-piece** handheld router: two enclosures, two PCBs, designed together.
 **the power box detaches without disturbing any PCIe or antenna connection.**
 **Only 5 V power crosses the seam, over USB-C** — no signal, no telemetry.
 
+## How the four deliverables fit together
+
+```mermaid
+flowchart LR
+    CHG([external USB-C<br/>PD charger or bank]):::ext
+
+    subgraph B["ENCLOSURE B · lower power box — detachable"]
+        PCB2["<b>PCB 2</b> · power board<br/>RotoPD Pro → Pico 2 → Pololu<br/>OLED + encoder console<br/>accessory USB-C out"]:::pwr
+    end
+
+    subgraph A["ENCLOSURE A · upper router box"]
+        PI["<b>Orange Pi 5 Plus</b><br/>RK3588"]:::core
+        RAD["<b>AX210</b> · top-side E-key<br/><i>hotel uplink</i><br/><b>MT7922</b> · underside, via M→E adapter<br/><i>private AP</i><br/>4 × flex antennas, 2 per radio"]:::rf
+        PCB1["<b>PCB 1</b> · front control board<br/>3 keys · 4 RGB · ANO wheel · toggle"]:::ctl
+        DISP["4.26-inch e-paper<br/>over SPI"]:::ctl
+        PI === RAD
+        PI ---|keyed harness| PCB1
+        PCB1 --- DISP
+    end
+
+    CHG ==>|USB-C| PCB2
+    PCB2 ==>|"<b>the seam</b><br/>5 V over USB-C · power only"| PI
+
+    classDef ext  fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    classDef pwr  fill:#fee2e2,stroke:#dc2626,color:#0f172a
+    classDef ctl  fill:#dcfce7,stroke:#16a34a,color:#0f172a
+    classDef core fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef rf   fill:#ffedd5,stroke:#ea580c,color:#0f172a
+```
+
+Everything that transmits lives in **A**. **B** only makes 5 V and hands it
+over. Detail — including the double-sided radio stack — is in
+[01-architecture.md](docs/01-architecture.md).
+
 ## The hard requirement
 
 **Two independent Wi-Fi radios, both on 5 GHz, at the same time** — a 5 GHz
@@ -104,6 +138,32 @@ external USB-C charger
 The **Pico 2 sits beside that path, not in it** — it controls the RotoPD Pro
 over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 5 V into VSYS, **never** from the Pololu rail it may be needed to bring up.
+
+## Block schematics
+
+> [!NOTE]
+> These are **block schematics, not captured schematics.** No EDA file exists
+> yet. They show blocks, nets and the rules that must survive layout — not
+> footprints, pin numbers or values. Where a part is unchosen the block says
+> so. Treat them as the brief a PCB designer works *from*, and the docs linked
+> under each as the authority if the two ever disagree.
+
+### PCB 1 — front control board
+
+![PCB 1 block schematic: three C&K key switches to ground, an NKK toggle on a dedicated GPIO, a TLC59116 I²C driver feeding four common-anode RGB indicators, the ANO wheel on STEMMA QT, and a reserved e-paper connector, all gathered onto one keyed harness to the Orange Pi](docs/img/pcb-1-block-schematic.svg)
+
+Full spec: **[04-pcb-1-front-control.md](docs/04-pcb-1-front-control.md)**.
+Every placed part is in JLCPCB stock **except the RGB LED** — choosing it,
+together with its optic, is the critical path to a quote.
+
+### PCB 2 — power board
+
+![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, 5 V out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, driving EN with a pull-down and reading PG, with the OLED console on bus 2 and the accessory USB-C port on its own regulator](docs/img/pcb-2-block-schematic.svg)
+
+Full spec: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
+drawing exists to make unmissable: **EN needs a physical pull-down** so the
+buck is off while the Pico's GPIO is high-Z at reset, and **the accessory port
+never sees raw PD VBUS.**
 
 ## The three dimensions nobody should guess
 

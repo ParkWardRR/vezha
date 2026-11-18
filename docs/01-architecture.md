@@ -162,13 +162,17 @@ Going to a standard connector removes three problems rather than solving them:
   ground opens while a logic line is still connected.
 - Keyed, latching and commodity by definition.
 
-### The 3 A problem
+### The 5 V seam problem
 
-This is the one thing the simplification does *not* make easier.
+The simplification does not make this easier, and it is worse than it first
+looked. There are **two** constraints, and the binding one is not the obvious
+one.
+
+#### Constraint 1 — the advertisement limit
 
 > [!CAUTION]
-> **USB-C advertises at most 3 A at 5 V.** The Orange Pi 5 Plus is specified
-> at **5 V / 4 A**. A standards-compliant USB-C source cannot offer that.
+> **USB-C advertises at most 3 A at 5 V.** The Orange Pi 5 Plus is specified at
+> **5 V / 4 A**. A standards-compliant USB-C source cannot offer that.
 
 > [!WARNING]
 > **The indicators are not a rounding error.** PCB 1's four RGB indicators draw
@@ -177,21 +181,59 @@ This is the one thing the simplification does *not* make easier.
 > current crosses the seam *on top of* the board's own draw — about **8 % of
 > the 3 A ceiling** before any USB peripheral is counted.
 
-Three ways out, in order of preference:
+#### Constraint 2 — IR drop, which binds first
 
-1. **Measure actual peak draw** — board **plus** indicators plus USB load. If
-   the total stays under 3 A, advertise 5 V / 3 A (**10 kΩ ±5 % Rp**) and the
-   problem disappears. This is the outcome to aim for.
-2. **Confirm what the Orange Pi's USB-C input actually expects.** If it is a
-   PD sink wanting a specific contract, PCB 2 has to source that contract —
-   which is more than a dumb 5 V rail.
-3. **Accept a non-compliant 5 V / 4 A source.** Vendor supplies do this
-   routinely, but it is outside the standard and should be a conscious
-   decision, not a default.
+> [!CAUTION]
+> **The Pololu D42V55F5 is a fixed 5.0 V part with ±3 % accuracy — 4.85 V at
+> its worst corner.** To still deliver the USB minimum of **4.75 V** at the
+> Orange Pi, the entire round-trip loop may be no more than **25 mΩ**.
+>
+> **One USB-C mated pair is typically 30–40 mΩ on its own**, before any cable
+> or trace. In the worst tolerance corner the 5.0 V part cannot meet spec
+> through a USB-C seam at 4 A **at all.**
 
-**Peak current at the Orange Pi is now the most important measurement on this
-project** — it decides whether the seam works as a plain USB-C link. See
-[05 · Measurement](05-pcb-2-power.md#measurement-before-trusting-any-of-this).
+Loop-resistance allowance to hold 4.75 V at the Pi (`sim/04-router-rail-drop.cir`):
+
+| Regulator output | Headroom | @ 4 A | @ 3 A | @ 2 A |
+|---|---|---|---|---|
+| **5.0 V −3 % = 4.85 V** | 100 mV | **25.0 mΩ** | **33.3 mΩ** | 50.0 mΩ |
+| 5.0 V nominal | 250 mV | 62.5 mΩ | 83.3 mΩ | 125.0 mΩ |
+| **5.3 V −3 % = 5.141 V** | 391 mV | **97.8 mΩ** | 130.3 mΩ | 195.5 mΩ |
+| 5.3 V nominal | 550 mV | 137.5 mΩ | 183.3 mΩ | 275.0 mΩ |
+
+Note the 3 A column: **dropping to 3 A does not rescue the 5.0 V part.** It
+buys 33.3 mΩ, still inside the range a mated pair consumes by itself.
+
+#### The regulator choice
+
+Neither fixed part is clean:
+
+| Part | Low corner | High corner | Problem |
+|---|---|---|---|
+| **D42V55F5** (#5571) — 5.0 V | 4.85 V → **25 mΩ** | 5.15 V | Cannot make the loop budget at 4 A |
+| **D42V55F5.3** (#5572) — 5.3 V | 5.141 V → **97.8 mΩ** | **5.459 V** no-load | Above the 5.25 V some sinks tolerate |
+
+Same family, same footprint, same pinout — so this is a part-number decision,
+not a layout one.
+
+**Leaning toward the 5.3 V part (#5572)**, on this reasoning: USB-C `vSafe5V`
+is specified as **4.75–5.5 V**, so a *compliant* USB-C sink must tolerate
+5.459 V. The risk is narrow and specific — that the Orange Pi's USB-C input is
+a plain 5 V rail wearing a USB-C connector rather than a compliant sink.
+
+> [!IMPORTANT]
+> **Two measurements now gate this, not one:**
+>
+> 1. **Peak current at the Orange Pi** — board **plus** indicators plus USB load
+> 2. **The Orange Pi 5 Plus's absolute maximum input voltage** — this decides
+>    whether 5.459 V is safe, and therefore which regulator is correct
+>
+> Until both exist, do not order either regulator.
+
+**If both fail**, the honest fallback is that a USB-C seam cannot carry 4 A
+within spec, and the power seam goes back to a connector with lower contact
+resistance and fatter conductors. That reopens a decision this simplification
+closed — worth knowing before the shells are cut.
 
 ### What dropping telemetry costs
 

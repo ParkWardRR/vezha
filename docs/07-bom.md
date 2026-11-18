@@ -81,8 +81,8 @@ Notes:
 |---|---|---|---|
 | PD negotiation | CentyLab RotoPD Pro | 🟡 Chosen | **Outline, height, mounting pattern all unverified** |
 | Controller | Raspberry Pi Pico 2 (non-wireless) | 🟡 Chosen | 51 × 21 × 1 mm bare |
-| 5 V regulator | Pololu D42V55F5 (#5571) | 🟡 Chosen | 25.4 × 25.4 × 9 mm · 3 × M2 holes |
-| Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved** | **5 V power only.** Advertise 5 V/3 A (10 kΩ Rp) if the Pi measures under 3 A — see [01](01-architecture.md#the-3-a-problem) |
+| 5 V regulator | Pololu D42V55F5 (#5571) **or D42V55F5.3 (#5572)** | 🔴 **Reopened** | 25.4 × 25.4 × 9 mm · 3 × M2 holes. Same family/footprint/pinout. **The 5.0 V part's −3 % corner cannot make the seam loop budget** — see [01](01-architecture.md#the-5-v-seam-problem). Blocked on the Pi's max input voltage. |
+| Seam output | USB-C receptacle, part TBD | 🔴 **Unresolved** | **5 V power only.** Advertise 5 V/3 A (10 kΩ Rp) if the Pi measures under 3 A — see [01](01-architecture.md#the-5-v-seam-problem) |
 | Seam cable | Short USB-C to USB-C | 🔴 **Unresolved** | Captive or detachable, TBD |
 | USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
 
@@ -91,13 +91,15 @@ Notes:
 Added as cheap insurance: each is small money at design time and expensive or
 impossible once the boards are made and the boxes closed. Rationale and
 rankings in [05](05-pcb-2-power.md#cheap-insurance-worth-adding-now).
+JLCPCB codes checked 2026-11-18. **All four are `expand`**, so each adds a
+feeder fee — worth weighing against placing them at all.
 
 | Part | PN | Status | Price | Notes |
 |---|---|---|---|---|
-| Current/voltage monitor | TI **INA226** | 🟡 **Chosen** | ~$1–2 | **High-side in the 5 V output**, between Pololu VOUT and the USB-C seam receptacle — measures what the Orange Pi actually receives. On **I²C bus 1** (rail-critical). Defaults to `0x40`, strappable `0x40`–`0x4F` — **verify no collision with the RotoPD Pro.** |
-| Sense resistor | **2 mΩ** shunt, ≥1 W, low TCR | 🔴 **Unresolved** | — | 8.0 mV at 4 A = 9.8 % of INA226 range · 1.25 mA resolution · 32 mW loss. ~10× headroom for inrush that a larger shunt would clip. Kelvin-connect it. |
-| Temperature sensor | NTC thermistor, 10 kΩ typical | 🔴 **Unresolved** | ~10 ¢ | Against the **Pololu's thermal pad**, to a Pico ADC. Measures sealed-box derating with the lid closed — the condition that cannot otherwise be probed. Enables thermal foldback. |
-| Telemetry header | 3-pin 2.54 mm, or **4-pos with one blanked** as a key | 🔴 **Unresolved** | ~5 ¢ | TX/RX/GND. **Populated but unwired in Rev A** — the seam carries no signal. Silkscreen `TX→RX`. |
+| Current/voltage monitor | TI **INA226AIDGSR** · JLC `C49851` | 🟡 **Chosen** | ~$1–2 | **High-side in the 5 V output**, between Pololu VOUT and the USB-C seam receptacle — measures what the Orange Pi actually receives. On **I²C bus 1** (rail-critical). Defaults to `0x40`, strappable `0x40`–`0x4F` — **verify no collision with the RotoPD Pro.** VSSOP-10, stock 56,084. **Avoid `C2653870`** (DGST, stock 17). |
+| Sense resistor | TA-I **RLP25FEER002** · JLC `C160590` | 🟡 **Chosen** | — | 2512, 2 W, ±1 %, ±50 ppm/°C, stock 32,253. 8.0 mV at 4 A = 9.8 % of INA226 range · 1.25 mA resolution · **32 mW loss, so 2 W is ample** — pick on stock. Alt `C154685` (RALEC 3 W, stock 27,568). Kelvin-connect it. |
+| Temperature sensor | Murata **NCP18XH103F03RB** · JLC `C13564` | 🟡 **Chosen** | ~10 ¢ | 0603, 10 kΩ, B = 3380 K, ±1 %, stock 261,587. Against the **Pololu's thermal pad**, to a Pico ADC. Measures sealed-box derating with the lid closed. Enables thermal foldback. **Generic "NTC" rows are all zero stock** — match this code. |
+| Telemetry header | XFCN **PZ254V-11-03P** · JLC `C2937625` | 🟡 **Chosen** | ~5 ¢ | 1×3P vertical through-hole, 3 A/250 V, stock 1,030,846. TX/RX/GND, **populated but unwired in Rev A**. Silkscreen `TX→RX`. **`C492402` is the same MPN at zero stock — match the code, not the MPN.** |
 | Telemetry series R | 100–330 Ω ×2 | 🔴 **Unresolved** | ~2 ¢ | On TX and RX. Makes a reversed header survivable. |
 | SWD header | 3-pin 2.54 mm | 🔴 **Unresolved** | ~10 ¢ | SWCLK, SWDIO, GND. The only way in when firmware crashes before USB enumerates. |
 | Rail test points | Probe pads | 🔴 **Unresolved** | free | PD VBUS, Pololu VOUT, 3.3 V, several GND — **plus a pair at the USB-C seam output**, so "voltage at the Orange Pi under load" does not mean probing connector pins. |

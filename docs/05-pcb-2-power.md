@@ -15,7 +15,7 @@ control wiring, a front-panel console, and the mechanical anchor.
 |---|---|
 | **CentyLab RotoPD Pro** | Negotiates a PD contract over its **built-in USB-C jack**; provides switched VBUS |
 | **Raspberry Pi Pico 2** | Controller. Sequences the rail, drives the console, talks to the router |
-| **Pololu D42V55F5** (#5571) | Steps negotiated VBUS down to **regulated 5 V @ 4 A** for the Orange Pi |
+| **Pololu D42V55F5** (#5571) | Steps negotiated VBUS down to **regulated 5 V @ 4 A**. ⚠️ **Part number in question** — its 5.0 V −3 % corner cannot make the seam's loop-resistance budget. See [01 · The 5 V seam problem](01-architecture.md#the-5-v-seam-problem) |
 | **Adafruit 5297 OLED** | Front-panel display |
 | **Alps Alpine EC11E15244B2** | Front-panel push encoder, 30 detents |
 | **HRO TYPE-C-31-M-12** (`C165948`) | Side-facing 5 V accessory output |
@@ -49,10 +49,18 @@ control wiring, a front-panel console, and the mechanical anchor.
 - **The buck defaults off at startup.**
 
 > [!CAUTION]
-> **"Defaults off" is a layout requirement, not firmware.** The Pico's GPIO is
-> high-impedance at reset, so **EN needs a pull-down to ground** on the board.
-> Without it the rail state during Pico reset is undefined, and the router can
-> come up before any PD contract has been validated.
+> **Corrected: the bare buck defaults ON, not off.** The D42V55F5 pulls EN up
+> to VIN through **1 MΩ on the module**. "Defaults off" is therefore something
+> the carrier must *impose*, not something it inherits — and the Pico's GPIO is
+> high-impedance at reset, so firmware cannot do it either.
+>
+> **Fit a 1.5 kΩ pull-down on EN.** Simulation (`sim/01-buck-en-pulldown.cir`,
+> `sim/02-en-drive-high.cir`) shows **100 kΩ, 47 kΩ and 22 kΩ all leave the
+> buck enabled at 48 V input**, and even Raspberry Pi's recommended 8.2 kΩ
+> fails once RP2350-E9 pad leakage is active.
+>
+> Without this the router can come up before any PD contract has been
+> validated — the exact failure this architecture exists to prevent.
 >
 > **PG is an input to the Pico** — it is how firmware confirms the rail
 > actually came up, rather than assuming it did after asserting EN.
@@ -101,7 +109,7 @@ receives.
 
 This directly answers **the project's biggest open question** — whether the Pi
 stays under USB-C's 3 A limit at 5 V, see
-[01 · The 3 A problem](01-architecture.md#the-3-a-problem). Instead of a
+[01 · The 3 A problem](01-architecture.md#the-5-v-seam-problem). Instead of a
 one-off bench measurement with a meter in the lid, the board measures it
 continuously, with the case closed, under real load, and shows it on the OLED.
 
@@ -195,9 +203,12 @@ Side-facing, **power only**, 5 V. Part is HRO `TYPE-C-31-M-12`, JLCPCB
 `C165948`.
 
 > [!CAUTION]
-> **Do not connect this port to raw PD VBUS.** VBUS may be at 9, 12, 15 or
-> 20 V depending on the negotiated contract. Putting that on a port a user
-> plugs a phone into destroys the phone.
+> **Do not connect this port to raw PD VBUS.** The RotoPD Pro is a **240 W
+> EPR/AVS** part — **VBUS reaches 48 V**, not the 20 V an SPR-only source would
+> top out at. Putting that on a port a user plugs a phone into destroys the
+> phone.
+>
+> **The accessory regulator must be rated for 48 V input**, not 24 V.
 
 ### Requirements
 
@@ -320,7 +331,7 @@ power applied
 > only after a sink's Rd appears — does the gating a detect contact would have.
 >
 > **Caveat:** USB-C tops out at **3 A at 5 V** and the Orange Pi is specified
-> at 4 A. See [01 · The 3 A problem](01-architecture.md#the-3-a-problem).
+> at 4 A. See [01 · The 3 A problem](01-architecture.md#the-5-v-seam-problem).
 
 ## I²C bus allocation
 
@@ -356,6 +367,9 @@ charger. Cable and connector drop at several amps is the failure mode.
 4. **Buck case temperature in the closed enclosure at sustained 4 A** — this
    produces the real derating figure and decides whether the accessory port is
    viable at all
+5. **The Orange Pi's absolute maximum input voltage** — decides whether the
+   5.3 V regulator's 5.459 V high corner is safe, and therefore which Pololu
+   part is correct
 
 Also confirm which PD profiles the chosen charger actually offers, from the
 device rather than its marketing copy.
