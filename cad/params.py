@@ -188,6 +188,29 @@ class A:
     rtc_cell_d = D("rtc_cell_d", 20.0, "02#rtc-backup-cell -- 20 mm coin cell", verified=True)
     rtc_holder_h = D("rtc_holder_h", 5.0, "GUESS -- holder not selected; chemistry unresolved")
 
+    # -- Service access ---------------------------------------------------
+    # DECIDED 2026-11-18. 02 left this open: "lid, base plate, or seam split.
+    # Driven by assembly and MHF4 access, nothing else."
+    #
+    # Answer: a PERIMETER BAND with BOTH BROAD FACES as separate plates.
+    #   * 02 requires the broad faces stay clear of antennas, and all four
+    #     strips live in the narrow walls. So making the broad faces removable
+    #     costs no antenna real estate, while a mid-height seam split would
+    #     cut straight through the strips.
+    #   * The SBC mounts to the BASE PLATE on its standoffs. Pull the base and
+    #     the board leaves with it, exposing the underside M.2 stack and both
+    #     sets of MHF4 connectors at once -- which 02 names as the thing that
+    #     breaks during service and the reason access is required at all.
+    #   * The TOP CAP stays replaceable, which is exactly the hedge 04 asks
+    #     for: swap only the uplink antenna pair for domes without touching
+    #     anything else. 02 listed its survival as an open question; this
+    #     keeps it.
+    # Cost: two gasket/seam lines instead of one, and the band needs enough
+    # stiffness on its own. Neither is a reason to cut antenna zones instead.
+    SERVICE_ACCESS = "band-with-two-plates"
+    plate_t = D("plate_t", 2.5, "chosen -- base plate carries the SBC, so it is stiffer than a wall")
+    cap_t = D("cap_t", 2.0, "chosen -- top cap carries nothing but itself")
+
     # -- Derived interior -------------------------------------------------
     sbc_margin = D("sbc_margin", 4.0, "chosen cable/assembly margin around the SBC")
     standoff_h = underside_stack + COMMON.clearance_slip
@@ -199,7 +222,9 @@ class A:
 
     outer_x = interior_x + 2 * COMMON.wall
     outer_y = interior_y + 2 * COMMON.wall
-    outer_z = interior_z + 2 * COMMON.wall
+    #: Band height + the two broad plates, not 2x wall: the plates differ in
+    #: thickness because only the base carries the board.
+    outer_z = interior_z + plate_t + cap_t
 
 
 # =======================================================================
@@ -216,13 +241,30 @@ class B:
     rotopd_h = D("rotopd_h", 12.0, "GUESS -- 06: tallest component unknown")
     #: 06 U1: switched VBUS leaves on a 2-position 5 mm SCREW TERMINAL on the
     #: edge opposite the USB-C jack -- "an assembly and enclosure constraint,
-    #: not just a schematic one". Keep or remove is an open decision with a
-    #: height consequence, so it is modelled separately from the board height.
+    #: not just a schematic one".
+    #:
+    #: DECIDED 2026-11-18: REMOVE IT, solder heavy wire to the pads.
+    #:   * That path is VBUS_PD, up to 5 A at up to 48 V (06 power domains).
+    #:   * A screw terminal is the worse joint for that in a travel device --
+    #:     it loosens under the vibration and thermal cycling this product is
+    #:     defined by. A soldered joint does not.
+    #:   * It is never field-disconnected. Removing the module means
+    #:     desoldering it regardless, so the terminal buys no serviceability.
+    #:   * It was setting the box height: ~22 mm vs the encoder's 20 mm.
+    #: Cost: must be removed before the module is mounted, and it forecloses
+    #: a quick module swap. Both acceptable for a soldered-down carrier.
+    ROTOPD_SCREW_TERMINAL = False
     rotopd_screw_terminal_h = D(
         "rotopd_screw_terminal_h", 10.0,
-        "GUESS -- 06: 2-pos 5 mm screw terminal; keep-or-remove still open",
-        note="If removed and wires soldered to the pads, this drops out of the "
-             "height budget entirely. Decide before drawing the carrier.",
+        "GUESS -- 06: 2-pos 5 mm screw terminal, height never measured",
+        note="Only charged to the height budget if ROTOPD_SCREW_TERMINAL is True. "
+             "Decided False -- see the comment above.",
+    )
+    rotopd_terminal_charge = (
+        rotopd_screw_terminal_h if ROTOPD_SCREW_TERMINAL
+        else D("rotopd_terminal_removed", 0.0,
+               "DECIDED 2026-11-18 -- terminal removed, wires soldered to pads",
+               verified=True)
     )
     rotopd_mount_holes = D(
         "rotopd_mount_holes", 2.0,
@@ -297,7 +339,7 @@ class B:
     #: Above-board height only. The Pololu's 1.4 mm below-board protrusion is
     #: charged to standoff height, not to headroom.
     _above_board = [
-        rotopd_h + rotopd_screw_terminal_h,
+        rotopd_h + rotopd_terminal_charge,
         pololu_above,
         pico_stack + pico_t,
     ]

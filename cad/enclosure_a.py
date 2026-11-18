@@ -90,17 +90,35 @@ def usbc_inlet():
 
 
 def build():
-    body = lib.tray(A.outer_x, A.outer_y, A.outer_z, COMMON.wall, corner_r=CORNER_R)
-    body = body - usbc_inlet()
-    body = body + lib.standoff_grid(
+    """Three printed parts, per the service-access decision in params.A.
+
+    The band carries all four antenna zones and is never opened. The base
+    plate carries the SBC, so pulling it takes the board and the whole
+    underside M.2 stack out together. The top cap is the antenna hedge.
+    """
+    assert A.SERVICE_ACCESS == "band-with-two-plates", A.SERVICE_ACCESS
+
+    shell = lib.band(A.outer_x, A.outer_y, A.interior_z, COMMON.wall,
+                     corner_r=CORNER_R)
+    shell = shell - usbc_inlet()
+
+    # Standoffs rise from the BASE PLATE, not from the band. This is the whole
+    # point of the decision: the board leaves with the plate.
+    base = lib.plate(A.outer_x, A.outer_y, A.plate_t, COMMON.wall,
+                     corner_r=CORNER_R)
+    base = base + Pos(0, 0, float(A.plate_t)) * lib.standoff_grid(
         A.standoff_h, COMMON.standoff_od, COMMON.standoff_id,
         float(A.sbc_x) - 2 * float(A.sbc_hole_inset),
         float(A.sbc_y) - 2 * float(A.sbc_hole_inset),
     )
-    cover = lib.lid(A.outer_x, A.outer_y, COMMON.wall, corner_r=CORNER_R)
+
+    cap = lib.plate(A.outer_x, A.outer_y, A.cap_t, COMMON.wall,
+                    corner_r=CORNER_R)
+
     return {
-        "enclosure-a-tray": body,
-        "enclosure-a-lid": cover,
+        "enclosure-a-band": shell,
+        "enclosure-a-base-plate": base,
+        "enclosure-a-top-cap": cap,
         "enclosure-a-keepout-underside": underside_keepout(),
         "enclosure-a-keepout-sbc": sbc_keepout(),
         "enclosure-a-keepout-antennas": antenna_pads(),

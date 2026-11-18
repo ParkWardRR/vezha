@@ -60,6 +60,34 @@ def lid(outer_x, outer_y, wall, lip_depth=3.0, lip_clearance=0.3, corner_r=0.0):
     return plate + Pos(0, 0, -ld) * (lip_outer - lip_inner)
 
 
+def band(outer_x, outer_y, height, wall, corner_r=0.0):
+    """Perimeter band: four walls, both broad faces open.
+
+    Used where service access comes from removing a broad face rather than
+    splitting the wall -- which keeps wall-mounted antenna zones unbroken.
+    Inner floor plane is z=0; the band spans z=0..height.
+    """
+    ox, oy, h, w = map(float, (outer_x, outer_y, height, wall))
+    body = Box(ox, oy, h, align=BOTTOM)
+    if corner_r:
+        body = fillet(body.edges().filter_by(Axis.Z), float(corner_r))
+    return body - Box(ox - 2 * w, oy - 2 * w, h, align=BOTTOM)
+
+
+def plate(outer_x, outer_y, thickness, wall, lip_depth=3.0, lip_clearance=0.3,
+          corner_r=0.0):
+    """Broad face that closes one end of a band, with a locating lip."""
+    ox, oy, t, w = map(float, (outer_x, outer_y, thickness, wall))
+    ld, lc = float(lip_depth), float(lip_clearance)
+
+    face = Box(ox, oy, t, align=BOTTOM)
+    if corner_r:
+        face = fillet(face.edges().filter_by(Axis.Z), float(corner_r))
+    lip_o = Box(ox - 2 * w - 2 * lc, oy - 2 * w - 2 * lc, ld, align=BOTTOM)
+    lip_i = Box(ox - 4 * w - 2 * lc, oy - 4 * w - 2 * lc, ld, align=BOTTOM)
+    return face + Pos(0, 0, t) * (lip_o - lip_i)
+
+
 def standoff(height, outer_d, pilot_d):
     """Screw boss rising from the inner floor (z=0)."""
     h, od, pid = float(height), float(outer_d), float(pilot_d)
