@@ -262,13 +262,28 @@ Source: [the family dimension drawing](https://www.pololu.com/file/0J2180/d42v55
 |---|---|
 | Board | 25.4 × 25.4 mm, 1.57 mm thick |
 | **Mounting** | **3 holes, ⌀2.18 mm, on a 21.1 × 21.1 mm pattern, 2.2 mm in from each edge** (#2 / M2) |
+
+> [!WARNING]
+> **2.18 mm and 2.2 mm are different numbers and are easy to conflate.**
+> 2.18 mm is the **hole diameter**; 2.2 mm is the **inset from each edge**.
+> They are near-identical by coincidence. Use the 21.1 × 21.1 mm pattern for
+> the hole positions, not the inset.
 | Pin holes | 12 × ⌀1.02 mm, two rows, first row 1.27 mm from the edge |
 | **Height above board** | **6.1 mm** for items 5570–5577, which includes #5571 and #5572 |
 | Height below board | 1.4 mm |
 | Drill tolerance | ±0.1 mm · board edge ±0.3 mm |
 
 Total stack is 9.07 mm, consistent with the 9 mm figure in
-[03](03-enclosure-b-lower.md) and [07](07-bom.md). **Items 5578 and 5579 are
+[03](03-enclosure-b-lower.md) and [07](07-bom.md).
+
+> [!IMPORTANT]
+> **That 9 mm is the TOTAL stack, not the height above the board**, and the
+> split matters mechanically. Only **6.1 mm sits above** the PCB; **1.4 mm
+> hangs below it**, with the 1.57 mm board in between. The below-board part
+> is charged against **standoff height**, not against interior headroom — so
+> Enclosure B's standoffs must clear 1.4 mm plus trimmed through-hole leads
+> before anything else. Treating 9 mm as "height above board" over-sizes the
+> box and under-sizes the standoffs at the same time. **Items 5578 and 5579 are
 8.0 mm above board** — if the part number ever changes to one of those, the
 enclosure height changes with it.
 

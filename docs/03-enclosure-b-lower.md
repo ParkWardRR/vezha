@@ -20,6 +20,35 @@ Read [01-architecture.md](01-architecture.md) first.
 | **Pololu D42V55F5** (#5571) | 25.4 × 25.4 × 9 mm | Use [Pololu's drawing](https://www.pololu.com/product/5571) for the 2.54 mm through-hole pattern and the **three M2 mounting holes.** |
 | **Seam output** | USB-C receptacle, part TBD | **5 V power only** to Enclosure A. Recessed contacts, so no exposed-metal hazard when detached. |
 
+## The VBUS screw terminal
+
+**Decided 2026-11-18: remove it, and solder heavy wire to its pads.**
+
+[06 · U1](06-power-board-schematic.md#u1--rotopd-pro) establishes that the
+RotoPD Pro's switched VBUS output leaves on a **2-position 5 mm screw
+terminal** on the edge opposite the USB-C jack, and calls it "an assembly and
+enclosure constraint, not just a schematic one". It was the tallest thing on
+the board, at roughly 10 mm above the module.
+
+Why remove rather than keep:
+
+- That path is `VBUS_PD` — **up to 5 A at up to 48 V**. A screw terminal is
+  the worse joint for it in a device defined by being carried around:
+  vibration and thermal cycling are exactly what loosens one. A soldered
+  joint is not.
+- **It is never field-disconnected.** Removing the module means desoldering
+  it from its header anyway, so the terminal buys no serviceability it does
+  not already have.
+- It was setting this box's height on its own.
+
+**Cost of the decision:** the terminal has to come off before the module is
+mounted, and a quick module swap is foreclosed. Both are acceptable on a
+carrier the module is soldered to regardless.
+
+**Measure the module with the terminal already removed** — see
+[10](10-measurement-protocol.md). Measuring it fitted records ~10 mm that
+will not exist.
+
 ## Pico 2 mounting — pick one, it changes the height
 
 | Option | How | Trade-off |

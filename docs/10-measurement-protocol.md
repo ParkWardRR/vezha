@@ -1,14 +1,14 @@
 # 10 · Measurement Protocol — the three dimensions nobody should guess
 
-**Added 2026-11-18.** Everything dimensional in
-[`cad/params.py`](../cad/params.py) is gated on three measurements that need
-physical parts. This document exists so that when the parts arrive, taking them
-is a short unambiguous job rather than a research exercise.
+**Added 2026-11-18.** Three measurements gate every enclosure dimension, and
+all three need physical parts in hand. This document exists so that when the
+parts arrive, taking them is a short unambiguous job rather than a research
+exercise — and so whoever does the mechanical work is not guessing at what
+matters.
 
 > [!IMPORTANT]
-> **No measurement in this document has been taken.** It is the procedure, not
-> the result. `cad/build.py` currently reports **36 of 60 dimensions
-> unverified**, and `--strict` exits non-zero by design until that changes.
+> **No measurement in this document has been taken.** It is the procedure,
+> not the result.
 
 ## Why these three and not others
 
@@ -22,7 +22,8 @@ discovered after a case has been printed or a board fabricated:
 | 2 | **RotoPD Pro envelope** — outline, height, mounting holes | Enclosure B footprint and the power board's carrier | **40 × 30 × 12 mm**, all invented |
 | 3 | **Mated USB-C plug + cable bend radius** | Every USB-C opening in both boxes | **25 mm** |
 
-Each maps to named values in `params.py`. Nothing else needs editing.
+Everything else in [02](02-enclosure-a-upper.md) and
+[03](03-enclosure-b-lower.md) can be sized once these three are known.
 
 ---
 
@@ -134,8 +135,8 @@ If measuring:
 3. The two mounting holes flanking the USB-C jack: diameter, and X/Y from a
    defined board corner. Pick one corner and stay with it.
 4. **Measure with the screw terminal already removed**, per the
-   [2026-11-18 decision](../cad/params.py) to solder the VBUS path to its
-   pads. Measuring it fitted records ~10 mm that will not exist.
+   [2026-11-18 decision](03-enclosure-b-lower.md#the-vbus-screw-terminal) to
+   solder the VBUS path to its pads. Measuring it fitted records ~10 mm that will not exist.
 
 ## 3 · Mated USB-C plug and bend radius
 
@@ -159,26 +160,25 @@ plug and its bend radius, not the receptacle footprint."*
 
 ## Recording results
 
-For each value, in [`cad/params.py`](../cad/params.py):
+Write each measured value straight into the document that owns it —
+[02](02-enclosure-a-upper.md) for Enclosure A, [03](03-enclosure-b-lower.md)
+for Enclosure B, [06](06-power-board-schematic.md) for anything that changes
+the power board's carrier — and say in the table that it is a **measured**
+figure with the date, not a published one.
 
-1. Replace the number.
-2. Replace the `source` string with how it was measured and on what date.
-3. Set `verified=True`.
+That distinction is the whole point. Both enclosure documents currently open
+by warning that their numbers are published figures for bare parts, and the
+three above are the ones where being wrong is only discovered after a case has
+been printed or a board fabricated.
 
-Then:
+Two things to re-check after any of the three lands:
 
-```sh
-cad/.venv/bin/python cad/build.py --strict
-```
-
-`--strict` fails while any dimension remains a guess, so it goes green only
-when the model is entirely real. The derived envelopes flip from `TBD` to `ok`
-automatically — a derived value is verified only if every input is, so there
-is no way to mark an envelope real while an input is still invented.
-
-Watch for `violations()` in the same output: it checks constraints that do not
-need measurements, such as the standoffs clearing the Pololu's 1.4 mm
-below-board protrusion. A new measurement can break one of those.
+- **Enclosure A's thickness** is set by the underside stack and nothing else.
+  A new figure there moves the whole box.
+- **Standoff height in Enclosure B** must still clear the Pololu's **1.4 mm
+  below-board protrusion** ([06 · U3](06-power-board-schematic.md)) plus
+  trimmed through-hole leads. That constraint is checkable without any
+  measurement and is easy to break while changing others.
 
 ## Sources
 

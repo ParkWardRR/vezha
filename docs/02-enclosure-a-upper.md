@@ -101,6 +101,38 @@ a separate part. What replaces it is a decision, not a given:
 - If a service cover is used, it is a candidate home for the **printed Wi-Fi
   join label** that replaced the `★` key's QR screen.
 
+## How it opens — decided
+
+**Decided 2026-11-18: a perimeter band, with BOTH broad faces as separate
+plates.** This replaces the open question that previously read "lid, base
+plate, or seam split."
+
+The deciding evidence was already in this document and in
+[04](04-antennas.md): all four antenna strips live in the **narrow walls**,
+and the **broad faces stay clear**. So making the broad faces removable costs
+no antenna area, while a mid-height seam split would cut straight through the
+strips.
+
+| Part | Carries | Opens? |
+|---|---|---|
+| **Perimeter band** | All four antenna zones, the USB-C inlet | No — never opened |
+| **Base plate** | **The Orange Pi, on its standoffs** | Yes, for service |
+| **Top cap** | Nothing structural | Yes, for the antenna swap |
+
+Two things fall out of it:
+
+- **The SBC mounts to the base plate, not to the band.** Pull the base and
+  the board leaves with it, exposing the underside M.2 stack and *both* sets
+  of MHF4 connectors at once — which this document names as the thing that
+  breaks during service and the only reason access is required at all.
+- **The replaceable top cap survives**, which is exactly the hedge
+  [04](04-antennas.md) asks for: swap only the uplink antenna pair for domes
+  without disturbing anything else. That closes the open question below about
+  whether the top cap had a reason to exist once the faceplate was cut.
+
+**Cost of the decision:** two seam lines instead of one, and the band has to
+be stiff enough on its own. Neither is a reason to cut antenna zones instead.
+
 ## Power entry
 
 Enclosure A receives **5 V power only**, over a short **USB-C cable** from
@@ -192,9 +224,11 @@ the RF test in [06-antennas.md](04-antennas.md) rather than by assumption.
 - **RTC cell chemistry** — primary or rechargeable, decided by whether the
   Orange Pi's RTC header trickle-charges. Its mounting location is a thermal
   keep-out, [above](#rtc-backup-cell)
-- **How the box opens for service** — lid, base plate, or seam split. Driven
-  by assembly and MHF4 access, nothing else.
-- Whether a replaceable top cap survives as the fallback for swapping the
-  uplink antennas — it no longer has a faceplate to be part of
+- ~~**How the box opens for service**~~ — **decided 2026-11-18**: perimeter
+  band with two removable broad faces, SBC on the base plate.
+  [See above](#how-it-opens--decided)
+- ~~Whether a replaceable top cap survives as the fallback for swapping the
+  uplink antennas~~ — **yes**, it is one of the two broad faces.
+  [See above](#how-it-opens--decided)
 - ~~Display model and bracket geometry~~ — moot, [v1 is headless](01-architecture.md#the-v1-scope-cut)
 - ~~PCB 1 outline and standoff height~~ — moot, there is no PCB 1
