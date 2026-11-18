@@ -1,21 +1,26 @@
-# 09 · Background — Project Handoff
+# Retired · Original Project Handoff
 
 > [!WARNING]
-> **Historical context, partly superseded.** This was the original project
-> handoff, written before the mechanical and power architecture was settled.
-> Keep it for the *why* — goals, constraints, software direction, open design
-> tasks. For *what to build*, the current documents win wherever they
-> disagree:
+> **Fully retired. Historical record only.** This was the first handoff,
+> written before the mechanical and power architecture existed. It is kept
+> because it is the origin of several requirements, not because any of it is
+> current.
 >
-> | This document says | Superseded by |
+> **Nothing here should be designed against.** Where it disagrees with a live
+> document, the live document wins — always.
+>
+> | This document | Superseded by |
 > |---|---|
-> | Power is a 5 V / 5 A bench-supply target, converter undecided | [01](01-architecture.md) · [05](05-pcb-2-power.md) — RotoPD Pro → Pololu → Pico-gated rail |
-> | Radio fit and slot topology undetermined | [01](01-architecture.md) · [02](02-enclosure-a-upper.md) — AX210 top-side E-key, second radio on an underside adapter |
-> | A battery lives in the portable build | [03](03-enclosure-b-lower.md) — external USB-C source; internal cell is an open question |
+> | Power is a 5 V / 5 A bench-supply target, converter undecided | [01](../01-architecture.md) · [05](../05-power-board.md) — RotoPD Pro → Pololu → Pico-gated rail |
+> | Radio fit and slot topology undetermined | [01](../01-architecture.md) · [02](../02-enclosure-a-upper.md) — AX210 top-side E-key, second radio on an underside adapter |
+> | A battery lives in the portable build | [03](../03-enclosure-b-lower.md) — external USB-C source; internal cell is an open question |
+> | A touchscreen, then an e-paper panel, then physical controls | [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut) — **v1 is headless** |
 > | Repo owner, URL and creation status unverified | Repo exists and is public |
+> | Software direction, captive portal, VPN, bring-up order | **[09 · Software and bring-up](../09-software-and-bringup.md)** — carried forward live |
 >
-> The software, captive-portal, and VPN sections below are **not** superseded —
-> nothing has been implemented.
+> The software sections were the only part still load-bearing. They now live in
+> [09](../09-software-and-bringup.md); what remains below is kept verbatim as
+> the record of where the project started.
 
 ## Goal
 
@@ -49,7 +54,7 @@ and fallback policy have not been selected.
 
 The complete build needs to power the SBC, two radios, storage, and some
 USB peripheral load. A touchscreen may add to that budget. *(Moot as of
-2026-11-18 — [v1 has no display at all](01-architecture.md#the-v1-scope-cut),
+2026-11-18 — [v1 has no display at all](../01-architecture.md#the-v1-scope-cut),
 so nothing in Enclosure A draws power except the SBC and its peripherals.)*
 
 The previous bench supply target was a regulated 5 V / 5 A. This is a
@@ -106,14 +111,14 @@ login. No display, switch wiring, or button assignments are confirmed.
 
 **Superseded 2026-11-17:** the display became the Waveshare 4.26-inch
 e-Paper HAT (SKU 26376), SPI rather than HDMI and with no touch layer.
-See [10-display.md](retired/display-epaper.md).
+See [10-display.md](display-epaper.md).
 
 **Superseded again 2026-11-18 — and this one closes the thread.** Vezha v1
 has **no display and no physical controls.** The original ask above, "physical
 controls for radio enable/disable and restarting the hotel-login workflow,"
 is **not met in v1**; both move to the web UI. That is the one place the v1
 scope cut departs from the original brief rather than merely simplifying it —
-see [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut). Worth
+see [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut). Worth
 re-reading before v2, because this paragraph is the reason a front panel was
 specified in the first place.
 

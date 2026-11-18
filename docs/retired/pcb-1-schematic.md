@@ -27,7 +27,7 @@ Requirements and the reasoning behind each part choice live in
 [04-pcb-1-front-control.md](pcb-1-front-control.md); this is the electrical
 design that follows from them.
 
-Companion to [11-pcb-2-schematic.md](../06-pcb-2-schematic.md). Simulation decks
+Companion to [11-pcb-2-schematic.md](../06-power-board-schematic.md). Simulation decks
 are `sim/11`, `sim/12`, `sim/13`.
 
 > [!NOTE]
@@ -43,7 +43,7 @@ four RGB indicators, and a breakout for the e-paper display. It has **no
 regulator and no controller** — every rail arrives from the Orange Pi and every
 decision is made by the host.
 
-That is deliberate. PCB 2 is the board that must survive the host being absent;
+That is deliberate. The power board is the board that must survive the host being absent;
 PCB 1 only exists while the router is up.
 
 ## Power domains
@@ -58,8 +58,8 @@ The 5 V rail carries only LED anode current. 120 mA is the all-white
 self-test; a realistic status display is one or two indicators, under 30 mA.
 
 > [!NOTE]
-> **Tell PCB 2 about the 120 mA.** The seam budget in
-> [11](../06-pcb-2-schematic.md) sizes the router rail. If the indicators were
+> **Tell the power board about the 120 mA.** The seam budget in
+> [11](../06-power-board-schematic.md) sizes the router rail. If the indicators were
 > assumed negligible, they are not — they are up to 120 mA on the 5 V rail,
 > drawn through the same seam.
 
@@ -415,7 +415,7 @@ differs between channels, which is this case.
 | 470 nF | never reaches a valid low | ❌ |
 
 **Conclusion.** 10 kΩ / 1 kΩ / 100 nF. 100 nF over 47 nF for commonality with
-PCB 2's encoder RC — one BOM line across both boards, and PCB 2 validated that
+the power board's encoder RC — one BOM line across both boards, and the power board validated that
 value against a harder stimulus. 47 nF is the fallback if the coupon shows
 double presses.
 

@@ -505,7 +505,7 @@ exactly what the ballast option addresses.
 > and it was wrong because of the **pass criterion**, not the arithmetic. The
 > deck asked whether the filter keeps the node above V_IL for the whole bounce
 > burst — whether bounce is hidden *entirely* — which is far stricter than
-> debounce requires. The right question, which the PCB 2 encoder work asked
+> debounce requires. The right question, which the power board encoder work asked
 > correctly, is whether the input manufactures a **second edge** after it has
 > already read a valid low.
 
@@ -530,8 +530,8 @@ cap stops discharging fully during the short closures, only reaches 0.650 V,
 and then wanders back over the threshold. That is the non-obvious part.
 
 100 nF is chosen over the slightly better 47 nF for commonality: it is the same
-value PCB 2 uses on the EC11 encoder, so one BOM line covers both boards, and
-PCB 2 validated it against a harder stimulus (30 µs chatter) than this switch
+value the power board uses on the EC11 encoder, so one BOM line covers both boards, and
+the power board validated it against a harder stimulus (30 µs chatter) than this switch
 produces. **Keep 47 nF in mind if the coupon shows double presses.**
 
 Two constraints worth stating because they bound the design:
@@ -617,4 +617,4 @@ the full printed wall.
   drawing (nominal is Ø6.5 mm).
 - ANO wheel opening diameter and standoff height — set from the test coupon.
 - How `AIRPLANE` is read and enforced in software, and what drives the
-  confirmed-off LED. Relates to uplink recovery in [09-background.md](../09-background.md).
+  confirmed-off LED. Relates to uplink recovery in [09-software-and-bringup.md](../09-software-and-bringup.md).

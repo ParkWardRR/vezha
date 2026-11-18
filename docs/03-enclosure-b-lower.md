@@ -1,6 +1,6 @@
 # 03 · Enclosure B — Lower Power Box
 
-Detachable. Holds **PCB 2** and nothing else of consequence: the power chain
+Detachable. Holds **the power board** and nothing else of consequence: the power chain
 that turns an external USB-C PD supply into regulated 5 V for the router.
 
 Read [01-architecture.md](01-architecture.md) first.
@@ -24,7 +24,7 @@ Read [01-architecture.md](01-architecture.md) first.
 
 | Option | How | Trade-off |
 |---|---|---|
-| **Low profile** | Solder the **castellated edges** directly to PCB 2 | Minimum stack height. Pico is not replaceable. |
+| **Low profile** | Solder the **castellated edges** directly to the power board | Minimum stack height. Pico is not replaceable. |
 | **Replaceable** | Two 20-pin rows of **2.54 mm** headers and sockets | Taller. Pico can be swapped or removed. |
 
 If programming access is wanted in situ, **leave room for the overhanging
@@ -75,7 +75,7 @@ produce a box that does not close.
 ## Wall openings
 
 This box has **four** things reaching a wall, not one. All four constrain the
-shell before PCB 2's outline does.
+shell before the power board's outline does.
 
 | Opening | Part | Face |
 |---|---|---|
@@ -87,7 +87,7 @@ shell before PCB 2's outline does.
 ### PD input
 
 **Resolved:** the RotoPD Pro's **built-in USB-C jack is the PD input.** There
-is no separate input receptacle on PCB 2 — bring the module's own jack to the
+is no separate input receptacle on the power board — bring the module's own jack to the
 wall. That fixes the RotoPD's position relative to the shell, so its
 unverified outline now constrains the enclosure in two ways at once.
 
@@ -102,14 +102,14 @@ gets yanked by.
 
 Side-facing, **5 V power only**, on its **own regulator** — never raw PD
 VBUS, which can be at 20 V. Electrical requirements and the proposed 1.0 A
-limit are in [05-pcb-2-power.md](05-pcb-2-power.md#accessory-usb-c-output-port).
+limit are in [05-power-board.md](05-power-board.md#accessory-usb-c-output-port).
 
 ### Front-panel console
 
 > [!WARNING]
 > **Unresolved:** whether this console is *additional to* the controls in
 > Enclosure A, or *replaces* them. See
-> [05 · Unresolved conflicts](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved). Do not
+> [05 · Unresolved conflicts](05-power-board.md#previously-flagged-conflicts--both-resolved). Do not
 > cut a front panel for either box until this is settled — it decides whether
 > Enclosure B has a user-facing face at all.
 
@@ -136,6 +136,6 @@ sustained load before closing the design.
 - Charging behaviour: does the unit run while the bank is charging, through
   the same port?
 - Regulator thermal path under sustained load
-- PCB 2 outline — an output of the above, not an input
+- Power board outline — an output of the above, not an input
 
-Full electrical requirements are in [05-pcb-2-power.md](05-pcb-2-power.md).
+Full electrical requirements are in [05-power-board.md](05-power-board.md).

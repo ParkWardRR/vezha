@@ -160,4 +160,4 @@ figures were taken in free space, not on a handheld.
   mating assumptions here are based on MHF4. See
   [02-enclosure-a-upper.md](02-enclosure-a-upper.md).
 - **6 GHz AP operation remains unverified.** Do not assume it. A tri-band
-  antenna does not establish it. See [09-background.md](09-background.md).
+  antenna does not establish it. See [09-software-and-bringup.md](09-software-and-bringup.md).

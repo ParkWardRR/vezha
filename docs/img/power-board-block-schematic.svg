@@ -35,12 +35,12 @@
 
   <rect class="bg" x="0" y="0" width="1270" height="920"/>
 
-  <text class="t" x="24" y="34">Vezha · PCB 2 — power board</text>
+  <text class="t" x="24" y="34">Vezha · Power board</text>
   <text class="st" x="24" y="56">Block overview of docs/11-pcb-2-schematic.md — same reference designators, net names and values. That document is the authority; this is the one-page view of it. Nothing here is built or measured.</text>
 
   <!-- board outline -->
   <rect class="board" x="226" y="84" width="804" height="746" rx="10"/>
-  <text class="ref" x="242" y="106">PCB 2 · board outline (dashed teal) — a carrier plus a sequencing controller; the modules do the PD and the regulation</text>
+  <text class="ref" x="242" y="106">Power board · board outline (dashed teal) — a carrier plus a sequencing controller; the modules do the PD and the regulation</text>
 
   <!-- off-board input -->
   <rect class="ob" x="22" y="130" width="192" height="86" rx="6"/>

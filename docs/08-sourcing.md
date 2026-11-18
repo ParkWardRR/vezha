@@ -134,7 +134,7 @@ Type-C female, SMD, USB 2.0, rated 48 V / 5 A, −25 °C to +85 °C, RoHS.
 **Important:** 48 V / 5 A is the *connector's contact rating*, not a USB-PD
 capability. Negotiating anything above 5 V / 3 A still requires a PD sink
 controller, and 5 A specifically requires an e-marked cable. See the power
-section of [09-background.md](09-background.md) — the PD profile and the converter
+section of [09-software-and-bringup.md](09-software-and-bringup.md) — the PD profile and the converter
 feeding the board are both still unresolved.
 
 This part is not committed to the BOM. It was a lookup, not a selection.

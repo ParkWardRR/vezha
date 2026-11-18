@@ -31,7 +31,7 @@ ordered.**
 | Antenna alt | TE/Linx ANT-W63WS1-SMA | 🔵 Candidate | $12.27 ea | Blade, needs MHF4→SMA bulkheads. Not pocketable. |
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
-| UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-pcb-2-power.md#telemetry-header). |
+| UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-power-board.md#telemetry-header). |
 | Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | **v1 is headless** — [the scope cut](01-architecture.md#the-v1-scope-cut). Chosen 2026-11-17, cut 2026-11-18. Analysis kept in [10](retired/display-epaper.md). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
@@ -78,7 +78,7 @@ ordering it.
   height.
 - TLC59116 must be strapped clear of the ANO's `0x49`; `0x60` was chosen.
 
-## PCB 2 — power board
+## Power board
 
 | Part | PN | Status | Dimensions |
 |---|---|---|---|
@@ -89,11 +89,11 @@ ordering it.
 | Seam cable | Short USB-C to USB-C | 🔴 **Unresolved** | Captive or detachable, TBD |
 | USB-C receptacle | GCT USB4120-03-C (`C3445864`) | 🔵 Candidate | 48 V / 5 A **contact** rating — not a PD capability. JLC stock 1,253 as of 2026-11-17. |
 
-### PCB 2 — measurement and debug hardware
+### Power board — measurement and debug hardware
 
 Added as cheap insurance: each is small money at design time and expensive or
 impossible once the boards are made and the boxes closed. Rationale and
-rankings in [05](05-pcb-2-power.md#cheap-insurance-worth-adding-now).
+rankings in [05](05-power-board.md#cheap-insurance-worth-adding-now).
 JLCPCB codes checked 2026-11-18. **All four are `expand`**, so each adds a
 feeder fee — worth weighing against placing them at all.
 
@@ -130,7 +130,7 @@ Outputs of design work, not catalogue items:
 
 - Enclosure A shell, with service access (3D printed) — **no faceplate in v1**
 - Enclosure B shell (3D printed)
-- **PCB 2** fabrication and assembly — the only board in v1
+- **the power board** fabrication and assembly — the only board in v1
 
 ## Before ordering anything
 
@@ -144,7 +144,7 @@ Outputs of design work, not catalogue items:
    [01](01-architecture.md#the-5-v-seam-problem).
 3. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
    search. A catalog snapshot is not a commitment. This now applies only to
-   PCB 2's measurement and debug hardware, all four of which are `expand`
+   the power board's measurement and debug hardware, all four of which are `expand`
    library and each of which adds a feeder fee.
 
 Lookup method and price checking: [08-sourcing.md](08-sourcing.md).

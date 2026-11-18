@@ -1,9 +1,9 @@
-# 06 · PCB 2 — Schematic
+# 06 · Power Board — Schematic
 
 A net-by-net schematic for the power board, with every passive value either
 calculated or simulated, and the simulation that justifies it.
 
-Requirements live in [05-pcb-2-power.md](05-pcb-2-power.md). This document is
+Requirements live in [05-power-board.md](05-power-board.md). This document is
 the implementation of them, and in five places it **contradicts** them — those
 are called out in [Corrections to 05](#corrections-to-05) and are the most
 important part of this file.
@@ -16,12 +16,12 @@ podman container on `fucina`.
 > **Nothing here has been built or measured.** Simulation establishes that the
 > arithmetic and the corner cases work. It says nothing about thermals,
 > layout, EMI, or whether the modules behave as their vendors claim. The
-> measurement list in [05](05-pcb-2-power.md#measurement-before-trusting-any-of-this)
+> measurement list in [05](05-power-board.md#measurement-before-trusting-any-of-this)
 > still gates everything.
 
 ## Corrections to 05
 
-Research for this schematic found five errors in [05](05-pcb-2-power.md), each
+Research for this schematic found five errors in [05](05-power-board.md), each
 of which changes a part choice or a resistor value. **All five are now fixed in
 05 itself** — they are restated here because they are the reasoning behind
 values in the tables below, and because anyone holding an older copy of 05 is
@@ -211,7 +211,7 @@ Source: [`Documents/RotoPD_Pro_pinout.png`](https://github.com/CentyLab/RotoPD_P
 The 1×8 2.54 mm header (J4 in the vendor schematic), top to bottom with the
 USB-C jack at the top:
 
-| Pin | Name | Use on PCB 2 |
+| Pin | Name | Use on the power board |
 |---:|---|---|
 | 1 | USB_D− | not connected |
 | 2 | USB_D+ | not connected |
@@ -227,7 +227,7 @@ Also on the board:
 - **The switched VBUS output is a 2-position 5 mm screw terminal**, not header
   pins — `VBUS` and `GND`, on the edge opposite the USB-C jack. This is the
   main power path to U3's VIN, and it is an **assembly and enclosure
-  constraint**, not just a schematic one: PCB 2 cannot simply reflow the
+  constraint**, not just a schematic one: the power board cannot simply reflow the
   module down for the power path. Either land short heavy wire from the screw
   terminal, or remove the terminal and solder to its pads. Decide before
   drawing the carrier.

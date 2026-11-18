@@ -29,7 +29,7 @@ is summarised in [the v1 scope cut](../01-architecture.md#the-v1-scope-cut).
 ## Original: the chosen display for Enclosure A
 
 **Superseded the Waveshare 3.5" HDMI touchscreen** discussed in
-[09-background.md](../09-background.md#enclosure-antenna-layout-and-controls).
+[09-software-and-bringup.md](original-handoff.md#enclosure-antenna-layout-and-controls).
 
 Part: **Waveshare 4.26inch e-Paper display HAT**, SKU **26376** — 800 × 480,
 black/white, SPI. Listed at **$31.99** (the page's own quantity tier says $30.99
@@ -52,7 +52,7 @@ Three properties earn it the slot, and they are not the obvious ones:
    with the router off, which is a better behaviour than the HDMI panel could
    have offered.
 3. **No touch layer.** It removes the USB touch load from the power budget
-   in [09](../09-background.md#power-and-portability), and leaves the ANO wheel and
+   in [09](original-handoff.md#power-and-portability), and leaves the ANO wheel and
    three keys as the sole input path. That matches the control scheme already
    specified rather than competing with it.
 
@@ -135,8 +135,8 @@ toggle and keys.
 > Pico.**
 
 The absent Pico support is a point in favour of the first reading of the
-[two-interfaces conflict](../05-pcb-2-power.md#previously-flagged-conflicts--both-resolved): this panel is
-the **Orange Pi's** display. If the PCB 2 OLED survives, it is a separate
+[two-interfaces conflict](../05-power-board.md#previously-flagged-conflicts--both-resolved): this panel is
+the **Orange Pi's** display. If the power board OLED survives, it is a separate
 power-box console, not a consolidation target.
 
 ## Refresh discipline is a hard requirement
@@ -169,7 +169,7 @@ The `PWR` pin exists for this reason. It should be driven, not tied high.
 This also lands on the shutdown path. If the Orange Pi crashes or loses power
 mid-refresh and leaves the panel energised, the failure mode is a dead display,
 not a stale one. Worth deciding whether the Pico — which
-[05](../05-pcb-2-power.md) already has booting before the Orange Pi — has any role
+[05](../05-power-board.md) already has booting before the Orange Pi — has any role
 in guaranteeing the panel ends up asleep.
 
 ## What this does to the UI

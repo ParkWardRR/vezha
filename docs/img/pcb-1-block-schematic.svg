@@ -84,7 +84,7 @@
   <text class="bd" x="962" y="584">C1–C4 100 nF. The RC is a</text>
   <text class="bd" x="962" y="598">window, not a floor: 47–100 nF</text>
   <text class="bd" x="962" y="612">passes, 10 nF and 220 nF fail.</text>
-  <text class="bd" x="962" y="626">100 nF is shared with PCB 2.</text>
+  <text class="bd" x="962" y="626">100 nF is shared with the power board.</text>
 
   <!-- AIRPLANE toggle path -->
   <path class="w" d="M218 170 H260"/>

@@ -14,14 +14,14 @@ A compact **two-piece** travel router.
 |  | Enclosure | Holds | Detachable? |
 | --- | --- | --- | --- |
 | **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, the M-key→E-key adapter, all four antennas, storage. **No display, no controls, no front PCB.** | No — this is the router |
-| **B** | **Lower power box** | PCB 2: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
+| **B** | **Lower power box** | Power board: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
 
 **The governing rule:** both radios and all antennas stay in the upper
 enclosure, so **the power box comes off without disturbing any PCIe or
 antenna connection.** **Only 5 V power crosses the seam**, over USB-C.
 
 > [!NOTE]
-> **Enclosure A is headless; Enclosure B carries the only panel.** PCB 2 drives
+> **Enclosure A is headless; Enclosure B carries the only panel.** The power board drives
 > an OLED and a push encoder, and the Pico boots before the Orange Pi, so that
 > console is live first *and* is the sole piece of hardware UI in the product.
 > This was an open question that blocked both front panels; **the v1 scope cut
@@ -176,7 +176,7 @@ over 3.3 V I²C and gates the router rail.
 
 Measure voltage **at the Orange Pi** during cold boot, with both radios
 active, and with the intended USB load applied. See
-[05-pcb-2-power.md](05-pcb-2-power.md).
+[05-power-board.md](05-power-board.md).
 
 ## Crossing the seam
 
@@ -288,13 +288,13 @@ closed — worth knowing before the shells are cut.
 
 ### What dropping telemetry costs
 
-The Pico can no longer read router status, so **the PCB 2 OLED shows power and
+The Pico can no longer read router status, so **the power board's OLED shows power and
 PD state only** — input voltage, negotiated contract, rail status, fault
 reason. It cannot show uplink or client information.
 
 That was an acceptable trade when Enclosure A had its own UI to fall back on.
 **Under [the v1 scope cut](#the-v1-scope-cut) it is sharper than that:** the
-PCB 2 console is the product's *only* hardware interface, and it still cannot
+the power board's console is the product's *only* hardware interface, and it still cannot
 see anything the router knows. Input voltage, PD contract, rail status and
 fault reason are the complete set of things v1 can display.
 
@@ -304,7 +304,7 @@ router is up and you are already associated with it.** That is the v1 bargain,
 and it is worth being deliberate about: the telemetry footprint below is what
 makes it reversible.
 
-**Reserve an unpopulated 3-pin footprint** on PCB 2 for TX/RX/GND. If
+**Reserve an unpopulated 3-pin footprint** on the power board for TX/RX/GND. If
 telemetry is wanted later it is a cable, not a board respin.
 
 ## The three dimensions nobody should guess
@@ -332,7 +332,7 @@ to take, not values to look up:
 - **Enclosure A is headless in v1** — no display, no controls, no PCB 1. The
   product ships **two enclosures and one PCB.** See
   [the v1 scope cut](#the-v1-scope-cut).
-- **The OLED and encoder live on PCB 2, in Enclosure B** — previously the
+- **The OLED and encoder live on the power board, in Enclosure B** — previously the
   open question that blocked both front panels
 
 **Open — do not design against these**
@@ -357,8 +357,8 @@ to take, not values to look up:
 | You are doing | Read |
 | --- | --- |
 | Upper enclosure | [02](02-enclosure-a-upper.md) · [06](04-antennas.md) |
-| Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-pcb-2-power.md) |
-| Power board — **the only PCB in v1** | [05](05-pcb-2-power.md) — requirements · [11](06-pcb-2-schematic.md) — schematic |
+| Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-power-board.md) |
+| Power board — **the only PCB in v1** | [05](05-power-board.md) — requirements · [11](06-power-board-schematic.md) — schematic |
 | Ordering parts | [07](07-bom.md) · [08](08-sourcing.md) |
-| Project context | [09](09-background.md) |
+| Project context | [09](09-software-and-bringup.md) |
 | *Retired — kept for v2* | [04](retired/pcb-1-front-control.md) · [10](retired/display-epaper.md) · [12](retired/pcb-1-schematic.md) |

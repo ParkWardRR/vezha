@@ -1,4 +1,4 @@
-# Retired — cut from v1, kept on purpose
+# Retired — superseded or cut, kept on purpose
 
 Nothing here is built in v1. Nothing here is deleted either.
 
@@ -21,10 +21,13 @@ Reasoning for the cut, and what it bought:
 | [pcb-1-front-control.md](pcb-1-front-control.md) | Requirements for the front control board — `AIRPLANE` toggle, three keys, ANO wheel, four RGB indicators | The RGB driver design, the stale-indicator hazard, the faceplate and optics rules, the key-feel coupons |
 | [pcb-1-schematic.md](pcb-1-schematic.md) | Net-by-net schematic. **Complete and believed correct** | **Its 40-pin header map is still correct and still useful** regardless of what is attached to the Orange Pi |
 | [display-epaper.md](display-epaper.md) | Waveshare 4.26" e-paper, SKU `26376` — chosen 11-17, cut 11-18 | Refresh discipline, temperature limits, and what a slow panel does to a UI |
+| [original-handoff.md](original-handoff.md) | The first project handoff, before any mechanical or power architecture existed | **Where the requirements came from.** Its software direction was carried forward live to [09](../09-software-and-bringup.md); everything else is superseded |
 
 Retired simulation decks live in [`sim/retired/`](../../sim/retired/):
-`11-i2c-pullups`, `12-led-driver-thermal`, `13-key-debounce`. All three still
-parse and produce their recorded results.
+`11-i2c-pullups`, `12-led-driver-thermal`, `13-key-debounce`, with their output
+in [`sim/retired/RESULTS.txt`](../../sim/retired/RESULTS.txt). All three were
+re-run on 2026-11-18 after SIM-13 was corrected — that file is the corrected
+run, not the superseded one.
 
 ## Two findings that outlived the board
 
@@ -51,7 +54,7 @@ Corrected result — **10 kΩ pull-up, 1 kΩ series, 100 nF per key**:
 | 470 nF | never reaches a valid low | ❌ |
 
 **Too much capacitance fails too** — the cap stops discharging fully during
-short closures. 100 nF over 47 nF for commonality with PCB 2's encoder RC.
+short closures. 100 nF over 47 nF for commonality with the power board's encoder RC.
 
 The external 10 kΩ pull-up stays for a reason unrelated to bounce: **an
 internal pull-up is not active before pinmux runs.**
@@ -63,7 +66,7 @@ zero** — nothing is attached to the 40-pin header.
 
 ## What v1 gives up
 
-Recorded honestly in [09 · Background](../09-background.md):
+Recorded honestly in [09 · Background](../09-software-and-bringup.md):
 
 - **No at-rest status of any kind.** A powered-down or wedged Vezha shows
   nothing. The e-paper would have held its last screen with power removed.
@@ -71,5 +74,5 @@ Recorded honestly in [09 · Background](../09-background.md):
   controls; v1 does not meet that.
 - **No home for the Wi-Fi join QR code.**
 
-The only hardware panel in v1 is PCB 2's OLED and encoder, in the power box,
+The only hardware panel in v1 is the power board's OLED and encoder, in the power box,
 and it can show **power and PD state only**.

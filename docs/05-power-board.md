@@ -1,4 +1,4 @@
-# 05 · PCB 2 — Power Board
+# 05 · Power Board — Requirements
 
 A custom carrier in [Enclosure B](03-enclosure-b-lower.md) that mounts three
 modules, drives a small console, and gates power to the router.
@@ -7,7 +7,7 @@ Read [01-architecture.md](01-architecture.md) first.
 
 ## Block schematic
 
-![PCB 2 block schematic](img/pcb-2-block-schematic.svg)
+![the power board block schematic](img/power-board-block-schematic.svg)
 
 Blocks and nets only — **not a captured schematic.** Module envelopes are
 unmeasured and no EDA file exists yet. If this drawing and the text below ever
@@ -33,7 +33,7 @@ control wiring, a front-panel console, and the mechanical anchor.
 ### CentyLab RotoPD Pro
 
 - **Use its built-in USB-C jack as the PD input.** No separate input
-  receptacle on PCB 2 — bring the RotoPD's own jack to the enclosure wall.
+  receptacle on the power board — bring the RotoPD's own jack to the enclosure wall.
 - Route **negotiated VBUS and ground to the buck's VIN/GND.**
 - **SDA/SCL to the Pico.**
 
@@ -191,7 +191,7 @@ project most needs stop depending on someone remembering to take them.
 > [!IMPORTANT]
 > **Corrected 2026-11-18.** This section previously said *"hardware RC debounce
 > cannot work on a switch-to-ground input — do not reserve RC footprints."*
-> **That was wrong, and it contradicted both [11](06-pcb-2-schematic.md) and
+> **That was wrong, and it contradicted both [11](06-power-board-schematic.md) and
 > the corrected deck.** Reserve the footprints and fit the parts.
 >
 > The error was in the pass criterion, not the arithmetic. The original deck
@@ -206,7 +206,7 @@ project most needs stop depending on someone remembering to take them.
 > a safer capacitor.
 >
 > Source: `sim/retired/13-key-debounce.cir`, corrected in `a4c5201`. The deck is
-> retired along with PCB 1, but this result is why — it converges with PCB 2's
+> retired along with PCB 1, but this result is why — it converges with the power board's
 > own encoder deck, `sim/05-encoder-debounce.cir`, which had it right.
 
 ## Accessory USB-C output port
@@ -299,7 +299,7 @@ Four reasons:
 > paired with a 1.5 A advertisement.
 
 Two legal configurations, resolved in
-[11 · Accessory port](06-pcb-2-schematic.md#accessory-usb-c-output-port-j6):
+[11 · Accessory port](06-power-board-schematic.md#accessory-usb-c-output-port-j6):
 
 | | **A · Default USB** (recommended) | B · 1.5 A |
 |---|---|---|
@@ -448,7 +448,7 @@ competing interface altogether.
 
 - RotoPD Pro **outline, mounting-hole coordinates and height** — still
   blocking. Its **pinout is now resolved** from the vendor artwork — see
-  [11 · U1](06-pcb-2-schematic.md#u1--rotopd-pro) — along with two findings
+  [11 · U1](06-power-board-schematic.md#u1--rotopd-pro) — along with two findings
   that were not previously recorded: the switched VBUS output is a **5 mm
   screw terminal**, not header pins, which constrains both assembly and the
   enclosure; and there is a **3.3V pin whose direction is undocumented**,
@@ -457,7 +457,7 @@ competing interface altogether.
   reported to be an LMR51635 fed from VBUS. If so, requesting a 48 V EPR
   contract could cut the Pico's own supply. Until answered, firmware caps
   requested contracts at 20 V. See
-  [11 · Boot sequence](06-pcb-2-schematic.md#boot-sequence).
+  [11 · Boot sequence](06-power-board-schematic.md#boot-sequence).
 - `U3` 5.0 V vs 5.3 V — see
   [01 · The 5 V seam problem](01-architecture.md#the-5-v-seam-problem)
 - Seam USB-C receptacle part, and whether the Pi stays under 3 A
@@ -468,18 +468,18 @@ competing interface altogether.
 - Accessory port config **A** (Default USB) or **B** (1.5 A) — B is gated on
   the thermal measurement
 
-**Answered in [11-pcb-2-schematic.md](06-pcb-2-schematic.md)**, with the
+**Answered in [11-pcb-2-schematic.md](06-power-board-schematic.md)**, with the
 simulations behind each:
 
 | Was open | Now |
 |---|---|
-| EN pull-down value | **1.5 kΩ** — [SIM-01](06-pcb-2-schematic.md#sim-01--buck-en-pull-down) |
-| Encoder debounce: RC or firmware | **Both** — 10 kΩ / 1 kΩ / **100 nF**, plus a Gray-code decoder. [SIM-05](06-pcb-2-schematic.md#sim-05--encoder-debounce) |
+| EN pull-down value | **1.5 kΩ** — [SIM-01](06-power-board-schematic.md#sim-01--buck-en-pull-down) |
+| Encoder debounce: RC or firmware | **Both** — 10 kΩ / 1 kΩ / **100 nF**, plus a Gray-code decoder. [SIM-05](06-power-board-schematic.md#sim-05--encoder-debounce) |
 | Dedicated accessory regulator part | **LMR38020FDDAR** (`C5149193`), 80 V in — needed because VBUS reaches 48 V |
 | Accessory current limiter | **TPS2553DBVR** (`C55266`) + 22.6 kΩ R_ILIM |
 | NTC part and mounting | **NCP18XH103F03RB** (`C13564`) in a 10 kΩ divider to ADC2 |
-| Accessory Rp reference and value | **36 kΩ to +3V3** — [SIM-03](06-pcb-2-schematic.md#sim-03--accessory-cc-detection) |
+| Accessory Rp reference and value | **36 kΩ to +3V3** — [SIM-03](06-power-board-schematic.md#sim-03--accessory-cc-detection) |
 
 Full net list, designators and Pico pin map:
-[11-pcb-2-schematic.md](06-pcb-2-schematic.md).
+[11-pcb-2-schematic.md](06-power-board-schematic.md).
 Mechanical context in [03-enclosure-b-lower.md](03-enclosure-b-lower.md).

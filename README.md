@@ -16,8 +16,8 @@ there isn't one yet.
 [![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
 [![Enclosure A](https://img.shields.io/badge/enclosure%20A-headless-informational?style=flat-square)](docs/02-enclosure-a-upper.md)
 [![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%20RotoPD%20envelope-red?style=flat-square)](docs/03-enclosure-b-lower.md)
-[![PCB 1](https://img.shields.io/badge/PCB%201-retired%20in%20v1-lightgrey?style=flat-square)](docs/retired/pcb-1-front-control.md)
-[![PCB 2](https://img.shields.io/badge/PCB%202-spec%20ready-success?style=flat-square)](docs/05-pcb-2-power.md)
+[![Front panel](https://img.shields.io/badge/front%20panel-retired%20in%20v1-lightgrey?style=flat-square)](docs/retired/)
+[![Power board](https://img.shields.io/badge/power%20board-spec%20ready-success?style=flat-square)](docs/05-power-board.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
 [![Host](https://img.shields.io/badge/host-Orange%20Pi%205%20Plus-F47B20?style=flat-square)](docs/02-enclosure-a-upper.md)
@@ -27,11 +27,11 @@ there isn't one yet.
 [![Bands](https://img.shields.io/badge/5%20GHz-simultaneous%20up%20%2B%20down-success?style=flat-square)](#the-hard-requirement)
 [![Antennas](https://img.shields.io/badge/antennas-4%C3%97%20internal%20flex-blueviolet?style=flat-square)](docs/04-antennas.md)
 
-[![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-pcb-2-power.md)
-[![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-pcb-2-power.md)
-[![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-pcb-2-power.md)
+[![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-power-board.md)
+[![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-power-board.md)
+[![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-power-board.md)
 [![UI](https://img.shields.io/badge/router%20UI-web%20only-795548?style=flat-square)](docs/01-architecture.md#the-v1-scope-cut)
-[![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20box-FF6F00?style=flat-square)](docs/05-pcb-2-power.md)
+[![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20box-FF6F00?style=flat-square)](docs/05-power-board.md)
 [![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/07-bom.md)
 
 [![Last commit](https://img.shields.io/github/last-commit/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
@@ -61,7 +61,7 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 | | Deliverable | Contents | Status |
 |---|---|---|---|
 | **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, M→E adapter, four antennas, storage. **Headless — sealed shell, no panel** | Ready to design |
-| **B** | **Lower power box** | PCB 2 only — detachable | Blocked on 3 measurements |
+| **B** | **Lower power box** | Power board only — detachable | Blocked on the RotoPD envelope |
 | **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
 | ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#the-v1-scope-cut) | Design complete, not built |
 
@@ -69,7 +69,7 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 > **v1 has no display and no controls in the router box.** The e-paper panel,
 > three keys, nav wheel, toggle and RGB indicators were all specified, sourced
 > and simulated — then cut for scope on 2026-11-18. The router's entire UI is
-> the **web UI**; the only hardware panel in the product is PCB 2's OLED and
+> the **web UI**; the only hardware panel in the product is the power board's OLED and
 > encoder, in the power box, and it can show **power and PD state only.**
 > Reasoning and what it buys: [01 · The v1 scope cut](docs/01-architecture.md#the-v1-scope-cut).
 
@@ -84,7 +84,7 @@ flowchart LR
     CHG([external USB-C<br/>PD charger or bank]):::ext
 
     subgraph B["ENCLOSURE B · lower power box — detachable"]
-        PCB2["<b>PCB 2</b> · power board<br/>RotoPD Pro → Pico 2 → Pololu<br/>OLED + encoder console<br/>accessory USB-C out"]:::pwr
+        PCB2["<b>Power board</b><br/>RotoPD Pro → Pico 2 → Pololu<br/>OLED + encoder console<br/>accessory USB-C out"]:::pwr
     end
 
     subgraph A["ENCLOSURE A · upper router box"]
@@ -155,12 +155,12 @@ over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 > exists yet, and nothing here has been built or measured.** Where the drawing
 > and the document disagree, the document wins.
 
-### PCB 2 — power board — *the only board in v1*
+### Power board — *the only board in v1*
 
-![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/pcb-2-block-schematic.svg)
+![Power board block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/power-board-block-schematic.svg)
 
-Schematic: **[11-pcb-2-schematic.md](docs/06-pcb-2-schematic.md)** ·
-requirements: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
+Schematic: **[11-pcb-2-schematic.md](docs/06-power-board-schematic.md)** ·
+requirements: **[05-power-board.md](docs/05-power-board.md)**. The two rules the
 drawing exists to make unmissable: the bare buck **defaults on** — the module
 pulls EN to VIN through 1 MΩ, so **R1 at 1.5 kΩ** has to impose off — and
 **the accessory port never sees raw VBUS_PD**, which on a 240 W EPR part
@@ -193,18 +193,20 @@ out of the path.
 | **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the double-sided board problem, antenna zones, USB-C inlet, thermal |
 | **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, wall openings |
 | **04** | [Antennas](docs/04-antennas.md) | RF + mechanical | Four placements with orientation, candidates and gain, tri-band clarification, RF bench test |
-| **05** | [PCB 2 — requirements](docs/05-pcb-2-power.md) | PCB | What the board must do: module interfaces, the rules that must survive layout, headroom, measurement plan |
-| **06** | [PCB 2 — schematic](docs/06-pcb-2-schematic.md) | PCB | Net-by-net, every passive calculated or simulated, Pico 2 pin map |
+| **05** | [Power board — requirements](docs/05-power-board.md) | PCB | What the board must do: module interfaces, the rules that must survive layout, headroom, measurement plan |
+| **06** | [Power board — schematic](docs/06-power-board-schematic.md) | PCB | Net-by-net, every passive calculated or simulated, Pico 2 pin map |
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, JLCPCB codes, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
-| **09** | [Background](docs/09-background.md) | Context | Original handoff and what v1 gives up. Partly superseded — kept for the *why* |
+| **09** | [Software & bring-up](docs/09-software-and-bringup.md) | **Software** | The only live software doc — captive portal, VPN, uplink recovery, and the bring-up order. **Nothing implemented** |
 
-**[docs/retired/](docs/retired/)** — the display, PCB 1 requirements and PCB 1
-schematic, cut from v1 on 2026-11-18. Complete work, kept so a v2 panel
-inherits it. Two findings there outlived the board: the corrected RC debounce
-window, and the 40-pin header map, which stays valid regardless.
+**[docs/retired/](docs/retired/)** — the display, PCB 1 requirements, the PCB 1
+schematic, and the original project handoff. Complete work, kept so a v2 panel
+inherits it rather than rediscovering it. Three things there outlived their
+documents: the corrected RC debounce window, the 40-pin header map, and the
+original brief's ask for physical radio controls — the one requirement v1
+does not meet.
 
-**[sim/](sim/)** — ngspice decks. `01`–`06` back the PCB 2 schematic;
+**[sim/](sim/)** — ngspice decks. `01`–`06` back the power-board schematic;
 `sim/retired/` holds the three PCB 1 decks.
 
 ## Decision status
