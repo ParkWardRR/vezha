@@ -64,7 +64,7 @@ re-check before ordering.
 |---|---|---:|---:|---|---|
 | TI `TLC59116IPWR` LED driver | `C131194` | 3,611 | 3,463 | $1.79 / $1.11 | ✅ **Available**, TSSOP-28 |
 | GCT `USB4120-03-C` USB-C | `C3445864` | 1,253 | 896 | $1.37 / $0.87 | ✅ **Available** |
-| C&K `KSC221JLFS` switch *(alt)* | `C221726` | 16,623 | 15,660 | $0.76 / $0.46 | ✅ **Available**, 6.2 × 6.2 mm J-lead |
+| C&K `KSC221JLFS` switch **(chosen)** | `C221726` | 16,623 | 15,660 | $0.76 / $0.46 | ✅ **Available**, 6.2 × 6.2 mm J-lead |
 | APEM/MEC `6CJ1NOPR` switch | `C5518654` | **0** | −1 (unclear) | $5.66 / $3.94 | ❌ Not placeable |
 | NKK `MN12LL4G01` toggle | `C20103999` | **0** | 0 | $15.13 / $15.13 | ❌ Not placeable |
 | MEC `10G09` keycap | `C5381950` | **0** | 0 | $1.18 (min 8) | ❌ Not placeable |
@@ -91,9 +91,10 @@ Three things this settles:
    name — the 6C switch, both keycaps, the NKK toggle — is at zero stock with no
    pre-order. That is the split the build already assumed: JLC assembles the
    electronics, the controls go in by hand.
-2. **The C&K alternative is the only tactile switch actually in stock**, at
-   16,623 pieces and $0.46 in hundreds. Match the code exactly — the bare
-   `KSC221J` listing (`C19458559`) is a separate zero-stock row.
+2. **The C&K part is the only tactile switch actually in stock**, at 16,623
+   pieces and $0.46 in hundreds — which is why it was chosen on 2026-11-17.
+   Match the code exactly: the bare `KSC221J` listing (`C19458559`) is a
+   separate zero-stock row.
 3. **Nothing on this list is a `basic` part.** All are `expand`, so any
    assembled board here pays the extended-part feeder fee per distinct part.
 

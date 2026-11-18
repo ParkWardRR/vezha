@@ -39,44 +39,40 @@ ordered.**
 | Part | PN | Qty | Status | Price |
 |---|---|---:|---|---|
 | Nav wheel | Adafruit #6310 ANO I²C module | 1 | 🔵 Candidate | $13.95 |
-| Key switches | APEM Ultramec 6C `6CJ1NOPR` | 5 | 🔵 Candidate | $3.07 ea |
-| Keycaps | APEM/MEC `10G09` black, `10G08` red | 5 | 🔵 Candidate | ~$1–2 ea (est.) |
+| Key switches | **C&K `KSC221JLFS`** · LCSC `C221726` | 5 | 🟡 **Chosen** | $0.76 ea · $0.46 @100 |
+| Plungers | Printed — no catalogue part | 3 | 🔴 **Design work** | — |
 | Toggle | NKK `MN12LL4G01` | 1 | 🔵 Candidate | ~$11 |
-| LED driver | TI `TLC59116IPWR` | 1 | 🔵 Candidate | — |
+| LED driver | TI `TLC59116IPWR` · LCSC `C131194` | 1 | 🟡 **Chosen** | $1.79 ea · $1.11 @100 |
 | RGB LEDs | Common-anode SMD | 4 | 🔴 **Unresolved** | — |
 | Light pipes / diffusers | — | 4 | 🔴 **Unresolved** | — |
-| Switch alt (SMD) | C&K `KSC221J LFS` | — | 🔵 Candidate | ~$0.52 |
-| Switch alt (through-hole) | MEC Multimec 5G `5GTH935` | — | 🔵 Candidate | — |
+| Switch, rejected | APEM Ultramec 6C `6CJ1NOPR` | — | ⬜ Rejected | $3.07 DigiKey · 0 stock at JLC |
+| Switch, rejected | MEC Multimec 5G `5GTH935` | — | ⬜ Rejected | Through-hole, 0 stock at LCSC |
 
-**Controls subtotal ≈ $45–50** including spares, before cables, shipping, and
-PCB assembly.
+**Controls subtotal ≈ $29–32** including spares, before cables, shipping, and
+PCB assembly. *(Down from ~$45–50: the switch went from $3.07 to $0.76 and the
+$1–2 keycaps became printed plungers.)*
 
 Notes:
-- Populate **3 of 5** switches; keep 2 spare. 6C is firm at ~3.6 N — test one.
-  (LCSC's listing says 3.7 N.)
-- C&K alt is **not a drop-in**: different footprint, needs its own plunger.
-- Multimec 5G alt is **through-hole** — solderable with an iron, 3.5 N, 10 M
-  cycles — but it is 10 × 10 × 6.4 mm against the 6C's 8 × 8 × 2.5 mm and takes
-  the `1Z`/`1S` cap families, **not** the 10G caps above. Also not a drop-in.
+- Populate **3 of 5** switches; keep 2 spare.
+- **The KSC has no cap system.** Three printed plungers replace the MEC 10G
+  caps, and **travel is only 0.6 mm** against the 6C's 2.5 mm. The plunger
+  stack is now the highest-risk mechanical item on the front panel — see
+  [04](04-pcb-1-front-control.md#plunger-design).
+- At ~2 N the keys are lighter than the 6C's ~3.6 N. `MAC` stays recessed.
 - **RGB LED and its optic must be chosen as a pair** — they set standoff height.
 - TLC59116 must be strapped to an address **not** colliding with the ANO's `0x49`.
 
-**JLCPCB assembly availability, checked 2026-11-17** — full results and codes in
+**JLCPCB assembly, checked 2026-11-17** — codes and price ladders in
 [08-sourcing.md](08-sourcing.md#looked-up-so-far):
 
-- ✅ `TLC59116IPWR` (`C131194`) in stock, 3,611 · $1.11 @100.
-- ❌ `6CJ1NOPR` (`C5518654`), NKK `MN12LL4G01` (`C20103999`), and both keycaps
-  are **zero stock with no pre-order** — JLC cannot place them. Only the switch
-  matters: the toggle is panel-mount and the caps press on by hand, so neither
-  was ever a machine-placed part. Source all three from DigiKey.
-- ❌ The through-hole alternatives are **also** zero stock at LCSC — Multimec
-  `5GTH935`/`5GTH920` and the whole C&K `PTS645` range. Fine if you are hand-
-  sourcing, but there is no JLC fallback for them later. The only through-hole
-  tactiles actually in stock are generic Alps `SKHH` (6 × 6 mm, ~$0.09–0.17).
-- ✅ The C&K alt `KSC221JLFS` (`C221726`) is in stock at 16,623 · $0.46 @100 —
-  the only tactile switch here JLC can actually place.
-- Every part checked is an `expand` (extended) library part, so each distinct one
-  adds a feeder fee to an assembly order.
+- ✅ Switch `C221726` — 16,623 in stock. ✅ Driver `C131194` — 3,611 in stock.
+- 🔴 **The RGB LED is the only unsourced placed part**, and therefore the
+  critical path to an assembly quote for this board.
+- Both chosen parts are `expand` (extended) library, so each carries a feeder
+  fee. Confirm in the quote, not from the catalog.
+- The rejected switches and both keycaps read **zero stock with no pre-order**
+  at LCSC, as do all the through-hole alternatives (Multimec 5G, C&K `PTS645`).
+  That is what settled the choice.
 
 ## PCB 2 — power board
 
@@ -106,13 +102,14 @@ Outputs of design work, not catalogue items:
 
 ## Before ordering anything
 
-1. **Buy one of each control first.** One NKK toggle, one 6C switch with cap,
-   one ANO, one RGB LED with its optic. Print the test coupons in
-   [04](04-pcb-1-front-control.md) before committing to a four-indicator board.
+1. **Buy one of each control first.** One NKK toggle, a few KSC switches, one
+   ANO, one RGB LED with its optic. Print the test coupons — including plungers
+   at two or three lengths — in [04](04-pcb-1-front-control.md) before
+   committing to a four-indicator board.
 2. **Confirm JLCPCB assembly sourcing in the quote**, not from a catalog
-   search. The catalog check on 2026-11-17 says the TLC59116 is in stock and the
-   6C switch, toggle and keycaps are not; the RGB LED has no part number yet. A
-   catalog snapshot is not a commitment — the quote is.
+   search. As of 2026-11-17 the switch and driver are both in stock and the RGB
+   LED has no part number yet. A catalog snapshot is not a commitment — the
+   quote is.
 3. **Measure, don't look up**, the three dimensions in
    [01-architecture.md](01-architecture.md#the-three-dimensions-nobody-should-guess).
 

@@ -13,6 +13,10 @@ nominal bushing diameter.
 > (`LINK` / `MAC` / `F1` / `F2`). Adding the ANO navigation wheel makes two
 > general-purpose function keys redundant, so the front row drops to three
 > action keys and the wheel handles browsing and selection.
+>
+> **2026-11-17.** The key switch is now the **C&K `KSC221JLFS`**, replacing the
+> APEM Ultramec 6C. JLCPCB can place it; it cannot place the 6C. The MEC 10G
+> keycaps go with it, replaced by printed plungers against 0.6 mm of travel.
 
 ## Concept
 
@@ -105,7 +109,7 @@ on the front panel — more than the wheel opening.
 |---|---|---|
 | `AIRPLANE` | Maintained `RADIOS / OFF`. Read it before bringing up wireless; keep Ethernet available. | **Dedicated Orange Pi GPIO, independent of the ANO.** |
 | `LINK` | Tap: uplink / IP / portal status. Hold: retry the uplink. | One GPIO per key, switch to ground. |
-| `MAC` | Tap: show current uplink MAC. Hold 2 s: rotate it and reconnect. Factory-MAC restore stays in the menu. | Same switch as `LINK`, but **cap set lower** so it feels different and is harder to hit by accident. |
+| `MAC` | Tap: show current uplink MAC. Hold 2 s: rotate it and reconnect. Factory-MAC restore stays in the menu. | Same switch as `LINK`, but **plunger set lower** so it feels different and is harder to hit by accident. At ~2 N this matters more than it did at 3.6 N. |
 | `★` | Wi-Fi join QR code; user-assignable later. | One GPIO. For a second shortcut, reserve a fourth footprint but **do not cut the first faceplate for it.** |
 | ANO wheel | Rotate to browse, center to select, left to go back. Leave the other directions unassigned until there is a real use. | 3.3 V, GND, SDA, SCL over STEMMA QT; default address `0x49`. An `INT` wire or test pad is optional for event-driven input — **it is not carried on the four-wire QT cable.** |
 | `RECOVERY` *(optional, hidden)* | Boot a known wired management profile. **No factory wipe.** | Reserve the footprint behind a pinhole by the Ethernet ports or inside the service cover — not on the front row. |
@@ -132,9 +136,10 @@ the panel has. See [10-display.md](10-display.md#what-this-does-to-the-ui).
 **One independently programmable RGB indicator beside each control** —
 `AIRPLANE`, `LINK`, `MAC`, `★`.
 
-Keep the APEM 6C switches and their **opaque** caps. The light goes through a
-**separate flush diffuser above each label**, not through the keycap. This gives
-a readable panel without changing how the buttons feel.
+Keep the plungers **opaque**. The light goes through a **separate flush diffuser
+above each label**, never through the plunger. This gives a readable panel
+without changing how the buttons feel — and it keeps the indicator working
+whether or not a key is pressed.
 
 ### Parts (Rev A)
 
@@ -171,58 +176,51 @@ the panel would claim the radios are off when nothing is confirming it.
 Prototype **one key and one light pipe in the same printed coupon** as the
 mechanical test below, before ordering the faceplate. Check it in a dark room
 *and* in daylight. The target is an even, readable dot with **no visible
-hotspot and no glow leaking around the keycap.**
+hotspot and no glow leaking around the plunger.**
 
-The driver is in JLCPCB stock (see below); the RGB LED has no part number yet,
-so its stock and optic pairing are still open. Confirm both in the assembly
-quote before locking footprints.
+The driver is in JLCPCB stock; the RGB LED has no part number yet, so its stock
+and optic pairing are still open. **It is now the only unsourced placed part on
+this board** — see below.
 
 ## Before sending the board to JLCPCB
 
-**Assembly availability and switch choice are separate decisions.**
-
-JLCPCB catalog check, 2026-11-17 — codes and price ladders in
+**Every placed part on this board is in JLCPCB stock except the RGB LED.**
+Catalog check 2026-11-17 — codes and price ladders in
 [08-sourcing.md](08-sourcing.md#looked-up-so-far):
 
 | Part | Code | JLC can place it? |
 |---|---|---|
-| TI `TLC59116IPWR` | `C131194` | ✅ Yes — 3,611 in stock |
-| APEM/MEC `6CJ1NOPR` | `C5518654` | ❌ No — 0 stock, no pre-order |
-| C&K `KSC221JLFS` *(alt)* | `C221726` | ✅ Yes — 16,623 in stock |
+| C&K `KSC221JLFS` switch | `C221726` | ✅ Yes — 16,623 in stock |
+| TI `TLC59116IPWR` driver | `C131194` | ✅ Yes — 3,611 in stock |
 | RGB LED | — | 🔴 No part number chosen |
 
-**Only the switch is a real sourcing problem.** The toggle is panel-mount with
-leads to the board and the caps press on by hand — see the
-[bill of materials](#bill-of-materials) above. Neither was ever going to be
-machine-placed, so their zero stock at JLC is not a blocker, just a note that
-they come from DigiKey. The ANO is a module on its own standoffs.
+So **the RGB LED is the only thing standing between this board and a quote.**
+Choosing it — with its optic — is the critical path for PCB 1.
 
-For the switch, keeping the 6C means **leaving the three positions unpopulated**
-and installing DigiKey parts with paste and hot air or a small reflow setup. The
-6C uses **J-leads**, so do not plan around hand-soldering with an iron — that
-constraint is the strongest argument for the through-hole 5G in
-[Switch options](#why-this-switch), which an iron handles.
+Nothing else on the front panel is a sourcing question. The toggle is
+panel-mount with leads to the board, the plungers are printed, and the ANO is a
+module on its own standoffs — none were ever machine-placed parts.
 
-Restocking does not change the economics — JLC quotes the 6C at $3.94 in
-hundreds against $3.07 at DigiKey.
-
-With the switch hand-installed on any of the three paths, PCB 1's JLC BOM comes
-down to the **driver, the RGB LEDs, passives and connectors** — all placeable
-once the LED is chosen. That is the board to quote.
+Both are `expand` library parts, so the quote carries an extended-part feeder
+fee per distinct part. Confirm stock in the quote itself, not from the catalog.
 
 ## Mechanical test coupon
 
 Buy the ANO and switches **before** freezing the mechanical stack. Print a small
-faceplate coupon with the wheel opening and **two cap openings — one flush, one
-recessed.** With the real parts mounted, check:
+faceplate coupon with the wheel opening and **two plunger openings — one flush,
+one recessed** — with printed plungers in both. With the real parts mounted,
+check:
 
 1. All four wheel directions and the center press without the wheel rubbing
-2. Caps return freely with no preload
-3. The recessed `MAC` position feels distinct from the flush keys
-4. The toggle pulls easily against its locking detent
+2. Plungers return freely with **no preload on the switch at rest**
+3. **The 0.6 mm throw is reachable and crisp** through the plunger, not mushy
+4. The recessed `MAC` position feels distinct from the flush keys
+5. The toggle pulls easily against its locking detent
 
-If the through-hole 5G is in play, **coupon both switch bodies.** They differ by
-3.9 mm in height and take different caps, so one coupon cannot answer for both.
+Item 3 is the new one and the reason this coupon matters more than it used to.
+With the MEC cap system gone, the plunger geometry is the only thing standing
+between a crisp key and a vague one, and 0.6 mm is not much to aim at. **Print
+plungers at two or three lengths** and keep the one that feels right.
 
 Then set standoff height and PCB outlines.
 
@@ -251,14 +249,16 @@ the full printed wall.
 
 ## Open questions
 
-- ~~JLCPCB assembly sourcing for `6CJ1NOPR` and the TLC59116IPWR driver~~ —
-  checked 2026-11-17: driver in stock, switch not. RGB LED sourcing stays open
-  because no part number is chosen.
-- **Switch termination: SMD 6C or through-hole 5G.** Decides the footprint, the
-  cap series, and 3.9 mm of standoff height. See
-  [Switch options](#why-this-switch).
-- Which cap replaces `10G09`/`10G08` if the 5G is chosen — the `1Z` and `1S`
-  families are what APEM lists, none of them verified here.
+- ~~JLCPCB assembly sourcing~~ and ~~the switch choice~~ — **settled
+  2026-11-17.** C&K `KSC221JLFS` (`C221726`), machine-placed. The RGB LED is now
+  the only unsourced placed part and the critical path to a quote.
+- **Plunger geometry** — length, retention, and the two `MAC`-vs-flush heights,
+  against only 0.6 mm of switch travel. See [Plunger design](#plunger-design).
+  Highest-risk mechanical item on the panel.
+- `KSC221JLFS` PCB footprint and recommended land pattern, from the C&K
+  datasheet — not yet pulled.
+- Whether ~2 N is light enough to cause accidental `MAC` presses in a bag, with
+  the plunger recessed.
 - Display connector on this board, and whether SPI is routed through it to the
   Orange Pi — see [10-display.md](10-display.md#interface-and-wiring).
 - Whether paged e-paper navigation suits the ANO wheel at all —
@@ -271,7 +271,5 @@ the full printed wall.
 - NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
   drawing (nominal is Ø6.5 mm).
 - ANO wheel opening diameter and standoff height — set from the test coupon.
-- Whether 3.6 N is acceptable, or the build moves to the C&K KSC at ~2 N with a
-  new footprint and plunger.
 - How `AIRPLANE` is read and enforced in software, and what drives the
   confirmed-off LED. Relates to uplink recovery in [09-background.md](09-background.md).
