@@ -44,8 +44,10 @@ ordered.**
 | Plungers | Printed — no catalogue part | 3 | 🔴 **Design work** | — |
 | Toggle | NKK `MN12LL4G01` | 1 | 🔵 Candidate | ~$11 |
 | LED driver | TI `TLC59116IPWR` · LCSC `C131194` | 1 | 🟡 **Chosen** | $1.79 ea · $1.11 @100 |
-| RGB LEDs | Common-anode SMD | 4 | 🔴 **Unresolved** | — |
-| Light pipes / diffusers | — | 4 | 🔴 **Unresolved** | — |
+| RGB LEDs | **MEIHUA `MHPA2525RGBDT-S`** · LCSC `C404285` | 4 | 🟡 **Chosen** | $0.091 ea |
+| LED current-set R | 1.87 kΩ 1% on `REXT` — sets 10 mA/ch | 1 | 🟡 **Chosen** | — |
+| Display connector | JST GH 9-pin `SM09B-GHS-TB` · LCSC `C265420` | 1 | 🟡 **Chosen** | $0.39 |
+| Diffuser windows | Printed into the faceplate — no catalogue part | 4 | 🔴 **Design work** | — |
 | Switch, rejected | APEM Ultramec 6C `6CJ1NOPR` | — | ⬜ Rejected | $3.07 DigiKey · 0 stock at JLC |
 | Switch, rejected | MEC Multimec 5G `5GTH935` | — | ⬜ Rejected | Through-hole, 0 stock at LCSC |
 
@@ -56,7 +58,8 @@ $1–2 keycaps became printed plungers.)*
 Notes:
 - Populate **3 of 5** switches; keep 2 spare.
 - **The KSC has no cap system.** Three printed plungers replace the MEC 10G
-  caps, and **travel is only 0.6 mm** against the 6C's 2.5 mm. The plunger
+  caps, and **travel is only 0.35 mm nominal** (0.25-0.65 mm band) against the
+  6C's 2.5 mm. The plunger
   stack is now the highest-risk mechanical item on the front panel — see
   [04](04-pcb-1-front-control.md#plunger-design).
 - At ~2 N the keys are lighter than the 6C's ~3.6 N. `MAC` stays recessed.
@@ -67,8 +70,9 @@ Notes:
 [08-sourcing.md](08-sourcing.md#looked-up-so-far):
 
 - ✅ Switch `C221726` — 16,623 in stock. ✅ Driver `C131194` — 3,611 in stock.
-- 🔴 **The RGB LED is the only unsourced placed part**, and therefore the
-  critical path to an assembly quote for this board.
+- ✅ LED `C404285` — 8,253 in stock. ✅ Display connector `C265420` — 7,140.
+- **Every placed part on PCB 1 is now sourced.** The board can be quoted once
+  the footprints are confirmed.
 - Both chosen parts are `expand` (extended) library, so each carries a feeder
   fee. Confirm in the quote, not from the catalog.
 - The rejected switches and both keycaps read **zero stock with no pre-order**

@@ -16,7 +16,15 @@ nominal bushing diameter.
 >
 > **2026-11-17.** The key switch is now the **C&K `KSC221JLFS`**, replacing the
 > APEM Ultramec 6C. JLCPCB can place it; it cannot place the 6C. The MEC 10G
-> keycaps go with it, replaced by printed plungers against 0.6 mm of travel.
+> keycaps go with it, replaced by printed plungers against 0.35 mm of travel.
+
+## Block schematic
+
+![PCB 1 block schematic](img/pcb-1-block-schematic.svg)
+
+Blocks and nets only — **not a captured schematic.** No EDA file exists yet and
+no footprint has been pulled. If this drawing and the text below ever disagree,
+**the text wins.**
 
 ## Concept
 
@@ -61,7 +69,7 @@ LED is chosen. Nothing on it needs hand reflow.
 | Termination | SMD J-lead | SMD J-lead | Through-hole |
 | Body | **6.2 × 6.2 mm** | 8 × 8 mm, h 2.5 mm | 10 × 10 mm, h 6.4 mm |
 | Force | **~2 N** | ~3.6 N | 2.0 / 3.5 / 6.5 N |
-| Travel | **0.6 mm** | 2.5 mm | — |
+| Travel | **0.35 mm** (0.25–0.65) | 2.5 mm | — |
 | Caps | **None — plunger** | 10G series | `1Z`/`1S` families |
 | JLC stock | ✅ **16,623** | ❌ 0 | ❌ 0 |
 | Price @100 | **$0.46** | $3.94 | — |
@@ -70,8 +78,8 @@ What this costs, stated plainly:
 
 - **The MEC cap system is gone**, and with it the "buy two caps and you have a
   premium panel" shortcut. Plungers are now a designed part.
-- **Travel drops from 2.5 mm to 0.6 mm.** This is the bigger change, more than
-  the force. A 0.6 mm throw is a short, crisp click with very little room for
+- **Travel drops from 2.5 mm to 0.35 mm nominal.** This is the bigger change,
+  more than the force. That throw is a short, crisp click with very little room for
   tolerance in the plunger stack — see below.
 - **Lighter at ~2 N.** Fine for `LINK` and `★`; it makes accidental presses more
   likely on `MAC`, which is why that key stays recessed.
@@ -88,7 +96,7 @@ the catalogue no longer does for you, so it carries the risk.
 
 Constraints:
 
-- **0.6 mm of travel is the whole budget.** Print tolerance, plunger length and
+- **0.35 mm of travel is the whole budget** (0.25 mm worst case). Print tolerance, plunger length and
   standoff height all land in it. Too long and the switch is preloaded or dead;
   too short and the key feels mushy and vague.
 - **No preload at rest.** The plunger must sit off the switch with the key
@@ -203,6 +211,188 @@ module on its own standoffs — none were ever machine-placed parts.
 
 Both are `expand` library parts, so the quote carries an extended-part feeder
 fee per distinct part. Confirm stock in the quote itself, not from the catalog.
+
+## Decisions taken 2026-11-18
+
+Six open items, all closed against datasheets rather than catalogue blurbs.
+Datasheets read: C&K KSC series (B-49 to B-52), TI TLC59116 (SLDS157E).
+
+| # | Decision | Answer |
+|---|---|---|
+| 1 | RGB LED | **MEIHUA `MHPA2525RGBDT-S`** (`C404285`), with **Rext = 1.87 kΩ** |
+| 2 | Plunger | **0.3 mm air gap, never preloaded** — geometry below |
+| 3 | TLC59116 address | **0x60** — A3–A0 all to GND |
+| 4 | Display connector | **JST GH 9-pin on PCB 1**, fed by one 2×20 ribbon from the SBC |
+| 5 | Reset footprint | **Yes, Rev A carries it** |
+| 6 | Switch land pattern | 2 pads ≈2.8 × 4.0 mm, 3.0 mm gap, 8.6 mm span |
+
+### 1 · RGB LED — frosted lens, and a smaller Rext than you'd guess
+
+**MEIHUA `MHPA2525RGBDT-S`, LCSC `C404285`.** 2.6 × 2.4 mm, white frosted lens,
+110°, common anode, 8,253 in stock at $0.091.
+
+The deciding property is the **frosted lens**, and it buys something structural:
+a water-clear LED needs cavity depth behind the diffuser to avoid a hotspot,
+which is why [07-bom.md](07-bom.md) said the LED and optic "set the standoff
+height". A frosted emitter does its own diffusing, so **standoff height is no
+longer set by the optics** — it is set by the switch and plunger stack, which is
+the harder constraint anyway. That removes a coupling between two unknowns.
+
+It is also the largest emitter on the shortlist, which matters for an even patch
+behind a window, and its weak channel is 250 mcd rather than the 19–32 mcd of
+the other frosted candidate (`C404284`), whose blue is too weak to make cyan or
+white at a sane duty cycle.
+
+> [!IMPORTANT]
+> **This choice made the thermal case worse, and that changed the current.**
+> Its Vf spread is red 1.6–2.6 V and green/blue 2.4–3.6 V. The driver eats the
+> remainder, so worst case it drops **3.4 V on red** and 2.6 V on green/blue —
+> more than the generic figures first simulated. At 20 mA all twelve channels
+> put **0.688 W** into a TSSOP-28: Tj 115 °C at 60 °C ambient, past the 100 °C
+> target and near the 125 °C max.
+
+The fix is one resistor, not firmware. Output current is set by `REXT`:
+
+> IOUT = (1.25 V / Rext) × 15 — TI's own example is 931 Ω for 20 mA
+
+| Rext | I/channel | P total | Tj @60 °C |
+|---|---|---|---|
+| 931 Ω | 20.1 mA | 0.693 W | 115 °C ❌ |
+| 1.5 kΩ | 12.5 mA | 0.430 W | 94 °C |
+| **1.87 kΩ** | **10.0 mA** | **0.345 W** | **88 °C** ✅ |
+| 3.0 kΩ | 6.3 mA | 0.215 W | 77 °C |
+
+**Rext = 1.87 kΩ, 1%.** At 10 mA the LED still gives half of 250–1600 mcd
+through a diffuser — far more than a status indicator needs — so nothing is
+lost. Firmware can scale further down through the IREF gain bits; this only sets
+a ceiling, at a point where the chip is safe even in a full-white self-test.
+
+Red ballast resistors are no longer needed at 10 mA. Keep the option on record:
+TI's datasheet recommends exactly that trick when VLED is high or Vf differs
+between channels, which is this case.
+
+Second source, if stock moves: **EKINGLUX `E6C0606RGBC3UDA`** (`C375569`),
+21,592 in stock, $0.053, and the *highest* Vf of the shortlist so it runs the
+driver coolest. It is water clear, so choosing it puts cavity depth back on the
+critical path.
+
+### 2 · Plunger — the air gap is the whole design
+
+Real switch numbers, from the C&K datasheet rather than the LCSC listing:
+
+| | |
+|---|---|
+| Travel | **0.35 mm nominal, +0.3 / −0.1 → 0.25 to 0.65 mm** |
+| Actuator | ø 2.9 mm, **3.5 mm** above the PCB at rest |
+| Body | 6.2 ± 0.3 mm square, 2.9 mm max |
+| Force | 2 ± 0.5 N |
+| Life | 500,000 operations |
+
+**Correction to the earlier figure: travel is 0.35 mm nominal, not 0.6 mm.**
+0.6 mm is near the top of the tolerance band. The worst case is **0.25 mm**, and
+FDM holds roughly ±0.15–0.2 mm in Z — so print tolerance alone can consume the
+entire travel budget.
+
+That single fact decides the design:
+
+- **Rest the plunger with a deliberate ~0.3 mm air gap above the actuator.**
+  Never size it to touch. Print variation then eats the gap instead of
+  preloading the switch, and preload at 2 N means a key that is held down or
+  sitting on the edge of triggering.
+- Felt travel becomes air gap + switch travel ≈ **0.65 mm**. Short, but crisp,
+  and crisp beats long here.
+- **Shaft** ø 3.0–3.5 mm, sitting on the 2.9 mm actuator; **head** ø 6–7 mm as a
+  finger target.
+- **Retain it with a flange** behind the faceplate, larger than the bore, in a
+  stepped hole. It drops in from behind at assembly and cannot fall inward
+  during service with the faceplate off.
+- **`MAC` sits ~1.0 mm lower** than `LINK` and `★` — same plunger, deeper
+  counterbore. At 2 N this matters more than it did at 3.6 N.
+- **Opaque.** Light comes from the separate diffusers, never the plunger.
+
+Print at three lengths on the coupon and keep the one that feels right. The
+0.3 mm figure is a starting point, not a measured result.
+
+### 3 · TLC59116 address — the collision was impossible all along
+
+The slave address is **`110` + A3 A2 A1 A0**, so the part can only ever land in
+**0x60–0x6F**. The ANO is at 0x49. **They cannot collide**, and the open question
+was unfounded — worth recording so nobody re-opens it.
+
+What it *can* collide with is its own reserved addresses, all inside that range:
+
+| Address | What |
+|---|---|
+| **0x68** | LED All Call default — **enabled at power-up**, datasheet says do not use as a slave address |
+| 0x6B | SWRST reserved |
+| 0x69 / 0x6A / 0x6C | Sub Call 1/2/3 defaults — disabled at power-up |
+
+**Strap A3–A0 all low → 0x60.** Bottom of the range, clear of everything. The
+datasheet is explicit that there are **no internal pull-ups** on the address
+pins and they must each be tied high or low — so tie all four directly to GND,
+with 0 Ω link footprints so any can be moved to VCC later.
+
+### 4 · Display connector — one ribbon in, one GH out
+
+**JST GH 9-pin, `SM09B-GHS-TB(LF)(SN)` (`C265420`)**, side-entry, on the back of
+PCB 1. Side entry keeps the cable parallel to the board instead of lifting off
+it, which protects the tight clearance behind the faceplate. Top-entry
+`BM09B-GHS-TBT` (`C495259`, 17,525 in stock) is the alternate if layout prefers
+it.
+
+Genuine JST rather than the $0.12 clones, because this mates with a cable you
+did not make — the 20 cm GH1.25 9-pin cable in the display box.
+
+On routing SPI through PCB 1: counting it up, a point-to-point harness would
+need ~17 conductors (3 power, 2 I²C, 4 keys, 1 driver reset, 7 display). That is
+a lot of custom harness. **Use a standard 2×20 IDC ribbon from the Orange Pi's
+40-pin header to PCB 1 instead**, and let PCB 1 fan out to the display on the GH
+connector. One keyed cable to the SBC, one standard part, and PCB 1 becomes the
+single breakout point.
+
+> [!WARNING]
+> **Match Waveshare's pin order exactly.** The 9-pin order on their cable is
+> theirs, not a standard. Read it off the HAT silkscreen before committing the
+> footprint — do not infer it from the signal list in
+> [10-display.md](10-display.md#interface-and-wiring).
+
+### 5 · Reset footprint — yes, and it is not optional anyway
+
+`RESET` is **pin 25, active low**, and the datasheet states it *"requires a
+pullup resistor to VCC if no active connection is used."* So a pull-up is
+mandatory regardless of whether a GPIO drives it.
+
+Given that, wiring it out costs one GPIO and nothing else, and it earns its
+place: **it is the only way to blank the indicators when the I²C bus is wedged.**
+`SWRST` is a bus command and needs a working bus; the hardware pin does not.
+Power-on and external reset both leave all channels deselected — LEDs off —
+which is the safe state.
+
+That directly serves the [stale-indicator hazard](#stale-indicator-hazard):
+if the router stops reporting, the host can still force the panel dark.
+
+**Rev A carries it:** `RESET` to an Orange Pi GPIO, 10 kΩ pull-up to VCC so it
+idles released.
+
+Worth knowing while here: the TLC59116 has **open-circuit detection** and
+**per-channel plus global overtemperature shutdown** (~170 °C global) readable
+through the `EFLAG1`/`EFLAG2` registers. Free diagnostics — the firmware should
+read them.
+
+### 6 · Switch land pattern
+
+From the C&K J-bend pad layout drawing (dimensions in mm):
+
+- **Two pads**, each ≈ **2.8 × 4.0 mm**
+- **3.0 mm gap** between facing pad edges (drawing: "3 maxi")
+- **8.6 mm total span** (drawing: "8,6 mini")
+- Terminals 0.7 ± 0.05 mm wide, 4 mm apart across the body
+
+Each pad covers the two commoned terminals on its side. Body is 6.2 ± 0.3 mm
+square and 3.5 mm tall, so allow **6.5 mm square of keep-out** plus the pads.
+
+> These are read off a scanned drawing. Confirm against the datasheet before
+> committing the footprint — a land pattern is not something to take second-hand.
 
 ## Electrical design, simulated
 
@@ -319,13 +509,13 @@ check:
 
 1. All four wheel directions and the center press without the wheel rubbing
 2. Plungers return freely with **no preload on the switch at rest**
-3. **The 0.6 mm throw is reachable and crisp** through the plunger, not mushy
+3. **The short throw is reachable and crisp** through the plunger, not mushy
 4. The recessed `MAC` position feels distinct from the flush keys
 5. The toggle pulls easily against its locking detent
 
 Item 3 is the new one and the reason this coupon matters more than it used to.
 With the MEC cap system gone, the plunger geometry is the only thing standing
-between a crisp key and a vague one, and 0.6 mm is not much to aim at. **Print
+between a crisp key and a vague one, and 0.35 mm is not much to aim at. **Print
 plungers at two or three lengths** and keep the one that feels right.
 
 Then set standoff height and PCB outlines.
@@ -355,28 +545,20 @@ the full printed wall.
 
 ## Open questions
 
-- ~~JLCPCB assembly sourcing~~ and ~~the switch choice~~ — **settled
-  2026-11-17.** C&K `KSC221JLFS` (`C221726`), machine-placed. The RGB LED is now
-  the only unsourced placed part and the critical path to a quote.
-- **Plunger geometry** — length, retention, and the two `MAC`-vs-flush heights,
-  against only 0.6 mm of switch travel. See [Plunger design](#plunger-design).
-  Highest-risk mechanical item on the panel.
-- `KSC221JLFS` PCB footprint and recommended land pattern, from the C&K
-  datasheet — not yet pulled.
+**All six items opened on 2026-11-17 are now closed** — see
+[Decisions taken 2026-11-18](#decisions-taken-2026-11-18). What remains:
+
+- **Verify before layout:** the `KSC221JLFS` land pattern against the datasheet
+  (read off a scan here), Waveshare's 9-pin cable order off the HAT silkscreen,
+  and the ANO module's actual pull-up value.
+- **Measure before layout:** whether the Orange Pi 5 Plus fits header I²C
+  pull-ups, and at what value. 2.2 kΩ on PCB 1 assumes it does not.
+- Plunger length is a starting figure (0.3 mm air gap), not a measured one —
+  the coupon sets it. Highest-risk mechanical item on the panel.
 - Whether ~2 N is light enough to cause accidental `MAC` presses in a bag, with
   the plunger recessed.
-- Display connector on this board, and whether SPI is routed through it to the
-  Orange Pi — see [10-display.md](10-display.md#interface-and-wiring).
 - Whether paged e-paper navigation suits the ANO wheel at all —
   [10](10-display.md#what-this-does-to-the-ui).
-- RGB LED part and its matching optic — must be chosen as a pair, and they set
-  the standoff height.
-- I²C address strapping for the TLC59116 (must not collide with ANO `0x49`).
-- ~~Combined bus pull-up value~~ — **answered: 2.2 kΩ on PCB 1**, see
-  [Electrical design, simulated](#electrical-design-simulated). Still needs the
-  SBC's own pull-ups *measured*, and the ANO's 10 kΩ confirmed.
-- ~~Key debounce in hardware or firmware~~ — **answered: firmware.**
-- Whether Rev A carries the watchdog-reset footprint for the LED driver.
 - NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
   drawing (nominal is Ø6.5 mm).
 - ANO wheel opening diameter and standoff height — set from the test coupon.

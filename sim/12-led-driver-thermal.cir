@@ -14,8 +14,19 @@
 *     blue  Vf ~2.9-3.4 V  ->  chip drops ~1.9 V
 *   Red is therefore the hottest channel despite being the dimmest colour,
 *   which is not obvious from the schematic.
-*   (Vf ranges are from the LCSC listings for in-stock common-anode parts,
-*   e.g. C404275 / C389528. No specific LED is chosen yet - docs/07-bom.md.)
+*   LED CHOSEN 2026-11-18: MEIHUA MHPA2525RGBDT-S, LCSC C404285.
+*   Its datasheet Vf spread is WORSE for the driver than the generic figures
+*   this deck first used:
+*     red   Vf 1.6-2.6 V  -> worst case chip drops 3.4 V (was 3.0)
+*     G/B   Vf 2.4-3.6 V  -> worst case chip drops 2.6 V (was 1.9)
+*   Worst case means LOWEST Vf, because the chip eats the remainder.
+*   Defaults below are set to that worst case, not the typical.
+*
+* CURRENT IS A DESIGN CHOICE, NOT A GIVEN
+*   TLC59116 output current is set by one resistor on REXT:
+*     IOUT = (1.25 V / Rext) x 15      (power-on defaults VG=127/128, CM=1)
+*   TI's own example: 931 ohm -> 20 mA. So 1.87 k -> 10.03 mA.
+*   This deck exists to pick that resistor.
 *
 * WHY NOT JUST USE 3.3 V FOR THE ANODES
 *   Blue and green need 2.9-3.4 V plus the driver's own output headroom. A
@@ -40,28 +51,32 @@
 *   thermal solution (docs/02), so 50-60 C internal ambient is the honest
 *   worst case, not 25 C.
 *
-* RESULT (run 2026-11-18 on fucina)
-*   All 12 channels at 20 mA on a 5 V anode puts 0.544 W in a TSSOP-28.
-*   At 60 C ambient that is Tj 103 C (theta 80) or 114 C (theta 100) -
-*   over the 100 C target, under the 125 C max. Not a failure, but not
-*   comfortable in an enclosure whose thermals are unmeasured.
-*   Red is the problem: 3.0 V across the chip per red channel against
-*   1.9 V for green/blue, so 4 red channels burn 44% of the total.
-*   OPTIONS, cheapest first:
-*     1. Cap global brightness at 75% in firmware -> 0.408 W, Tj 93 C.
-*        No BOM change. SIM-12d.
-*     2. 100 ohm ballast on the 4 red channels -> 0.384 W, keeps 1.0 V of
-*        output headroom. 120 ohm leaves only 0.6 V and is too tight.
-*     3. Both, if the enclosure measures hotter than 60 C.
-*   AND NOTE: white-at-full is not a real state for a status panel. One
-*   red indicator lit is 0.060 W, Tj 65 C. The thermal case only exists
-*   for a full-white self-test, so bounding THAT in firmware is enough.
+* RESULT (re-run 2026-11-18 with the chosen LED)
+*   The LED choice made this WORSE, which is why it was worth re-running.
+*   At 20 mA all 12 channels draw 0.688 W (was 0.544 W on generic Vf),
+*   giving Tj 115 C at 60 C ambient - over target and near the 125 C max.
+*
+*   THE FIX IS THE REXT RESISTOR, not firmware and not ballast:
+*     Rext 931  -> 20.1 mA -> 0.693 W -> Tj 115 C   FAIL
+*     Rext 1500 -> 12.5 mA -> 0.430 W -> Tj  94 C   ok
+*     Rext 1870 -> 10.0 mA -> 0.345 W -> Tj  88 C   CHOSEN
+*     Rext 3000 ->  6.3 mA -> 0.215 W -> Tj  77 C   ok, dimmer than needed
+*
+*   DECISION: Rext = 1.87 k, 1%. 10 mA per channel, Tj 88 C worst case.
+*   The LED is 250-1600 mcd at 20 mA; half of that through a diffuser is
+*   still far more than a status indicator needs, so nothing is lost.
+*   Firmware can still scale DOWN via the IREF gain bits; this only sets
+*   the ceiling, and sets it somewhere the chip is safe at full white.
+*
+*   Ballast on the red channels (SIM-12c) is no longer needed at 10 mA.
+*   Keep it on record: TI's own datasheet recommends exactly that trick
+*   when VLED is high or Vf differs between channels, which is this case.
 
 .title SIM-12 TLC59116 dissipation
 
 .param ILED  = 20m
-.param VFRED = 2.0
-.param VFGB  = 3.1
+.param VFRED = 1.6
+.param VFGB  = 2.4
 .param VANODE = 5.0
 .param RBAL  = 0.001
 
@@ -177,6 +192,29 @@ op > /dev/null
 let p1red = 1 * v(rpin) * 20m
 let tj1   = 60 + p1red * 80
 echo "@@   single red indicator at full: P = $&p1red W, Tj@60C/80 = $&tj1 C"
+
+echo "@@"
+echo "@@--- SIM-12f  THE DECISION: Rext, with the chosen LED worst-case Vf ---"
+echo "@@ IOUT = (1.25/Rext)*15, so Rext = 18.75/IOUT."
+echo "@@ Tj at 60 C ambient, theta_JA 80 C/W, all 12 channels lit"
+echo "@@ (full white self-test = the worst state the panel can be in)."
+echo "@@"
+echo "@@   I/ch(mA)   Rext(ohm)   P_total(W)   Tj@60C    verdict"
+alterparam RBAL = 0.001
+foreach il 0.02014 0.015625 0.0125 0.01003 0.00852 0.00625
+  alterparam ILED = $il
+  reset
+  op > /dev/null
+  let pt  = 4 * v(rpin) * $il + 8 * v(gpin) * $il
+  let tj  = 60 + pt * 80
+  let rx  = 18.75 / $il
+  let ima = $il * 1000
+  if ($&tj <= 100)
+    echo "@@   $&ima   $&rx   $&pt   $&tj   ok"
+  else
+    echo "@@   $&ima   $&rx   $&pt   $&tj   OVER 100 C TARGET"
+  end
+end
 
 quit
 .endc
