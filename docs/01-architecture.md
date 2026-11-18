@@ -170,11 +170,18 @@ This is the one thing the simplification does *not* make easier.
 > **USB-C advertises at most 3 A at 5 V.** The Orange Pi 5 Plus is specified
 > at **5 V / 4 A**. A standards-compliant USB-C source cannot offer that.
 
+> [!WARNING]
+> **The indicators are not a rounding error.** PCB 1's four RGB indicators draw
+> **~240 mA worst case** with all 12 TLC59116 channels lit
+> (`sim/12-led-driver-thermal.cir`). They hang off the Orange Pi's 5 V, so that
+> current crosses the seam *on top of* the board's own draw — about **8 % of
+> the 3 A ceiling** before any USB peripheral is counted.
+
 Three ways out, in order of preference:
 
-1. **Measure actual peak draw.** If this build stays under 3 A, advertise
-   5 V / 3 A (**10 kΩ ±5 % Rp**) and the problem disappears. This is the
-   outcome to aim for.
+1. **Measure actual peak draw** — board **plus** indicators plus USB load. If
+   the total stays under 3 A, advertise 5 V / 3 A (**10 kΩ ±5 % Rp**) and the
+   problem disappears. This is the outcome to aim for.
 2. **Confirm what the Orange Pi's USB-C input actually expects.** If it is a
    PD sink wanting a specific contract, PCB 2 has to source that contract —
    which is more than a dumb 5 V rail.

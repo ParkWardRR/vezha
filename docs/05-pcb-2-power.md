@@ -168,9 +168,26 @@ project most needs stop depending on someone remembering to take them.
 
 - Push encoder, **30 detents**.
 - **Keyed 4-pin harness: A, B, push switch, GND.**
-- A, B and the switch need pull-ups and debouncing — RC on-board or internal
-  pull-ups plus firmware debounce. Decide before layout; the RC parts need
-  footprints.
+- **Debounce in firmware, not hardware.** Resolved by simulation — see below.
+- **10 kΩ external pull-up** on A, B and the switch, for a defined level before
+  pinmux. Not for bounce.
+- **Optional 10–100 nF for ESD only**, not as a filter.
+
+> [!IMPORTANT]
+> **Hardware RC debounce cannot work on a switch-to-ground input.** This is
+> structural, not a sizing problem.
+>
+> The series resistor has to sit well below the pull-up to give a valid low —
+> but that same resistor is what discharges the filter cap, so discharge is
+> forced much faster than charge. Sweeping 10 nF to 470 nF against a 5 ms
+> bounce burst moves `V_min` only from 0.300 V to 0.407 V, never near `V_IL`.
+> Raising `Rs` to 10 kΩ puts the closed-switch level at 1.65 V — **above
+> `V_IL`, so the key stops registering at all.**
+>
+> Source: `sim/13-key-debounce.cir`. The result was obtained for PCB 1's keys
+> and applies unchanged here — the EC11's contacts are the same topology.
+>
+> **Do not reserve RC footprints for debounce.**
 
 ## Accessory USB-C output port
 
@@ -326,6 +343,7 @@ INA226 defaults to `0x40` and is strappable across `0x40`–`0x4F`.
 | Pololu D42V55F5 | **6 A typical maximum** — unvalidated in enclosure |
 | RotoPD auxiliary | **0.4 A continuous** — Pico + OLED + encoder only |
 | Accessory port | **1.0 A proposed**, on its own regulator |
+| PCB 1 indicators | **~240 mA** worst case, drawn through the seam |
 
 ## Measurement, before trusting any of this
 
@@ -365,7 +383,6 @@ state, so it cannot substitute for a router UI. The split is clean:
 - INA226 address vs. the RotoPD Pro's
 - NTC part and how it mounts against the regulator's thermal pad
 - Whether Rev A populates the telemetry header's series resistors
-- Encoder debounce: RC on board vs. firmware
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets
 
