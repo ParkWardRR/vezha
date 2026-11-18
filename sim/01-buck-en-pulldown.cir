@@ -21,102 +21,100 @@
 *   RPi's stated fix is an external pull-down of 8.2 kohm or less.
 *   E9 does NOT apply right after PoR/RUN reset (pad input enable is initially
 *   clear) but DOES apply if firmware sets the pin to an input and then hangs.
-*   Modelled as a Thevenin source: 2.2 V behind Req = 2.2 / I_leak.
-*     120 uA -> 18.333 k      200 uA (pessimistic) -> 11.0 k
-*     E9OFF: 1e12 ohm = absent
+*   Modelled as Thevenin: 2.2 V behind Req = 2.2 / I_leak.
+*     E9 absent       -> 1e12 ohm
+*     120 uA (typ)    -> 18.333 k
+*     200 uA (pessim) -> 11.0   k
 *
 * PASS CRITERION
 *   V(en) < 0.5 V in every corner.
 
 .title SIM-01 buck EN pull-down
 
-.param RPD  = 100k
-.param RE9  = 1e12
+.param RPD = 100k
+.param RE9 = 1e12
 
-Vin  vin   0  DC 48
-Rpu  vin   en     1MEG
-Rpd  en    0      {RPD}
-Ve9  e9s   0  DC 2.2
-Re9  e9s   en     {RE9}
+Vin  vin  0  DC 48
+Rpu  vin  en    1MEG
+Rpd  en   0     {RPD}
+Ve9  e9s  0  DC 2.2
+Re9  e9s  en    {RE9}
 
 .control
-option noinit
+echo "@@=============================================================="
+echo "@@ SIM-01  Pololu D42V55F5 EN pull-down sizing"
+echo "@@ Ceiling for guaranteed shutdown: V(en) < 0.500 V"
+echo "@@=============================================================="
 
-* ---------------------------------------------------------------
-echo "### SIM-01a  post-reset, E9 absent (pad input enable clear)"
-echo "### V(en) at the worst-case VIN corners. Ceiling = 0.500 V"
-echo ""
-echo "Rpd        V(en)@5V   V(en)@20V  V(en)@28V  V(en)@48V  verdict@48V"
+echo "@@"
+echo "@@--- SIM-01a  post-reset, E9 absent (pad input enable clear) ---"
+echo "@@"
+echo "@@     Rpd    V(en)@5V  V(en)@20V V(en)@28V V(en)@48V  verdict@48V"
 alterparam RE9 = 1e12
 foreach rpd 100k 47k 22k 10k 8.2k 4.7k 2.2k 1.5k
   alterparam RPD = $rpd
   reset
-  dc Vin 5 48 0.1
-  meas dc a FIND v(en) AT=5
-  meas dc b FIND v(en) AT=20
-  meas dc c FIND v(en) AT=28
-  meas dc d FIND v(en) AT=48
-  if $&d < 0.5
-    echo "$rpd      $&a    $&b    $&c    $&d    PASS"
+  dc Vin 5 48.5 0.1
+  meas dc a FIND v(en) AT=5  > /dev/null
+  meas dc b FIND v(en) AT=20 > /dev/null
+  meas dc c FIND v(en) AT=28 > /dev/null
+  meas dc d FIND v(en) AT=48 > /dev/null
+  if ($&d < 0.5)
+    echo "@@   $rpd   $&a  $&b  $&c  $&d   PASS"
   else
-    echo "$rpd      $&a    $&b    $&c    $&d    FAIL - buck ENABLED"
+    echo "@@   $rpd   $&a  $&b  $&c  $&d   FAIL - buck ENABLED"
   end
 end
 
-* ---------------------------------------------------------------
-echo ""
-echo "### SIM-01b  firmware hung with pad as input, E9 active at 120 uA"
-echo "### V(en) at VIN = 48 V. Ceiling = 0.500 V"
-echo ""
-echo "Rpd        V(en)@48V  verdict"
+echo "@@"
+echo "@@--- SIM-01b  firmware hung, pad = input, E9 at 120 uA typ ---"
+echo "@@"
+echo "@@     Rpd    V(en)@48V  verdict"
 alterparam RE9 = 18.333k
 foreach rpd 100k 47k 22k 10k 8.2k 4.7k 3.3k 2.2k 1.5k 1k
   alterparam RPD = $rpd
   reset
-  dc Vin 5 48 0.1
-  meas dc d FIND v(en) AT=48
-  if $&d < 0.5
-    echo "$rpd      $&d    PASS"
+  dc Vin 5 48.5 0.1
+  meas dc d FIND v(en) AT=48 > /dev/null
+  if ($&d < 0.5)
+    echo "@@   $rpd   $&d   PASS"
   else
-    echo "$rpd      $&d    FAIL - buck ENABLED"
+    echo "@@   $rpd   $&d   FAIL - buck ENABLED"
   end
 end
 
-* ---------------------------------------------------------------
-echo ""
-echo "### SIM-01c  candidate values, pessimistic E9 = 200 uA, VIN = 48 V"
-echo ""
-echo "Rpd        V(en)@48V  margin_to_0.5V  verdict"
+echo "@@"
+echo "@@--- SIM-01c  E9 pessimistic at 200 uA, VIN = 48 V ---"
+echo "@@"
+echo "@@     Rpd    V(en)@48V  margin_to_0.5V  verdict"
 alterparam RE9 = 11.0k
 foreach rpd 8.2k 4.7k 3.3k 2.2k 1.5k 1k
   alterparam RPD = $rpd
   reset
-  dc Vin 5 48 0.1
-  meas dc d FIND v(en) AT=48
-  let m = 0.5 - d
-  if $&d < 0.5
-    echo "$rpd      $&d    $&m    PASS"
+  dc Vin 5 48.5 0.1
+  meas dc d FIND v(en) AT=48 > /dev/null
+  let m = 0.5 - $&d
+  if ($&d < 0.5)
+    echo "@@   $rpd   $&d   $&m   PASS"
   else
-    echo "$rpd      $&d    $&m    FAIL - buck ENABLED"
+    echo "@@   $rpd   $&d   $&m   FAIL - buck ENABLED"
   end
 end
 
-* ---------------------------------------------------------------
-echo ""
-echo "### SIM-01d  chosen value 1.5k 1%, resistor tolerance corners"
-echo "### E9 = 120 uA, VIN = 48 V"
-echo ""
-echo "Rpd        V(en)@48V  verdict"
+echo "@@"
+echo "@@--- SIM-01d  chosen value 1.5k 1%, tolerance corners, E9 120 uA ---"
+echo "@@"
+echo "@@     Rpd     V(en)@48V  verdict"
 alterparam RE9 = 18.333k
 foreach rpd 1.485k 1.5k 1.515k
   alterparam RPD = $rpd
   reset
-  dc Vin 5 48 0.1
-  meas dc d FIND v(en) AT=48
-  if $&d < 0.5
-    echo "$rpd     $&d    PASS"
+  dc Vin 5 48.5 0.1
+  meas dc d FIND v(en) AT=48 > /dev/null
+  if ($&d < 0.5)
+    echo "@@   $rpd  $&d   PASS"
   else
-    echo "$rpd     $&d    FAIL"
+    echo "@@   $rpd  $&d   FAIL"
   end
 end
 

@@ -1,0 +1,168 @@
+* SIM-03  Accessory USB-C port: CC source detection via Rp to +3V3
+*
+* QUESTION
+*   docs/05-pcb-2-power.md requires "Rp pull-ups on both CC1 and CC2 ...
+*   Apply VBUS only after a sink's Rd is detected", and specifies
+*   "56 kohm +/-20% to 5 V".
+*
+* WHY THIS DESIGN REFERENCES Rp TO +3V3 INSTEAD OF 5 V
+*   Rp to 5 V is a chicken-and-egg: the 5 V accessory rail is the thing we are
+*   deciding whether to switch on, so it is not available to reference Rp
+*   against before attach. The USB Type-C spec defines a second resistor set
+*   for a 3.3 V pull-up for exactly this case. The Pico's +3V3 is already up
+*   (it boots first, by design), so Rp to +3V3 lets attach detection happen
+*   with the accessory buck AND the load switch both still off.
+*     Rp to 5.0 V:  56k (Default USB) / 22k (1.5 A) / 10k (3.0 A)
+*     Rp to 3.3 V:  36k (Default USB) / 12k (1.5 A) / 4.7k (3.0 A)
+*   SIM-03c checks the two sets really are equivalent at the Rd node.
+*
+* ALSO NOTE
+*   "Advertised 1.0 A" in docs/05 is not a legal Type-C advertisement. The
+*   only three choices are Default USB (0.5 A), 1.5 A and 3.0 A.
+*
+* WHAT IS BEING MEASURED
+*   CC node voltage for the three states the Pico's ADC must tell apart:
+*     open      - nothing plugged in           -> CC sits at the pull-up rail
+*     Rd  5.1k  - a sink is attached           -> ~0.41 V
+*     Ra  1.1k  - powered-cable VCONN resistor -> ~0.10 V
+*   Pico ADC is 0-3.3 V, 12 bit, 806 uV/LSB. RP2350's ADC INL/DNL is
+*   "Details to follow" in the datasheet - i.e. unspecified - so the gaps
+*   between these states must be large, not merely nonzero.
+*
+* PASS CRITERION
+*   open / Rd / Ra bands must not overlap across all tolerance corners, with
+*   at least 100 mV of clear air between adjacent bands.
+
+.title SIM-03 USB-C CC detection
+
+.param VPU = 3.3
+.param RP  = 36k
+.param RL  = 1e12
+
+V3v3 vpu 0 DC {VPU}
+Rp   vpu cc   {RP}
+Rl   cc  0    {RL}
+
+.control
+echo "@@=============================================================="
+echo "@@ SIM-03  Accessory port CC detection, Rp referenced to +3V3"
+echo "@@=============================================================="
+
+echo "@@"
+echo "@@--- SIM-03a  nominal: Rp = 36k (Default USB), +3V3 exact ---"
+echo "@@"
+echo "@@  state            R_load    V(cc)       ADC code (of 4095)"
+alterparam VPU = 3.3
+alterparam RP  = 36k
+foreach rl 1e12 5.1k 1.1k
+  alterparam RL = $rl
+  reset
+  op
+  let vcc  = v(cc)
+  let code = v(cc)/3.3*4095
+  echo "@@  load=$rl   $&vcc   $&code"
+end
+
+echo "@@"
+echo "@@--- SIM-03b  worst-case corners, Default USB ---"
+echo "@@  Rp 36k +/-20%, +3V3 rail +/-3%, Rd 5.1k +/-10%, Ra 1.1k +/-10%"
+echo "@@"
+echo "@@  UNATTACHED (open): V(cc) extremes"
+alterparam RL = 1e12
+foreach vpu 3.201 3.399
+  alterparam VPU = $vpu
+  foreach rp 28.8k 43.2k
+    alterparam RP = $rp
+    reset
+    op
+    let vcc = v(cc)
+    echo "@@   Vpu=$vpu Rp=$rp   V(cc) = $&vcc"
+  end
+end
+
+echo "@@"
+echo "@@  SINK ATTACHED (Rd): V(cc) extremes"
+foreach vpu 3.201 3.399
+  alterparam VPU = $vpu
+  foreach rp 28.8k 43.2k
+    alterparam RP = $rp
+    foreach rl 4.59k 5.61k
+      alterparam RL = $rl
+      reset
+      op
+      let vcc = v(cc)
+      echo "@@   Vpu=$vpu Rp=$rp Rd=$rl   V(cc) = $&vcc"
+    end
+  end
+end
+
+echo "@@"
+echo "@@  POWERED CABLE (Ra): V(cc) extremes"
+foreach vpu 3.201 3.399
+  alterparam VPU = $vpu
+  foreach rp 28.8k 43.2k
+    alterparam RP = $rp
+    foreach rl 0.99k 1.21k
+      alterparam RL = $rl
+      reset
+      op
+      let vcc = v(cc)
+      echo "@@   Vpu=$vpu Rp=$rp Ra=$rl   V(cc) = $&vcc"
+    end
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-03c  is Rp-to-3V3 equivalent to the spec's Rp-to-5V set? ---"
+echo "@@"
+echo "@@  config                V(cc) with Rd = 5.1k"
+alterparam RL = 5.1k
+alterparam VPU = 3.3
+alterparam RP = 36k
+reset
+op
+let v1 = v(cc)
+echo "@@  Default USB  3V3/36k   $&v1"
+alterparam VPU = 5.0
+alterparam RP = 56k
+reset
+op
+let v2 = v(cc)
+echo "@@  Default USB  5V0/56k   $&v2"
+alterparam VPU = 3.3
+alterparam RP = 12k
+reset
+op
+let v3 = v(cc)
+echo "@@  1.5 A        3V3/12k   $&v3"
+alterparam VPU = 5.0
+alterparam RP = 22k
+reset
+op
+let v4 = v(cc)
+echo "@@  1.5 A        5V0/22k   $&v4"
+
+echo "@@"
+echo "@@--- SIM-03d  load this puts on the Pico +3V3 rail ---"
+echo "@@  (300 mA budget on 3V3(OUT), shared with the OLED console)"
+echo "@@"
+alterparam VPU = 3.3
+alterparam RL = 1e12
+foreach rp 36k 12k
+  alterparam RP = $rp
+  reset
+  op
+  let i2 = 2 * (3.3 - v(cc)) / $rp * 1e6
+  echo "@@  Rp=$rp unattached, both CC pins: $&i2 uA total"
+end
+alterparam RL = 5.1k
+foreach rp 36k 12k
+  alterparam RP = $rp
+  reset
+  op
+  let i1 = (3.3 - v(cc)) / $rp * 1e6
+  echo "@@  Rp=$rp one CC pin loaded by Rd: $&i1 uA"
+end
+quit
+.endc
+.end

@@ -1,4 +1,4 @@
-* SIM-05  TLC59116 power dissipation and junction temperature
+* SIM-12  TLC59116 power dissipation and junction temperature
 *
 * QUESTION
 *   docs/04-pcb-1-front-control.md puts four RGB indicators on a TLC59116 in
@@ -49,7 +49,7 @@
 *   1.9 V for green/blue, so 4 red channels burn 44% of the total.
 *   OPTIONS, cheapest first:
 *     1. Cap global brightness at 75% in firmware -> 0.408 W, Tj 93 C.
-*        No BOM change. SIM-05d.
+*        No BOM change. SIM-12d.
 *     2. 100 ohm ballast on the 4 red channels -> 0.384 W, keeps 1.0 V of
 *        output headroom. 120 ohm leaves only 0.6 V and is too tight.
 *     3. Both, if the enclosure measures hotter than 60 C.
@@ -57,7 +57,7 @@
 *   red indicator lit is 0.060 W, Tj 65 C. The thermal case only exists
 *   for a full-white self-test, so bounding THAT in firmware is enough.
 
-.title SIM-05 TLC59116 dissipation
+.title SIM-12 TLC59116 dissipation
 
 .param ILED  = 20m
 .param VFRED = 2.0
@@ -79,12 +79,12 @@ Ig     gpin   0     DC {ILED}
 
 .control
 echo "@@=============================================================="
-echo "@@ SIM-05  TLC59116 dissipation, 4 RGB indicators (12 channels)"
+echo "@@ SIM-12  TLC59116 dissipation, 4 RGB indicators (12 channels)"
 echo "@@ 4 red + 8 green/blue. Tj target <= 100 C, abs max 125 C."
 echo "@@=============================================================="
 
 echo "@@"
-echo "@@--- SIM-05a  driver dissipation vs per-channel current, 5 V anode ---"
+echo "@@--- SIM-12a  driver dissipation vs per-channel current, 5 V anode ---"
 echo "@@ All 12 channels on at once = white at full brightness."
 echo "@@"
 echo "@@   I/ch    V_red_pin  V_gb_pin   P_red(W)  P_gb(W)   P_total(W)"
@@ -103,7 +103,7 @@ foreach il 5m 10m 15m 20m
 end
 
 echo "@@"
-echo "@@--- SIM-05b  junction temperature, no ballast, 20 mA/ch ---"
+echo "@@--- SIM-12b  junction temperature, no ballast, 20 mA/ch ---"
 echo "@@ TSSOP-28 theta_JA is board dependent; swept 60/80/100 C/W."
 echo "@@"
 echo "@@   theta_JA   Ta=25C    Ta=50C    Ta=60C    verdict@60C"
@@ -124,7 +124,7 @@ foreach th 60 80 100
 end
 
 echo "@@"
-echo "@@--- SIM-05c  ballast resistor on the RED channels only ---"
+echo "@@--- SIM-12c  ballast resistor on the RED channels only ---"
 echo "@@ Moves heat off the chip into a resistor JLC already places."
 echo "@@ R chosen so the chip keeps >=0.8 V of output headroom at 20 mA."
 echo "@@"
@@ -147,7 +147,7 @@ foreach rb 0.001 33 47 68 82 100 120
 end
 
 echo "@@"
-echo "@@--- SIM-05d  the cheap fix: cap global brightness in firmware ---"
+echo "@@--- SIM-12d  the cheap fix: cap global brightness in firmware ---"
 echo "@@ TLC59116 has 8-bit per-channel PWM plus a global current control."
 echo "@@ Average dissipation scales with duty. No BOM change at all."
 echo "@@"
@@ -168,7 +168,7 @@ foreach d 1.0 0.75 0.5 0.25 0.1
 end
 
 echo "@@"
-echo "@@--- SIM-05e  worst realistic steady state: one indicator red, rest off"
+echo "@@--- SIM-12e  worst realistic steady state: one indicator red, rest off"
 echo "@@ The actual duty cycle of a status panel is nothing like white-full."
 echo "@@"
 alterparam ILED = 20m

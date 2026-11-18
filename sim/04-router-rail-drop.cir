@@ -1,0 +1,150 @@
+* SIM-04  Router rail: IR drop across the seam, and bulk capacitance
+*
+* QUESTION
+*   docs/05-pcb-2-power.md: "Measure voltage AT the Orange Pi - not at the
+*   regulator, not at the charger. Cable and connector drop at several amps is
+*   the failure mode." That is the right instruction. This quantifies what the
+*   measurement is likely to find, and what it means for part choice.
+*
+* THE PATH (docs/01, docs/03)
+*   Pololu VOUT -> PCB 2 trace -> keyed 2-pin seam connector -> harness ->
+*   Orange Pi dedicated USB-C power input
+*   So the loop contains, per conductor and counting BOTH legs (5 V and GND):
+*     - PCB trace on PCB 2
+*     - one keyed seam connector contact pair
+*     - harness wire
+*     - the Orange Pi's own USB-C receptacle + the mating plug
+*   RLOOP below is the TOTAL round-trip series resistance.
+*
+* PLAUSIBLE RLOOP VALUES
+*   optimistic   20 mohm   short fat harness, good contacts, soldered
+*   likely       60 mohm   2 x 10 mohm seam contacts + 2 x 15 mohm USB-C
+*                          contacts + wire + traces
+*   poor        120 mohm   small-gauge wire, longer run
+*   bad         250 mohm   thin wire or a degraded/oxidised USB-C contact
+*
+* SOURCE TOLERANCE
+*   D42V55F5  is 5.0 V "with 3% accuracy" -> 4.85 V worst case
+*   D42V55F5.3 (Pololu #5572) is the 5.3 V part in the same family, same
+*   package and pinout -> 5.141 V worst case. Simulated as the alternative.
+*
+* LIMITS AT THE ORANGE PI
+*   4.75 V  USB 2.0/3.x minimum for a 5 V port - below this is out of spec
+*   4.50 V  below here, an RK3588 board browning out under radio load is
+*           an entirely expected outcome
+*
+* PASS CRITERION
+*   V(pi) >= 4.75 V at the full 4 A router load, in the worst source and
+*   RLOOP corner being designed for.
+
+.title SIM-04 router rail IR drop
+
+.param VREG   = 4.85
+.param RLOOP  = 60m
+
+Vreg  reg 0  DC {VREG}
+Rloop reg pi    {RLOOP}
+Iload pi  0  DC 0
+
+.control
+echo "@@=============================================================="
+echo "@@ SIM-04  Router rail IR drop at the Orange Pi"
+echo "@@ Limits: 4.750 V = USB minimum.  4.500 V = brownout territory"
+echo "@@=============================================================="
+
+echo "@@"
+echo "@@--- SIM-04a  D42V55F5 (5.0 V part) at its -3% corner, 4.850 V ---"
+echo "@@"
+echo "@@  Rloop     V(pi)@1A   V(pi)@2A   V(pi)@4A   drop@4A   verdict@4A"
+alterparam VREG = 4.85
+foreach rl 20m 60m 120m 250m
+  alterparam RLOOP = $rl
+  reset
+  dc Iload 0 5 0.01
+  meas dc p1 FIND v(pi) AT=1 > /dev/null
+  meas dc p2 FIND v(pi) AT=2 > /dev/null
+  meas dc p4 FIND v(pi) AT=4 > /dev/null
+  let dr = 4.85 - $&p4
+  if ($&p4 >= 4.75)
+    echo "@@  $rl    $&p1   $&p2   $&p4   $&dr   PASS"
+  else
+    if ($&p4 >= 4.5)
+      echo "@@  $rl    $&p1   $&p2   $&p4   $&dr   OUT OF USB SPEC"
+    else
+      echo "@@  $rl    $&p1   $&p2   $&p4   $&dr   BROWNOUT RISK"
+    end
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-04b  D42V55F5 at its nominal 5.000 V ---"
+echo "@@"
+echo "@@  Rloop     V(pi)@4A   verdict@4A"
+alterparam VREG = 5.0
+foreach rl 20m 60m 120m 250m
+  alterparam RLOOP = $rl
+  reset
+  dc Iload 0 5 0.01
+  meas dc p4 FIND v(pi) AT=4 > /dev/null
+  if ($&p4 >= 4.75)
+    echo "@@  $rl    $&p4   PASS"
+  else
+    echo "@@  $rl    $&p4   FAIL - under 4.75 V"
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-04c  D42V55F5.3 (Pololu #5572) at its -3% corner, 5.141 V ---"
+echo "@@  Same family, same footprint. Trades IR-drop headroom for the risk"
+echo "@@  of overshooting the Pi's input at light load."
+echo "@@"
+echo "@@  Rloop     V(pi)@0A   V(pi)@4A   verdict@4A"
+alterparam VREG = 5.141
+foreach rl 20m 60m 120m 250m
+  alterparam RLOOP = $rl
+  reset
+  dc Iload 0 5 0.01
+  meas dc p0 FIND v(pi) AT=0 > /dev/null
+  meas dc p4 FIND v(pi) AT=4 > /dev/null
+  if ($&p4 >= 4.75)
+    echo "@@  $rl    $&p0   $&p4   PASS"
+  else
+    echo "@@  $rl    $&p0   $&p4   FAIL - under 4.75 V"
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-04d  D42V55F5.3 at its +3% corner, 5.459 V, light load ---"
+echo "@@  Checks the other end: does the 5.3 V part overshoot a 5 V input?"
+echo "@@  USB sinks are specified to tolerate 5.25 V; 5.5 V is over."
+echo "@@"
+echo "@@  Rloop     V(pi)@0A   V(pi)@0.5A  verdict"
+alterparam VREG = 5.459
+foreach rl 20m 60m 120m
+  alterparam RLOOP = $rl
+  reset
+  dc Iload 0 5 0.01
+  meas dc p0 FIND v(pi) AT=0   > /dev/null
+  meas dc ph FIND v(pi) AT=0.5 > /dev/null
+  if ($&p0 <= 5.25)
+    echo "@@  $rl    $&p0   $&ph   PASS"
+  else
+    echo "@@  $rl    $&p0   $&ph   OVER 5.25 V at light load"
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-04e  how much Rloop can the 5.0 V part actually afford? ---"
+echo "@@  Largest Rloop that still delivers 4.75 V at 4 A"
+echo "@@"
+echo "@@  source       max allowable Rloop (mohm)"
+foreach vr 4.85 5.0 5.141 5.3
+  alterparam VREG = $vr
+  reset
+  op
+  let rmax = ($vr - 4.75) / 4 * 1000
+  echo "@@  $vr V        $&rmax"
+end
+quit
+.endc
+.end

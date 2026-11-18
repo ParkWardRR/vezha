@@ -1,4 +1,4 @@
-* SIM-06  Key input: pull-up, RC debounce, and whether hardware is needed
+* SIM-13  Key input: pull-up, RC debounce, and whether hardware is needed
 *
 * QUESTION
 *   docs/04 wires each key as "switch to ground" on an Orange Pi GPIO and
@@ -45,13 +45,13 @@
 *   ACTION: debounce in FIRMWARE. Do not fit debounce capacitors.
 *   Keep a 10 k external pull-up anyway - not for bounce, but so the input
 *   has a defined level before pinmux runs. It also settles in 0.84 ms
-*   against 7.35 ms for an 80 k internal pull-up (SIM-06d).
+*   against 7.35 ms for an 80 k internal pull-up (SIM-13d).
 *   Optional 10-100 nF to ground is defensible for ESD/EMI only; it buys
 *   nothing for bounce and should not be described as debounce.
 *   This answers docs/05's "encoder debounce: RC on board vs firmware" the
 *   same way, for the same reason.
 
-.title SIM-06 key input debounce
+.title SIM-13 key input debounce
 
 .param RPU = 10k
 .param RS  = 1k
@@ -73,12 +73,12 @@ Ssw  sw  0  ctl 0 swmod
 
 .control
 echo "@@=============================================================="
-echo "@@ SIM-06  Key input - pull-up and debounce"
+echo "@@ SIM-13  Key input - pull-up and debounce"
 echo "@@ Thresholds: V_IL 0.800 V, V_IH 2.000 V on a 3.3 V input"
 echo "@@=============================================================="
 
 echo "@@"
-echo "@@--- SIM-06a  NO filter (Cf=0): how dirty is the raw edge? ---"
+echo "@@--- SIM-13a  NO filter (Cf=0): how dirty is the raw edge? ---"
 echo "@@ Expect the GPIO to follow every bounce. This is the baseline."
 echo "@@"
 echo "@@   Rpu      edges_below_VIL   (count of separate low excursions)"
@@ -99,7 +99,7 @@ foreach rpu 20k 50k 80k 10k
 end
 
 echo "@@"
-echo "@@--- SIM-06b  RC filter sizing, Rpu=10k external, Rs=1k ---"
+echo "@@--- SIM-13b  RC filter sizing, Rpu=10k external, Rs=1k ---"
 echo "@@ Does the GPIO stay above V_IL through the whole bounce burst,"
 echo "@@ i.e. does the filter hide the bounce completely?"
 echo "@@"
@@ -121,7 +121,7 @@ foreach cf 1f 10n 47n 100n 220n 470n
 end
 
 echo "@@"
-echo "@@--- SIM-06c  release-edge latency with the filter in place ---"
+echo "@@--- SIM-13c  release-edge latency with the filter in place ---"
 echo "@@ Rising back through V_IH after the key is let go at t=60 ms."
 echo "@@ Must be far below ~50 ms or the key feels sticky."
 echo "@@"
@@ -140,7 +140,7 @@ foreach cf 1f 10n 47n 100n 220n 470n
 end
 
 echo "@@"
-echo "@@--- SIM-06d  the case for an external pull-up at all ---"
+echo "@@--- SIM-13d  the case for an external pull-up at all ---"
 echo "@@ With only the SBC internal pull-up (and no external), the node is"
 echo "@@ undriven until pinmux configures it. Compare settle time from 0 V."
 echo "@@"

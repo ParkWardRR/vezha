@@ -212,9 +212,9 @@ question, device facts, pass criteria and result in its header.
 
 | Deck | Question | Answer |
 |---|---|---|
-| `04-i2c-pullups.cir` | Combined bus pull-up with ANO + TLC59116 | **Fit 2.2 kΩ on PCB 1.** The bus as drawn does not work. |
-| `05-led-driver-thermal.cir` | TLC59116 dissipation on a 5 V anode | **Cap full-white brightness at 75%** in firmware. |
-| `06-key-debounce.cir` | RC debounce on board or in firmware | **Firmware.** Hardware RC cannot work here. |
+| `11-i2c-pullups.cir` | Combined bus pull-up with ANO + TLC59116 | **Fit 2.2 kΩ on PCB 1.** The bus as drawn does not work. |
+| `12-led-driver-thermal.cir` | TLC59116 dissipation on a 5 V anode | **Cap full-white brightness at 75%** in firmware. |
+| `13-key-debounce.cir` | RC debounce on board or in firmware | **Firmware.** Hardware RC cannot work here. |
 
 ### I²C: the bus as drawn does not work
 

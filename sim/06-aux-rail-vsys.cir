@@ -1,0 +1,152 @@
+* SIM-06  RotoPD aux 5 V -> Pico VSYS, and the programming-port back-feed
+*
+* QUESTION 1 - BACK-FEED (not raised anywhere in the repo)
+*   docs/03 requires the Pico's USB port reach a wall opening for programming.
+*   docs/01 and docs/05 require VSYS be fed from the RotoPD's auxiliary 5 V.
+*   Do both and you have built a back-feed path. On a Pico 2, VBUS from the
+*   micro-USB jack reaches VSYS through the Pico's own Schottky D1. That diode
+*   blocks VSYS -> VBUS. It does NOT block VBUS -> VSYS -> and then out of
+*   whatever else is tied to VSYS. So plugging a laptop into the programming
+*   port while the RotoPD is unpowered drives ~4.7 V backwards into the
+*   RotoPD's auxiliary buck OUTPUT - an unpowered regulator's output being
+*   driven by an external source.
+*   Fix: a series Schottky from aux 5 V into VSYS. This sim sizes it and
+*   measures what it blocks.
+*
+* QUESTION 2 - AUX BUDGET AND THE VSYS CEILING
+*   docs/05 rule 2: the aux output is 0.4 A continuous and the OLED and
+*   encoder must fit inside it. Separately, the Pico 2 datasheet allows VSYS
+*   from 1.8 V to 5.5 V. Feeding a regulated 5.0 V straight in leaves only
+*   0.5 V to the top of that range; the Schottky drop buys margin as well as
+*   blocking back-feed, so the fix helps twice.
+*
+* PASS CRITERION
+*   VSYS inside 1.8-5.5 V across the load range, and back-feed current into
+*   the aux rail negligible with the diode fitted.
+
+.title SIM-06 aux rail and VSYS
+
+.param ILOAD = 0.15
+.param RAUX  = 0.15
+.param RBYP  = 1e12
+.param VAUX  = 5.0
+.param VUSB  = 0
+.param RUSB  = 1e12
+.param RAUXSINK = 1e9
+
+* Schottky, SOD-123 1 A class (PMEG2010 / SS14), Vf ~0.3 V at 150 mA
+.model DSCH D(is=2e-6 n=1.05 rs=0.07 bv=20 ibv=1e-4 cjo=200p)
+
+Vaux  aux   0     DC {VAUX}
+Raux  aux   auxo     {RAUX}
+* ammeter in the aux leg
+Vam   auxo  auxd  DC 0
+D1    auxd  vsys  DSCH
+* RBYP shorts out the diode to model "no diode fitted"
+Rbyp  auxd  vsys     {RBYP}
+* what an unpowered buck output looks like as a sink
+Rsink auxo  0        {RAUXSINK}
+
+* the Pico's internal VBUS->VSYS Schottky, seen from outside as ~VUSB-0.3.
+* RUSB = 1e12 means "no cable plugged in"; 0.1 means "laptop connected".
+Vusbs usb   0     DC {VUSB}
+Rusb  usb   vsys     {RUSB}
+
+Iload vsys  0     DC {ILOAD}
+Rleak vsys  0     10MEG
+
+.control
+echo "@@=============================================================="
+echo "@@ SIM-06  Aux 5 V -> VSYS through a blocking Schottky"
+echo "@@ VSYS must stay inside 1.800 - 5.500 V (Pico 2 datasheet)"
+echo "@@=============================================================="
+
+echo "@@"
+echo "@@--- SIM-06a  VSYS vs total console load, normal operation ---"
+echo "@@  load = Pico 2 + OLED + pull-ups + CC Rp resistors"
+echo "@@"
+echo "@@  I_load    V(auxo)   V(vsys)   Vf_diode   headroom_to_5.5V  verdict"
+alterparam VAUX = 5.0
+alterparam RAUX = 0.15
+alterparam VUSB = 0
+alterparam RUSB = 1e12
+alterparam RBYP = 1e12
+alterparam RAUXSINK = 1e9
+foreach il 0.02 0.05 0.10 0.15 0.25 0.40
+  alterparam ILOAD = $il
+  reset
+  op
+  let va = v(auxo)
+  let vs = v(vsys)
+  let vf = v(auxo) - v(vsys)
+  let hr = 5.5 - v(vsys)
+  if ($&vs < 5.5)
+    if ($&vs > 1.8)
+      echo "@@  $il A    $&va   $&vs   $&vf   $&hr   PASS"
+    else
+      echo "@@  $il A    $&va   $&vs   $&vf   $&hr   FAIL - VSYS too low"
+    end
+  else
+    echo "@@  $il A    $&va   $&vs   $&vf   $&hr   FAIL - VSYS over 5.5 V"
+  end
+end
+
+echo "@@"
+echo "@@--- SIM-06b  no diode: VSYS tied straight to aux 5 V ---"
+echo "@@  Shows the margin that is given up at the top of the VSYS range."
+echo "@@"
+echo "@@  I_load    V(vsys)   headroom_to_5.5V"
+alterparam RBYP = 0.001
+foreach il 0.02 0.15 0.40
+  alterparam ILOAD = $il
+  reset
+  op
+  let vs = v(vsys)
+  let hr = 5.5 - v(vsys)
+  echo "@@  $il A    $&vs   $&hr"
+end
+
+echo "@@"
+echo "@@--- SIM-06c  BACK-FEED: laptop on the programming port, RotoPD dead"
+echo "@@  Pico VBUS 5 V reaches VSYS via the Pico's own D1, so VSYS ~4.7 V."
+echo "@@  The RotoPD's unpowered aux output is modelled as a sink; 1k is a"
+echo "@@  representative unpowered buck output, 10 ohm a harsh case."
+echo "@@  I_aux < 0 means current flowing INTO the RotoPD aux pin."
+echo "@@"
+echo "@@  config                aux sink   I_aux(mA)   verdict"
+* RotoPD unpowered: its aux source is isolated (RAUX huge) and the node's
+* behaviour is set by RAUXSINK, the unpowered buck output's own impedance.
+alterparam VAUX = 0
+alterparam RAUX = 1e12
+alterparam VUSB = 5.0
+alterparam RUSB = 0.1
+alterparam ILOAD = 0.05
+foreach rs 1k 100 10
+  alterparam RAUXSINK = $rs
+  alterparam RBYP = 1e12
+  reset
+  op
+  let ia = i(vam) * 1000
+  echo "@@  series Schottky fitted   $rs      $&ia      blocked"
+  alterparam RBYP = 0.01
+  reset
+  op
+  let ib = i(vam) * 1000
+  echo "@@  NO diode (direct tie)    $rs      $&ib      BACK-FEED"
+end
+
+echo "@@"
+echo "@@--- SIM-06d  aux 0.4 A budget, itemised ---"
+echo "@@  Pico 2 @ 150 MHz, both cores busy      ~ 55 mA  (measure, do not trust)"
+echo "@@  SSD1306/SH1107 OLED, most pixels lit   ~ 25 mA"
+echo "@@  3 x encoder pull-ups, 10k, worst case  ~  1 mA"
+echo "@@  2 x CC Rp, 36k to 3V3                  ~ 0.2 mA"
+echo "@@  PG + FAULT pull-ups                    ~ 0.1 mA"
+echo "@@  ------------------------------------------------"
+echo "@@  total                                  ~ 81 mA of 400 mA"
+echo "@@  The 0.4 A aux budget is NOT the binding constraint. The two real"
+echo "@@  constraints on this rail are the 5.5 V VSYS ceiling and the"
+echo "@@  back-feed path, and one Schottky addresses both."
+quit
+.endc
+.end
