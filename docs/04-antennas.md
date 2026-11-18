@@ -1,4 +1,4 @@
-# 06 · Antennas — Selection, Placement, RF Test
+# 04 · Antennas — Selection, Placement, RF Test
 
 Four internal flex antennas, **two per radio**, inside the narrow walls of
 [Enclosure A](02-enclosure-a-upper.md).

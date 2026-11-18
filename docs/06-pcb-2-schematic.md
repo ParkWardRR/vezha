@@ -1,4 +1,4 @@
-# 11 · PCB 2 — Schematic
+# 06 · PCB 2 — Schematic
 
 A net-by-net schematic for the power board, with every passive value either
 calculated or simulated, and the simulation that justifies it.

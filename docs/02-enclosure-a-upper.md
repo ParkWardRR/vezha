@@ -26,11 +26,11 @@ Read [01-architecture.md](01-architecture.md) first.
 | **Intel AX210** (uplink) | M.2 2230 · 22 × 30 × 2.4 mm | Slides into the **top-side E-key socket**, screws down at the 2230 standoff. Two MHF4 antenna leads snap onto the card. Wi-Fi over PCIe, Bluetooth over USB. |
 | **Second Wi-Fi card** (private AP) | 22 × 30 mm **if 2230** — height unconfirmed | Mounts in the **adapter's** E-key socket with its own retaining screw. MT7922/RZ616 is a candidate, **not a locked part.** Verify antenna connector type and 5 GHz AP operation on the target Linux image before committing. |
 | **M-key → E-key adapter** | **Installed size unverified** | Male M-key edge into the Orange Pi's **underside** socket; second radio into the adapter's female E-key socket. The host accepting 2280 modules does **not** tell you the adapter's size or the installed stack height. Choose a specific adapter **that routes PCIe**, then measure it with card and antenna plugs installed. |
-| **4 × flex antennas** | 42 × 7 mm each, 100 mm MHF4 lead | Inside the narrow walls. Full placement in [06-antennas.md](06-antennas.md). |
+| **4 × flex antennas** | 42 × 7 mm each, 100 mm MHF4 lead | Inside the narrow walls. Full placement in [06-antennas.md](04-antennas.md). |
 | **Storage** | eMMC discussed, unconfirmed | — |
-| ~~Display~~ | — | **Retired in v1.** Was a Waveshare 4.26" e-paper whose 107 × 64 mm driver board set the faceplate's minimum size. [10](10-display.md) |
+| ~~Display~~ | — | **Retired in v1.** Was a Waveshare 4.26" e-paper whose 107 × 64 mm driver board set the faceplate's minimum size. [10](retired/display-epaper.md) |
 | ~~Faceplate~~ | — | **Retired in v1.** No controls to carry, so no removable front part and no openings. |
-| ~~PCB 1~~ | — | **Retired in v1.** [04](04-pcb-1-front-control.md) · [12](12-pcb-1-schematic.md) |
+| ~~PCB 1~~ | — | **Retired in v1.** [04](retired/pcb-1-front-control.md) · [12](retired/pcb-1-schematic.md) |
 
 ### What the cut removes from this box
 
@@ -63,7 +63,7 @@ figure is unmeasured and is one of the
 
 ## Antenna zones
 
-Summarised here; full detail and test plan in [06-antennas.md](06-antennas.md).
+Summarised here; full detail and test plan in [06-antennas.md](04-antennas.md).
 
 - Four strips **inside the narrow walls** — top edge, upper-right sidewall,
   lower-left sidewall, bottom edge
@@ -130,7 +130,7 @@ load is exactly the case nobody has measured.** A heatsink exists in the
 clearance budget above; whether it is sufficient is open.
 
 Antenna zones and heatsink placement are in direct tension. Resolve it with
-the RF test in [06-antennas.md](06-antennas.md) rather than by assumption.
+the RF test in [06-antennas.md](04-antennas.md) rather than by assumption.
 
 ## Open questions
 

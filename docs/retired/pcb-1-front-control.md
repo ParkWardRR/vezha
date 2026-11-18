@@ -1,13 +1,13 @@
-# 04 · PCB 1 — Front Control Board *(retired)*
+# Retired · PCB 1 — Front Control Board
 
 > [!CAUTION]
 > **Retired 2026-11-18. PCB 1 does not exist in v1.** Enclosure A is fully
 > headless — no display, no keys, no wheel, no toggle, no indicators, no front
 > board at all. Vezha v1 ships **two enclosures and one PCB.** See
-> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut).
+> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut).
 >
 > **Do not order parts from this document** and do not lay the board out. The
-> schematic that followed from it, [12](12-pcb-1-schematic.md), is retired with
+> schematic that followed from it, [12](pcb-1-schematic.md), is retired with
 > it.
 
 **What this cost, and what it saved.** The board was *finished* — every placed
@@ -17,9 +17,9 @@ panel in v2 inherits a complete design; the findings worth keeping:
 
 | Finding | Still true? | Where |
 |---|---|---|
-| The I²C bus **as originally drawn does not work** — ANO pull-ups alone give 1271 ns rise at 150 pF, failing even 100 kHz. Fit 2.2 kΩ. | Yes, for any I²C front panel | [SIM-11](12-pcb-1-schematic.md#sim-11--ic-pull-ups) |
-| Red is the hot channel on a 5 V anode — 3.0 V across the driver vs 1.9 V for green/blue, so four red channels make 44 % of the heat | Yes | [SIM-12](12-pcb-1-schematic.md#sim-12--led-driver-dissipation) |
-| Key RC debounce **does** work on a switch-to-ground input: 10 kΩ / 1 kΩ / 100 nF, and it is a *window* — 220 nF and 470 nF both fail | Yes — corrected in `a4c5201` | [SIM-13](12-pcb-1-schematic.md#sim-13--key-debounce) |
+| The I²C bus **as originally drawn does not work** — ANO pull-ups alone give 1271 ns rise at 150 pF, failing even 100 kHz. Fit 2.2 kΩ. | Yes, for any I²C front panel | [SIM-11](pcb-1-schematic.md#sim-11--ic-pull-ups) |
+| Red is the hot channel on a 5 V anode — 3.0 V across the driver vs 1.9 V for green/blue, so four red channels make 44 % of the heat | Yes | [SIM-12](pcb-1-schematic.md#sim-12--led-driver-dissipation) |
+| Key RC debounce **does** work on a switch-to-ground input: 10 kΩ / 1 kΩ / 100 nF, and it is a *window* — 220 nF and 470 nF both fail | Yes — corrected in `a4c5201` | [SIM-13](pcb-1-schematic.md#sim-13--key-debounce) |
 | Printed plungers against 0.35 mm of travel were the highest-risk mechanical item, needing a coupon before any faceplate | Moot in v1 — no faceplate openings | [Plunger design](#plunger-design) |
 
 ---
@@ -28,9 +28,9 @@ panel in v2 inherits a complete design; the findings worth keeping:
 
 ## Original: the front panel of Enclosure A
 
-Read [01-architecture.md](01-architecture.md) first.
+Read [01-architecture.md](../01-architecture.md) first.
 
-**The net-by-net schematic is [12-pcb-1-schematic.md](12-pcb-1-schematic.md).**
+**The net-by-net schematic is [12-pcb-1-schematic.md](pcb-1-schematic.md).**
 This document covers requirements, part choices and the reasoning; 12 covers the
 electrical design that follows from them.
 
@@ -51,7 +51,7 @@ nominal bushing diameter.
 
 ## Block schematic
 
-![PCB 1 block schematic](img/pcb-1-block-schematic.svg)
+![PCB 1 block schematic](../img/pcb-1-block-schematic.svg)
 
 Blocks and nets only — **not a captured schematic.** No EDA file exists yet and
 no footprint has been pulled. If this drawing and the text below ever disagree,
@@ -73,7 +73,7 @@ removable power box.** Keep the display opening separate from the control
 openings so a display change does not force a new button PCB.
 
 The display is a **4.26" SPI e-paper panel** — see
-[10-display.md](10-display.md). Its nine-wire cable is expected to land on
+[10-display.md](display-epaper.md). Its nine-wire cable is expected to land on
 **this board** and share the single keyed harness to the Orange Pi, rather than
 contending for the same 40-pin header. Reserve the connector.
 
@@ -115,7 +115,7 @@ What this costs, stated plainly:
 - **Lighter at ~2 N.** Fine for `LINK` and `★`; it makes accidental presses more
   likely on `MAC`, which is why that key stays recessed.
 
-The two rejected paths stay on record in [07-bom.md](07-bom.md#pcb-1--front-control-board):
+The two rejected paths stay on record in [07-bom.md](../07-bom.md#pcb-1--front-control-board--dropped-entirely):
 the 6C needs hot air and is $3.94 against $0.46, and Multimec 5G is iron-solderable
 with a better 10 M-cycle life but is 10 × 10 × 6.4 mm with an incompatible cap
 family.
@@ -168,7 +168,7 @@ the display is showing a stale image. See
 With the e-paper display now chosen, **a stale image is the normal state** — a
 full redraw takes 4 s and the panel is not meant to be refreshed constantly.
 That promotes the RGB indicators from a nicety to the only real-time feedback
-the panel has. See [10-display.md](10-display.md#what-this-does-to-the-ui).
+the panel has. See [10-display.md](display-epaper.md#what-this-does-to-the-ui).
 
 ## RGB indicators
 
@@ -225,7 +225,7 @@ this board** — see below.
 
 **Every placed part on this board is in JLCPCB stock except the RGB LED.**
 Catalog check 2026-11-17 — codes and price ladders in
-[08-sourcing.md](08-sourcing.md#looked-up-so-far):
+[08-sourcing.md](../08-sourcing.md#looked-up-so-far):
 
 | Part | Code | JLC can place it? |
 |---|---|---|
@@ -264,7 +264,7 @@ Datasheets read: C&K KSC series (B-49 to B-52), TI TLC59116 (SLDS157E).
 
 The deciding property is the **frosted lens**, and it buys something structural:
 a water-clear LED needs cavity depth behind the diffuser to avoid a hotspot,
-which is why [07-bom.md](07-bom.md) said the LED and optic "set the standoff
+which is why [07-bom.md](../07-bom.md) said the LED and optic "set the standoff
 height". A frosted emitter does its own diffusing, so **standoff height is no
 longer set by the optics** — it is set by the switch and plunger stack, which is
 the harder constraint anyway. That removes a coupling between two unknowns.
@@ -385,7 +385,7 @@ single breakout point.
 > **Match Waveshare's pin order exactly.** The 9-pin order on their cable is
 > theirs, not a standard. Read it off the HAT silkscreen before committing the
 > footprint — do not infer it from the signal list in
-> [10-display.md](10-display.md#interface-and-wiring).
+> [10-display.md](display-epaper.md#interface-and-wiring).
 
 ### 5 · Reset footprint — yes, and it is not optional anyway
 
@@ -428,7 +428,7 @@ square and 3.5 mm tall, so allow **6.5 mm square of keep-out** plus the pads.
 ## Electrical design, simulated
 
 Three analog questions on this board were open. All three are now answered by
-ngspice decks in [`sim/`](../sim/), run 2026-11-18. Each deck carries its own
+ngspice decks in [`sim/`](../../sim/), run 2026-11-18. Each deck carries its own
 question, device facts, pass criteria and result in its header.
 
 | Deck | Question | Answer |
@@ -612,9 +612,9 @@ the full printed wall.
 - Whether ~2 N is light enough to cause accidental `MAC` presses in a bag, with
   the plunger recessed.
 - Whether paged e-paper navigation suits the ANO wheel at all —
-  [10](10-display.md#what-this-does-to-the-ui).
+  [10](display-epaper.md#what-this-does-to-the-ui).
 - NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
   drawing (nominal is Ø6.5 mm).
 - ANO wheel opening diameter and standoff height — set from the test coupon.
 - How `AIRPLANE` is read and enforced in software, and what drives the
-  confirmed-off LED. Relates to uplink recovery in [09-background.md](09-background.md).
+  confirmed-off LED. Relates to uplink recovery in [09-background.md](../09-background.md).

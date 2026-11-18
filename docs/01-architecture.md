@@ -1,6 +1,6 @@
 # 01 · System Architecture
 
-How Vezha is divided into two enclosures and two PCBs, what crosses between
+How Vezha is divided into two enclosures and one PCB, what crosses between
 them, and which decisions are settled.
 
 > [!IMPORTANT]
@@ -34,8 +34,8 @@ upper box is a sealed enclosure holding the SBC, the radios, the antennas and a
 USB-C power inlet. Its entire user interface is the web UI.
 
 This retired four documents' worth of settled design — the e-paper panel
-([10](10-display.md)), the front control board ([04](04-pcb-1-front-control.md))
-and its finished schematic ([12](12-pcb-1-schematic.md)), plus simulation decks
+([10](retired/display-epaper.md)), the front control board ([04](retired/pcb-1-front-control.md))
+and its finished schematic ([12](retired/pcb-1-schematic.md)), plus simulation decks
 `sim/11`, `sim/12` and `sim/13`. None of it was wrong. It was cut for scope.
 
 **How it got here**, briefly, because the reasoning constrains v2:
@@ -320,10 +320,10 @@ to take, not values to look up:
 
 **Settled — design against these**
 
-- Two enclosures, two PCBs, **power-only seam over USB-C**
+- **Two enclosures, one PCB** — power-only seam over USB-C
 - Both radios and all antennas in Enclosure A
 - AX210 in the top-side E-key socket; second radio on an adapter underneath
-- Power chain: RotoPD Pro → Pololu → detachable connector → Orange Pi
+- Power chain: RotoPD Pro → Pololu → **USB-C seam** → Orange Pi
 - Pico 2 as controller, powered from RotoPD auxiliary via VSYS
 - Buck defaults off; Pico validates the PD contract, asserts EN, confirms PG
 - Accessory USB-C output gets its **own regulator**, never raw PD VBUS
@@ -347,7 +347,7 @@ to take, not values to look up:
   2026-11-18:** Enclosure B, because Enclosure A no longer has a front panel.
 - ~~Display model~~ — **retired 2026-11-18.** There is no display in Enclosure
   A. The Waveshare 4.26" e-paper (SKU `26376`) was chosen on 2026-11-17 and cut
-  the next day; [10](10-display.md) is kept for the analysis.
+  the next day; [10](retired/display-epaper.md) is kept for the analysis.
 - Thermal solution, final antenna SKU
 - ~~JLCPCB assembly sourcing for PCB 1 parts~~ — moot. PCB 1 is not built.
   Sourcing work is preserved in [08](08-sourcing.md#looked-up-so-far).
@@ -356,9 +356,9 @@ to take, not values to look up:
 
 | You are doing | Read |
 | --- | --- |
-| Upper enclosure | [02](02-enclosure-a-upper.md) · [06](06-antennas.md) |
+| Upper enclosure | [02](02-enclosure-a-upper.md) · [06](04-antennas.md) |
 | Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-pcb-2-power.md) |
-| Power board — **the only PCB in v1** | [05](05-pcb-2-power.md) — requirements · [11](11-pcb-2-schematic.md) — schematic |
+| Power board — **the only PCB in v1** | [05](05-pcb-2-power.md) — requirements · [11](06-pcb-2-schematic.md) — schematic |
 | Ordering parts | [07](07-bom.md) · [08](08-sourcing.md) |
 | Project context | [09](09-background.md) |
-| *Retired — kept for v2* | [04](04-pcb-1-front-control.md) · [10](10-display.md) · [12](12-pcb-1-schematic.md) |
+| *Retired — kept for v2* | [04](retired/pcb-1-front-control.md) · [10](retired/display-epaper.md) · [12](retired/pcb-1-schematic.md) |

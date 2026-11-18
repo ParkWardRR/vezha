@@ -1,10 +1,10 @@
-# 10 · Display — 4.26" e-Paper *(retired)*
+# Retired · Display — 4.26" e-Paper
 
 > [!CAUTION]
 > **Retired 2026-11-18. Vezha v1 has no display.** Enclosure A is fully
 > headless: no panel, no keys, no wheel, no indicators, no front PCB. The
 > entire user interface is the web UI. See
-> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut).
+> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut).
 >
 > **Nothing in this document is a build instruction.** It is kept because the
 > analysis below is the reason the display went away, and because a v2 that
@@ -20,7 +20,7 @@
 | Leaving the panel powered in a static state destroys it — the `PWR` pin must be driven, and an unclean shutdown is a dead-display failure mode | [Refresh discipline](#refresh-discipline-is-a-hard-requirement) |
 
 A later comparison against monochrome OLED, run before the headless decision,
-is summarised in [the v1 scope cut](01-architecture.md#the-v1-scope-cut).
+is summarised in [the v1 scope cut](../01-architecture.md#the-v1-scope-cut).
 
 ---
 
@@ -29,7 +29,7 @@ is summarised in [the v1 scope cut](01-architecture.md#the-v1-scope-cut).
 ## Original: the chosen display for Enclosure A
 
 **Superseded the Waveshare 3.5" HDMI touchscreen** discussed in
-[09-background.md](09-background.md#enclosure-antenna-layout-and-controls).
+[09-background.md](../09-background.md#enclosure-antenna-layout-and-controls).
 
 Part: **Waveshare 4.26inch e-Paper display HAT**, SKU **26376** — 800 × 480,
 black/white, SPI. Listed at **$31.99** (the page's own quantity tier says $30.99
@@ -48,11 +48,11 @@ Three properties earn it the slot, and they are not the obvious ones:
    of the power budget.
 2. **It holds the image with power removed.** A powered-down Vezha still shows
    its last screen. The `★` key's Wi-Fi join QR code — see
-   [04](04-pcb-1-front-control.md#control-behavior-and-wiring) — stays readable
+   [04](pcb-1-front-control.md#control-behavior-and-wiring) — stays readable
    with the router off, which is a better behaviour than the HDMI panel could
    have offered.
 3. **No touch layer.** It removes the USB touch load from the power budget
-   in [09](09-background.md#power-and-portability), and leaves the ANO wheel and
+   in [09](../09-background.md#power-and-portability), and leaves the ANO wheel and
    three keys as the sole input path. That matches the control scheme already
    specified rather than competing with it.
 
@@ -79,7 +79,7 @@ in the upper box, and the faceplate has to carry a ~93 × 56 mm window *plus* th
 toggle, three keys, the wheel and four RGB diffusers.
 
 This does not break the existing rule from
-[02](02-enclosure-a-upper.md#faceplate-and-seam) — display opening stays
+[02](../02-enclosure-a-upper.md#shell-and-access) — display opening stays
 separate from control openings — but it does mean the faceplate's minimum size
 is now set by the display, not by the control layout.
 
@@ -124,7 +124,7 @@ toggle and keys.
 > **Checked 2026-11-18: these Raspberry Pi pin numbers do map onto the Orange
 > Pi 5 Plus, pin for pin.** SPI0 sits on physical 19/23/24 and all four control
 > pins (22, 11, 18, 12) are plain GPIO there. No rewiring — see the
-> [header table](12-pcb-1-schematic.md#the-orange-pi-5-plus-40-pin-header).
+> [header table](pcb-1-schematic.md#the-orange-pi-5-plus-40-pin-header).
 >
 > **Software is a different matter.** The I²C bus on pins 3/5 is **I²C2**, not
 > the Raspberry Pi's i2c-1, so code opening `/dev/i2c-1` talks to the wrong
@@ -135,7 +135,7 @@ toggle and keys.
 > Pico.**
 
 The absent Pico support is a point in favour of the first reading of the
-[two-interfaces conflict](05-pcb-2-power.md#previously-flagged-conflicts--both-resolved): this panel is
+[two-interfaces conflict](../05-pcb-2-power.md#previously-flagged-conflicts--both-resolved): this panel is
 the **Orange Pi's** display. If the PCB 2 OLED survives, it is a separate
 power-box console, not a consolidation target.
 
@@ -169,7 +169,7 @@ The `PWR` pin exists for this reason. It should be driven, not tied high.
 This also lands on the shutdown path. If the Orange Pi crashes or loses power
 mid-refresh and leaves the panel energised, the failure mode is a dead display,
 not a stale one. Worth deciding whether the Pico — which
-[05](05-pcb-2-power.md) already has booting before the Orange Pi — has any role
+[05](../05-pcb-2-power.md) already has booting before the Orange Pi — has any role
 in guaranteeing the panel ends up asleep.
 
 ## What this does to the UI
@@ -188,7 +188,7 @@ What follows:
   stepping between them and the center press confirming. Build the menu around
   a handful of pages, each a deliberate redraw.
 - **The four RGB indicators become the live layer.** This was already the
-  reasoning in [04](04-pcb-1-front-control.md#rfkill-is-not-an-interlock) —
+  reasoning in [04](pcb-1-front-control.md#rfkill-is-not-an-interlock) —
   *"live feedback even when the display is showing a stale image"* — written
   about a hypothetical. With e-paper, **a stale image is the normal state.** The
   indicators are now the only thing that can show state changing in real time,
@@ -248,4 +248,4 @@ The **driver IC is not named** on either page.
 - Whether paged navigation on e-paper is the experience wanted, or whether the
   wheel argues for a different display class.
 - Mounting: its own bracket, per
-  [02](02-enclosure-a-upper.md#contents-and-mounting) — geometry not designed.
+  [02](../02-enclosure-a-upper.md#contents-and-mounting) — geometry not designed.

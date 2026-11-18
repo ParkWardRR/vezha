@@ -32,7 +32,7 @@ ordered.**
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
 | UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-pcb-2-power.md#telemetry-header). |
-| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | **v1 is headless** — [the scope cut](01-architecture.md#the-v1-scope-cut). Chosen 2026-11-17, cut 2026-11-18. Analysis kept in [10](10-display.md). |
+| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | **v1 is headless** — [the scope cut](01-architecture.md#the-v1-scope-cut). Chosen 2026-11-17, cut 2026-11-18. Analysis kept in [10](retired/display-epaper.md). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
 ## PCB 1 — front control board ⬜ **Dropped entirely**

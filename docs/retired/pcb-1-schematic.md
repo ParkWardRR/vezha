@@ -1,10 +1,10 @@
-# 12 · PCB 1 — Schematic *(retired)*
+# Retired · PCB 1 — Schematic
 
 > [!CAUTION]
 > **Retired 2026-11-18. PCB 1 is not built in v1.** Enclosure A is fully
 > headless and this board has no contents left to carry. See
-> [01 · The v1 scope cut](01-architecture.md#the-v1-scope-cut) and the
-> requirements document it came from, [04](04-pcb-1-front-control.md).
+> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut) and the
+> requirements document it came from, [04](pcb-1-front-control.md).
 >
 > The design is **complete and believed correct** — it was cut for scope, not
 > for a fault. Three simulation decks (`sim/11`, `sim/12`, `sim/13`) back it and
@@ -24,10 +24,10 @@
 ## Original: net-by-net schematic for the front control board
 
 Requirements and the reasoning behind each part choice live in
-[04-pcb-1-front-control.md](04-pcb-1-front-control.md); this is the electrical
+[04-pcb-1-front-control.md](pcb-1-front-control.md); this is the electrical
 design that follows from them.
 
-Companion to [11-pcb-2-schematic.md](11-pcb-2-schematic.md). Simulation decks
+Companion to [11-pcb-2-schematic.md](../06-pcb-2-schematic.md). Simulation decks
 are `sim/11`, `sim/12`, `sim/13`.
 
 > [!NOTE]
@@ -59,7 +59,7 @@ self-test; a realistic status display is one or two indicators, under 30 mA.
 
 > [!NOTE]
 > **Tell PCB 2 about the 120 mA.** The seam budget in
-> [11](11-pcb-2-schematic.md) sizes the router rail. If the indicators were
+> [11](../06-pcb-2-schematic.md) sizes the router rail. If the indicators were
 > assumed negligible, they are not — they are up to 120 mA on the 5 V rail,
 > drawn through the same seam.
 
@@ -76,7 +76,7 @@ and is wasteful for red — which is what sets the current choice below.
 | **D1–D4** | MEIHUA MHPA2525RGBDT-S | `C404285` | SMD 2.6 × 2.4 mm | 8,253 | RGB indicators, **common anode**, white frosted |
 | **SW1–SW5** | C&K KSC221JLFS | `C221726` | SMD J-lead 6.2 mm | 16,623 | keys — **populate 3, SW4/SW5 are spare footprints** |
 | **R1** | **1.87 kΩ** 1 % | — | 0603 | — | U1 `REXT` → 10 mA/channel — [SIM-12](#sim-12--led-driver-dissipation) |
-| **R2, R3** | **2.2 kΩ** 1 % | — | 0603 | — | I²C SDA/SCL pull-ups to +3V3 — [SIM-11](#sim-11--i2c-pull-ups) |
+| **R2, R3** | **2.2 kΩ** 1 % | — | 0603 | — | I²C SDA/SCL pull-ups to +3V3 — [SIM-11](#sim-11--ic-pull-ups) |
 | **R4** | 10 kΩ | — | 0603 | — | U1 `RESET` pull-up to +3V3 |
 | **R5–R8** | 10 kΩ | — | 0603 | — | key / toggle pull-ups to +3V3 |
 | **R9–R12** | 1 kΩ | — | 0603 | — | key / toggle series R — [SIM-13](#sim-13--key-debounce) |
@@ -201,7 +201,7 @@ is the part that would have been missed by assuming compatibility.
 ~10 kΩ pull-ups alone — does not meet I²C rise time at realistic capacitance.
 2.2 kΩ in parallel with the module's 10 kΩ gives 1.8 kΩ, a 229 ns rise at
 150 pF, and sinks 1.6 mA against the 3 mA budget. See
-[SIM-11](#sim-11--i2c-pull-ups).
+[SIM-11](#sim-11--ic-pull-ups).
 
 > [!WARNING]
 > **Measure the Orange Pi header's own I²C pull-ups before fitting R2/R3.**
@@ -241,7 +241,7 @@ bounce burst to speak of, but the RC costs nothing and the symmetry is worth
 more than the saved parts.
 
 > **The toggle does not mount to the PCB.** Its leads land on J4. See
-> [04](04-pcb-1-front-control.md#bill-of-materials).
+> [04](pcb-1-front-control.md#bill-of-materials).
 
 **SW4 and SW5 are footprints only.** They are the two spare switch positions —
 routed to J1, not populated, and **not cut into the first faceplate**.
@@ -322,12 +322,12 @@ accepts 3.3 V logic.
 > **The J2 pin numbers are deliberately blank.** Waveshare's 9-pin order is
 > theirs, not a standard, and it must be read off the HAT silkscreen before the
 > footprint is committed. Do not infer it from the signal list in
-> [10](10-display.md#interface-and-wiring) — that list is alphabetical by
+> [10](display-epaper.md#interface-and-wiring) — that list is alphabetical by
 > function, not physical order.
 
 `PWR` must be driven, not tied high. The panel can be damaged by being left
 powered in a static state — see
-[10](10-display.md#refresh-discipline-is-a-hard-requirement).
+[10](display-epaper.md#refresh-discipline-is-a-hard-requirement).
 
 ### ANO module (J3)
 
@@ -428,9 +428,9 @@ double presses.
 - **Read** Waveshare's 9-pin cable order off the HAT silkscreen before
   committing J2's footprint.
 - **Confirm** the `KSC221JLFS` land pattern against the C&K datasheet — the
-  figures in [04](04-pcb-1-front-control.md#6--switch-land-pattern) are read
+  figures in [04](pcb-1-front-control.md#6--switch-land-pattern) are read
   off a scanned drawing.
 - **Confirm** the ANO module's actual pull-up value.
 - Board outline and standoff height are mechanical outputs — see
-  [02](02-enclosure-a-upper.md) and the test coupon in
-  [04](04-pcb-1-front-control.md#mechanical-test-coupon).
+  [02](../02-enclosure-a-upper.md) and the test coupon in
+  [04](pcb-1-front-control.md#mechanical-test-coupon).

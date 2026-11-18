@@ -106,7 +106,7 @@ login. No display, switch wiring, or button assignments are confirmed.
 
 **Superseded 2026-11-17:** the display became the Waveshare 4.26-inch
 e-Paper HAT (SKU 26376), SPI rather than HDMI and with no touch layer.
-See [10-display.md](10-display.md).
+See [10-display.md](retired/display-epaper.md).
 
 **Superseded again 2026-11-18 — and this one closes the thread.** Vezha v1
 has **no display and no physical controls.** The original ask above, "physical

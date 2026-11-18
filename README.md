@@ -159,7 +159,7 @@ over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
 
 ![PCB 2 block schematic: external PD into the RotoPD Pro, switched VBUS into the Pololu buck, then through a 2 milliohm shunt watched by an INA226 and out over the USB-C seam; the Pico 2 beside that path on auxiliary 5 V, controlling the RotoPD on I²C bus 1, imposing off on EN through a 1.5 kilohm pull-down and reading PG, with an NTC on the regulator, the OLED console on bus 2, and the accessory USB-C port on its own 48 V-rated regulator](docs/img/pcb-2-block-schematic.svg)
 
-Schematic: **[11-pcb-2-schematic.md](docs/11-pcb-2-schematic.md)** ·
+Schematic: **[11-pcb-2-schematic.md](docs/06-pcb-2-schematic.md)** ·
 requirements: **[05-pcb-2-power.md](docs/05-pcb-2-power.md)**. The two rules the
 drawing exists to make unmissable: the bare buck **defaults on** — the module
 pulls EN to VIN through 1 MΩ, so **R1 at 1.5 kΩ** has to impose off — and
@@ -177,33 +177,41 @@ not values to look up:
 
 1. **CentyLab RotoPD Pro** mounting pattern, outline, and height
 2. **Underside adapter stack height** — adapter + card + mated antenna plugs
-3. **Mated power connector clearance** — connector *and* cable bend
+3. **Mated USB-C plug clearance** — plug *and* cable bend
 
 ## Documents
 
+Nine live documents, numbered in reading order. Retired work is kept but moved
+out of the path.
+
 | | Document | For | Contents |
 |---|---|---|---|
-| **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, decision status. **Read first.** |
-| **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the double-sided board problem, antenna zones, faceplate, seam, thermal |
-| **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, USB-C input |
-| **04** | [PCB 1 — front control](docs/04-pcb-1-front-control.md) | *Retired* | ⬜ **Not built in v1.** Switches, caps, toggle, ANO wheel, RGB indicators. Kept for v2 |
-| **05** | [PCB 2 — power](docs/05-pcb-2-power.md) | PCB | Carrier wiring, the three rules that must survive layout, headroom, measurement plan |
-| **06** | [Antennas](docs/06-antennas.md) | RF + mechanical | Four placements with orientation, candidates and gain, tri-band clarification, RF bench test |
-| **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, price, and what is unresolved |
+| **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, the v1 scope cut, decision status. **Read first.** |
+| **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the double-sided board problem, antenna zones, USB-C inlet, thermal |
+| **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, wall openings |
+| **04** | [Antennas](docs/04-antennas.md) | RF + mechanical | Four placements with orientation, candidates and gain, tri-band clarification, RF bench test |
+| **05** | [PCB 2 — requirements](docs/05-pcb-2-power.md) | PCB | What the board must do: module interfaces, the rules that must survive layout, headroom, measurement plan |
+| **06** | [PCB 2 — schematic](docs/06-pcb-2-schematic.md) | PCB | Net-by-net, every passive calculated or simulated, Pico 2 pin map |
+| **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, JLCPCB codes, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
-| **09** | [Background](docs/09-background.md) | Context | Original handoff. Partly superseded — kept for the *why* |
-| **10** | [Display](docs/10-display.md) | *Retired* | ⬜ **No display in v1.** 4.26" e-paper: refresh discipline, temperature limits, what it did to the UI |
-| **11** | [PCB 2 — schematic](docs/11-pcb-2-schematic.md) | PCB | Net-by-net power board, every passive calculated or simulated, Pico 2 pin map |
-| **12** | [PCB 1 — schematic](docs/12-pcb-1-schematic.md) | *Retired* | ⬜ **Not built in v1.** Net-by-net front panel. **Its 40-pin header map is still correct and still useful** |
+| **09** | [Background](docs/09-background.md) | Context | Original handoff and what v1 gives up. Partly superseded — kept for the *why* |
+
+**[docs/retired/](docs/retired/)** — the display, PCB 1 requirements and PCB 1
+schematic, cut from v1 on 2026-11-18. Complete work, kept so a v2 panel
+inherits it. Two findings there outlived the board: the corrected RC debounce
+window, and the 40-pin header map, which stays valid regardless.
+
+**[sim/](sim/)** — ngspice decks. `01`–`06` back the PCB 2 schematic;
+`sim/retired/` holds the three PCB 1 decks.
 
 ## Decision status
 
 **Settled — design against these**
 
-- Two enclosures, two PCBs, power-only seam
+- **Two enclosures, one PCB** — power-only seam over USB-C
 - Both radios and all antennas in Enclosure A
 - AX210 top-side E-key; second radio on an underside M→E adapter
-- RotoPD Pro → Pololu → detachable connector → Orange Pi
+- RotoPD Pro → Pololu → **USB-C seam** → Orange Pi
 - Pico 2 controller, powered from RotoPD auxiliary via VSYS
 - Four internal flex antennas, two per radio, inside the narrow walls
 - **Enclosure A is headless** — no display, no controls, no PCB 1.
@@ -216,7 +224,7 @@ not values to look up:
 - Second radio part and height; antenna connector type unconfirmed
 - Which M→E adapter (must route PCIe)
 - RotoPD Pro physical envelope — **blocks Enclosure B**
-- Seam USB-C part; whether the Pi stays under USB-C's 3 A limit at 5 V
+- Seam USB-C part. **IR drop binds before the 3 A limit** — one mated pair is 30–40 mΩ against a 25 mΩ budget at the 5.0 V regulator's low corner
 - **Which regulator** — `D42V55F5` vs `D42V55F5.3`, blocked on the Orange Pi's
   maximum input voltage. [01](docs/01-architecture.md#the-5-v-seam-problem)
 - Thermal solution, final antenna SKU
@@ -232,15 +240,15 @@ not values to look up:
    dimension.
 3. **Confirm sourcing in the assembly quote**, not from a datasheet link.
 4. **Freeze the enclosures last.** The RF test in
-   [06](docs/06-antennas.md) can still move antenna positions, and antenna
+   [06](docs/04-antennas.md) can still move antenna positions, and antenna
    positions move walls.
 5. **Scope cuts go in the docs, not the bin.** Retired work keeps its document
    with a banner saying what was learned —
-   [04](docs/04-pcb-1-front-control.md), [10](docs/10-display.md) and
-   [12](docs/12-pcb-1-schematic.md) are the worked examples.
+   [04](docs/retired/pcb-1-front-control.md), [10](docs/retired/display-epaper.md) and
+   [12](docs/retired/pcb-1-schematic.md) are the worked examples.
 
 *Rules about faceplate coupons, plunger lengths and LED optics retired with
-PCB 1. They are preserved in [04](docs/04-pcb-1-front-control.md) should a
+PCB 1. They are preserved in [04](docs/retired/pcb-1-front-control.md) should a
 front panel return.*
 
 ## License
