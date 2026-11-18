@@ -458,15 +458,24 @@ competing interface altogether.
   contract could cut the Pico's own supply. Until answered, firmware caps
   requested contracts at 20 V. See
   [11 · Boot sequence](06-power-board-schematic.md#boot-sequence).
-- `U3` 5.0 V vs 5.3 V — see
-  [01 · The 5 V seam problem](01-architecture.md#the-5-v-seam-problem)
-- Seam USB-C receptacle part, and whether the Pi stays under 3 A
+- ~~`U3` 5.0 V vs 5.3 V~~ — **decided 2026-11-18: the 5.0 V #5571**, forced
+  by the Orange Pi's fixed-5 V input. It leaves the seam loop over budget,
+  which is now the open problem instead. See
+  [06 · U3 is the 5.0 V part](06-power-board-schematic.md#u3-is-the-50-v-part)
+- **Seam USB-C receptacle part, and whether the Pi stays under 3 A** — now
+  coupled to the loop-resistance problem, not independent of it: a 6-pin
+  power-only receptacle brings out only two VBUS and two GND contacts, where
+  a 16-pin part brings out four of each. See
+  [06 · U3 is the 5.0 V part](06-power-board-schematic.md#u3-is-the-50-v-part)
 - INA226 address vs. the RotoPD Pro's
 - Whether Rev A populates the telemetry header's series resistors
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets
-- Accessory port config **A** (Default USB) or **B** (1.5 A) — B is gated on
-  the thermal measurement
+- ~~Accessory port config **A** or **B**~~ — **decided 2026-11-18: build
+  Rev A as config A.** The two differ only in three 0603 values on identical
+  footprints, so B stays available as a bench swap after the thermal
+  measurement. See
+  [06 · What is still open](06-power-board-schematic.md#what-is-still-open)
 
 **Answered in [11-pcb-2-schematic.md](06-power-board-schematic.md)**, with the
 simulations behind each:
