@@ -60,69 +60,115 @@ CAD_BUILD = Path(__file__).resolve().parent.parent / "cad" / "build"
 BOARD_X = float(B.pcb_x)
 BOARD_Y = float(B.pcb_y)
 
-#: (ref, "Lib:Footprint", x, y, rotation). Origin is the board's top-left in
-#: KiCad's y-down page coordinates; values are mm from that corner.
-PLACEMENT = [
-    # ================= accessory port chain, top strip ==================
-    # VBUS_PD enters at the x-small wall and the port exits at x-large, so
-    # the chain runs left to right and the heavy input caps sit on U4's pin.
-    ("C4",  pb.FP_C1210, 28.0, 8.0, 0.0),
-    ("C5",  pb.FP_C1210, 28.0, 13.0, 0.0),
-    ("C6",  pb.FP_C0603, 28.0, 17.0, 0.0),
-    ("U4",  pb.FP_SOIC8_EP, 35.0, 12.0, 0.0),     # LMR38020, 80 V buck
-    ("C9",  pb.FP_C0603, 35.0, 6.0, 0.0),         # BOOT cap, close to the pin
-    ("R17", pb.FP_R0603, 35.0, 18.0, 0.0),        # RT
-    ("R20", pb.FP_R0603, 30.0, 20.0, 0.0),        # U4 PG pull-up
-    ("L1",  pb.FP_IND,   45.0, 12.0, 0.0),        # 22 uH
-    ("C7",  pb.FP_C1210, 53.0, 9.0, 0.0),
-    ("C8",  pb.FP_C0603, 53.0, 14.0, 0.0),
-    ("R18", pb.FP_R0603, 48.0, 19.0, 0.0),        # FB top
-    ("R19", pb.FP_R0603, 52.0, 19.0, 0.0),        # FB bottom
-    ("U5",  pb.FP_SOT23_6, 61.0, 12.0, 0.0),      # TPS2553 limiter
-    ("R5",  pb.FP_R0603, 61.0, 17.0, 0.0),        # R_ILIM, Config A
-    ("R6",  pb.FP_R0603, 65.0, 17.0, 0.0),        # FAULT pull-up
-    ("R3",  pb.FP_R0603, 70.0, 6.0, 0.0),         # CC1 Rp
-    ("R4",  pb.FP_R0603, 70.0, 9.0, 0.0),         # CC2 Rp
-    ("R21", pb.FP_R0603, 70.0, 12.0, 0.0),        # D+/D- BC1.2 short
-    ("J6",  pb.FP_USBC_16P, 82.0, 12.0, 0.0),     # accessory out, x-large wall
+# =======================================================================
+# Placement
+# =======================================================================
+# Two tiers, because the first attempt at this was bad in a specific way:
+# every passive sat at a hand-typed coordinate in a tidy grid, which looks
+# fine in a render and is wrong electrically. A decoupling cap 7 mm from the
+# pin it decouples is not decoupling anything.
+#
+# ANCHORS are absolute: the ICs, modules and wall connectors, placed by
+# floorplan. SATELLITES are placed relative to a NAMED PAD of their anchor,
+# so "C9 straddles U4's BOOT pin" survives any footprint whose internal pad
+# geometry I guessed wrong.
 
-    # ================= PD inlet edge (x small) ==========================
-    ("U1",  pb.FP_HDR_1X8,  6.0, 24.0, 0.0),
-    ("U1P", pb.FP_HDR.format(n=2), 6.0, 48.0, 0.0),
-    ("J1",  pb.FP_JST_SH4,  12.0, 10.0, 0.0),
-    ("JP1", pb.FP_R0603,    12.0, 46.0, 0.0),
+#: (ref, footprint, x, y, rotation)
+ANCHORS = [
+    # --- 48 V accessory buck, top strip -------------------------------
+    ("U4",  pb.FP_SOIC8_EP,  40.0, 12.0, 0.0),
+    ("U5",  pb.FP_SOT23_6,   64.0, 12.0, 0.0),
+    ("J6",  pb.FP_USBC_16P,  83.0, 10.0, 0.0),      # accessory out, x-large wall
 
-    # ================= router rail ======================================
-    ("U3",  pb.FP_HDR_2X6,  20.0, 26.0, 0.0),     # Pololu carrier
-    ("R1",  pb.FP_R0603,    27.0, 26.0, 0.0),
-    ("R2",  pb.FP_R0603,    27.0, 29.0, 0.0),
-    ("R16", pb.FP_R0603,    27.0, 32.0, 0.0),
-    ("RT1", pb.FP_R0603,    27.0, 35.0, 0.0),
-    ("D1",  pb.FP_SMA,      14.0, 52.0, 0.0),
-    ("R13", pb.FP_R2512,    44.0, 30.0, 0.0),     # 2 mohm shunt in the rail
-    ("U6",  pb.FP_VSSOP10,  45.0, 36.0, 0.0),
-    ("J2",  pb.FP_USBC_6P,  83.0, 36.0, 0.0),     # seam out, x-large wall
+    # --- PD inlet, x-small wall ---------------------------------------
+    ("U1",  pb.FP_HDR_1X8,    6.0, 26.0, 0.0),
+    ("U1P", pb.FP_HDR.format(n=2), 6.0, 50.0, 0.0),
+    ("J1",  pb.FP_JST_SH4,    9.0, 14.0, 0.0),
+    ("JP1", pb.FP_R0603,     13.0, 20.0, 0.0),
+    ("D1",  pb.FP_SMA,       12.0, 46.0, 0.0),
 
-    # ================= console row ======================================
-    ("J3",  pb.FP_HDR.format(n=3), 34.0, 24.0, 0.0),
-    ("R14", pb.FP_R0603,    38.0, 24.0, 0.0),
-    ("R15", pb.FP_R0603,    38.0, 27.0, 0.0),
-    ("R7",  pb.FP_R0603,    50.0, 24.0, 0.0),
-    ("R8",  pb.FP_R0603,    50.0, 27.0, 0.0),
-    ("R9",  pb.FP_R0603,    50.0, 30.0, 0.0),
-    ("R10", pb.FP_R0603,    54.0, 24.0, 0.0),
-    ("R11", pb.FP_R0603,    54.0, 27.0, 0.0),
-    ("R12", pb.FP_R0603,    54.0, 30.0, 0.0),
-    ("C1",  pb.FP_C0603,    58.0, 24.0, 0.0),
-    ("C2",  pb.FP_C0603,    58.0, 27.0, 0.0),
-    ("C3",  pb.FP_C0603,    58.0, 30.0, 0.0),
-    ("J5",  pb.FP_HDR.format(n=4), 64.0, 24.0, 0.0),
-    ("J4",  pb.FP_JST_SH4,  72.0, 26.0, 0.0),
+    # --- the 4 A router rail, kept SHORT ------------------------------
+    # U3 -> R13 -> J2 in a line against the x-large wall. SIM-04 allows
+    # 25 mohm for the whole round trip, so rail length is a budget item,
+    # not a style choice. VBUS_PD from U1 is allowed to be long instead:
+    # at 20-48 V the same power is far less current and the Pololu
+    # regulates the drop out anyway.
+    ("U3",  pb.FP_HDR_2X6,   56.0, 26.0, 0.0),      # Pololu carrier
+    ("R13", pb.FP_R2512,     70.0, 30.0, 0.0),      # 2 mohm shunt
+    ("U6",  pb.FP_VSSOP10,   70.0, 35.5, 0.0),      # INA226, Kelvin at R13
+    ("J2",  pb.FP_USBC_6P,   83.0, 30.0, 0.0),      # seam out, x-large wall
 
-    # ================= controller =======================================
-    ("U2",  pb.PICO_FP,     30.0, 64.0, 90.0),
-    ("J7",  pb.FP_HDR.format(n=3), 22.0, 52.0, 0.0),
+    # --- controller and console ----------------------------------------
+    # rot 270 puts GP12/13/14 on the Pico's top edge, so the encoder RC
+    # can sit at those inputs instead of across the board from them.
+    ("U2",  pb.PICO_FP,      79.0, 46.0, 270.0),
+    ("J5",  pb.FP_HDR.format(n=4), 46.0, 33.0, 0.0),   # encoder
+    ("J4",  pb.FP_JST_SH4,   24.0, 49.0, 0.0),         # OLED
+    ("J3",  pb.FP_HDR.format(n=3), 13.0, 56.0, 0.0),   # telemetry
+    ("J7",  pb.FP_HDR.format(n=3), 20.0, 62.0, 0.0),   # SWD
 ]
+
+#: (ref, footprint, anchor_ref, anchor_pin, dx, dy, rotation)
+#: Offsets are mm from that pad, so intent is readable: "2.6 mm right of
+#: U4's VIN pin" rather than an absolute coordinate nobody can check.
+SATELLITES = [
+    # --- U4's right column is SW / BOOT / VIN / PG, top to bottom, and FB
+    # --- is bottom-LEFT. That is lucky: the switch node and the feedback
+    # --- node end up on opposite sides of the part without trying.
+    ("C9",  pb.FP_C0603, "U4", str(pb.U4["BOOT"]),  2.94, -1.20,  0.0),
+    ("L1",  pb.FP_IND,   "U4", str(pb.U4["SW"]),    9.44, -2.50,  0.0),
+    ("C6",  pb.FP_C0603, "U4", str(pb.U4["VIN"]),   2.70,  0.00,  0.0),
+    ("C4",  pb.FP_C1210, "U4", str(pb.U4["VIN"]),   6.80,  2.80, 90.0),
+    ("C5",  pb.FP_C1210, "U4", str(pb.U4["VIN"]),  10.60,  2.80, 90.0),
+    ("C7",  pb.FP_C1210, "L1", "2",                 3.30,  0.00, 90.0),
+    ("C8",  pb.FP_C0603, "L1", "2",                 3.30,  4.60, 90.0),
+    ("R18", pb.FP_R0603, "U4", str(pb.U4["FB"]),   -3.04,  0.00,  0.0),
+    ("R19", pb.FP_R0603, "U4", str(pb.U4["FB"]),   -3.04,  2.50,  0.0),
+    ("R17", pb.FP_R0603, "U4", str(pb.U4["RT"]),   -3.04, -1.23,  0.0),
+    ("R20", pb.FP_R0603, "U4", str(pb.U4["PG"]),    0.00,  3.10,  0.0),
+
+    # --- limiter satellites, at their own pins
+    ("R5",  pb.FP_R0603, "U5", str(pb.U5["ILIM"]),  3.36, -1.00,  0.0),
+    ("R6",  pb.FP_R0603, "U5", str(pb.U5["FAULT"]), 3.36,  1.05,  0.0),
+
+    # --- CC pull-ups and the BC1.2 short, inboard of the connector
+    ("R3",  pb.FP_R0603, "J6", "A5",               -7.75,  0.04,  0.0),
+    ("R4",  pb.FP_R0603, "J6", "B5",              -10.75,  3.04,  0.0),
+    ("R21", pb.FP_R0603, "J6", "A6",               -8.75,  6.04,  0.0),
+
+    # --- rail control, flanking U3's own EN and PG pins
+    ("R1",  pb.FP_R0603, "U3", str(pb.U3["EN"]),   -4.00, -3.00,  0.0),
+    ("R2",  pb.FP_R0603, "U3", str(pb.U3["PG"]),    3.96,  0.00,  0.0),
+
+    # --- 06: the NTC goes against U3's thermal pad. On a header-mounted
+    # --- module that means UNDER it -- see UNDER_MODULE below.
+    ("RT1", pb.FP_R0603, "U3", "1",                 6.50,  3.00,  0.0),
+    ("R16", pb.FP_R0603, "U3", "1",                 6.50,  0.50,  0.0),
+
+    # --- encoder RC at the GPIOs it filters, not across the board
+    ("C1",  pb.FP_C0603, "U2", "16",                0.00, -4.50, 90.0),
+    ("C2",  pb.FP_C0603, "U2", "17",                0.00, -4.50, 90.0),
+    ("C3",  pb.FP_C0603, "U2", "19",                0.00, -4.50, 90.0),
+    ("R10", pb.FP_R0603, "U2", "16",                0.00, -7.50, 90.0),
+    ("R11", pb.FP_R0603, "U2", "17",                0.00, -7.50, 90.0),
+    ("R12", pb.FP_R0603, "U2", "19",                0.00, -7.50, 90.0),
+    ("R7",  pb.FP_R0603, "J5", "1",                 4.20,  0.00,  0.0),
+    ("R8",  pb.FP_R0603, "J5", "2",                 4.20,  0.00,  0.0),
+    ("R9",  pb.FP_R0603, "J5", "3",                 4.20,  0.00,  0.0),
+
+    # --- telemetry series resistors at the header
+    ("R14", pb.FP_R0603, "J3", "1",                 4.00,  0.00,  0.0),
+    ("R15", pb.FP_R0603, "J3", "2",                 4.00,  0.00,  0.0),
+]
+
+#: Tried and abandoned: placing the NTC UNDER the Pololu for thermal contact.
+#: There is ~8 mm of air under a header-mounted module, so height was fine,
+#: but the pin field is not. The rows are 2.54 mm apart and the pins repeat
+#: every 2.54 mm, so a 0603 lands on a through-hole pad whichever way it is
+#: turned -- DRC reported real shorts between R16 and U3's GND pins. RT1 now
+#: sits immediately beside the module. Less ideal thermally, but it is a
+#: resistor divider, not a short.
+UNDER_MODULE: set = set()
 
 
 def footprint_extent(fp: Footprint, x: float, y: float, rot: float):
@@ -157,6 +203,123 @@ def footprint_extent(fp: Footprint, x: float, y: float, rot: float):
     return min(xs), min(ys), max(xs), max(ys)
 
 
+def pad_positions(fp: Footprint, x: float, y: float, rot: float) -> dict[str, tuple]:
+    """World (x, y) of every pad on a placed footprint."""
+    import math
+
+    a = math.radians(-rot)          # KiCad sign convention, see footprint_extent
+    ca, sa = math.cos(a), math.sin(a)
+    out = {}
+    for pad in fp.pads:
+        px, py = pad.position.X, pad.position.Y
+        out[str(pad.number)] = (x + px * ca - py * sa, y + px * sa + py * ca)
+    return out
+
+
+def _span(pads: dict, netmap: dict, net: str, only=None) -> tuple:
+    """Bounding-box diagonal of every pad on a net, and which pads they are."""
+    import math
+
+    pts = [(ref, pin, pads[(ref, pin)])
+           for (ref, pin), n in netmap.items()
+           if n == net and (ref, pin) in pads and (only is None or ref in only)]
+    if len(pts) < 2:
+        return 0.0, pts
+    xs = [p[2][0] for p in pts]
+    ys = [p[2][1] for p in pts]
+    return math.hypot(max(xs) - min(xs), max(ys) - min(ys)), pts
+
+
+def _gap(pads, a, b) -> float:
+    import math
+    (ax, ay), (bx, by) = pads[a], pads[b]
+    return math.hypot(ax - bx, ay - by)
+
+
+#: Layout rules that come from the electrical design, not from taste. Each is
+#: (description, callable -> None | problem string). Keeping them here means a
+#: bad placement fails the build instead of looking fine in a render.
+def check_critical_nets(pads: dict, netmap: dict) -> list[str]:
+    problems = []
+
+    def limit(net, mm, why, only=None):
+        span, pts = _span(pads, netmap, net, only)
+        if span > mm:
+            refs = sorted({f"{r}.{p}" for r, p, _ in pts})
+            problems.append(
+                f"{net}: pads span {span:.1f} mm, limit {mm:.0f} mm -- {why}\n"
+                f"        pads: {', '.join(refs)}"
+            )
+
+    # --- the 80 V buck, where loop area is the whole game -----------------
+    # The input loop (C_IN -> VIN -> GND) and the switch node are what
+    # radiate. 06 chose an 80 V part precisely because VBUS reaches 48 V;
+    # that is also what makes a sloppy loop expensive.
+    limit("ACC_SW", 9.0, "48 V switch node: keep the radiating copper tiny",
+          only={"U4", "L1", "C9"})
+    limit("ACC_BOOT", 7.0, "bootstrap cap must sit across BOOT-SW",
+          only={"U4", "C9"})
+    # Split by role rather than one crude span. The high-frequency cap is
+    # what sets the input loop area and must be right at the pin; the bulk
+    # electrolytic-class caps carry low-frequency ripple and can sit further
+    # out. Lumping all three under one limit was wrong, not just strict.
+    limit("VBUS_PD", 5.0, "HF input cap C6 must sit right at U4's VIN pin",
+          only={"U4", "C6"})
+    limit("VBUS_PD", 12.0, "bulk input caps C4/C5 near U4's VIN pin",
+          only={"U4", "C4", "C5"})
+    limit("ACC_FB", 14.0, "feedback node: short, and away from SW",
+          only={"U4", "R18", "R19"})
+
+    # --- the 4 A router rail, where resistance is the whole game ----------
+    # SIM-04: the entire round trip may be no more than 25 mohm to hold
+    # 4.75 V at the Pi. Every mm of narrow trace spends that budget.
+    limit("+5V_RTR", 26.0, "4 A rail U3 VOUT -> shunt; SIM-04 allows 25 mohm total",
+          only={"U3", "R13", "U6"})
+    limit("+5V_RTR_SH", 34.0, "4 A rail shunt -> seam connector; same budget",
+          only={"R13", "U6", "J2"})
+
+    # --- INA226 Kelvin sense ---------------------------------------------
+    # The shunt is 2 mohm. Sense leads that pick up rail current instead of
+    # tapping the shunt turn a current measurement into a guess, and the
+    # shutdown decision depends on it.
+    for sense, shunt_pad in (("9", "1"), ("10", "2")):
+        try:
+            d = _gap(pads, ("U6", sense), ("R13", shunt_pad))
+        except KeyError:
+            continue
+        if d > 8.0:
+            problems.append(
+                f"U6 pin {sense} is {d:.1f} mm from R13 pad {shunt_pad}; "
+                "Kelvin sense wants <8 mm")
+
+    # --- 06: RT1 sits against U3's thermal pad ----------------------------
+    try:
+        d = _gap(pads, ("RT1", "1"), ("U3", "1"))
+        if d > 12.0:
+            problems.append(
+                f"RT1 is {d:.1f} mm from U3; 06 puts the NTC against U3's "
+                "thermal pad, so it must be under the module")
+    except KeyError:
+        pass
+
+    # --- decoupling and RC filters belong at the pin they serve -----------
+    # SIM-05's RC only works if the cap is at the GPIO, not 8 mm away.
+    for ch, (rs, cap, gpio) in {
+        "A": ("R10", "C1", "16"), "B": ("R11", "C2", "17"),
+        "SW": ("R12", "C3", "19"),
+    }.items():
+        try:
+            d = _gap(pads, (cap, "1"), ("U2", gpio))
+            if d > 20.0:
+                problems.append(
+                    f"encoder {ch}: {cap} is {d:.1f} mm from U2 pin {gpio}; "
+                    "the RC filter belongs at the input it filters")
+        except KeyError:
+            pass
+
+    return problems
+
+
 def check_placement(extents: dict[str, tuple], edge_margin: float = 1.0,
                     gap: float = 0.3) -> list[str]:
     """Footprints must sit inside the outline and not overlap each other."""
@@ -176,6 +339,8 @@ def check_placement(extents: dict[str, tuple], edge_margin: float = 1.0,
             bx0, by0, bx1, by1 = extents[b]
             ox = min(ax1, bx1) - max(ax0, bx0)
             oy = min(ay1, by1) - max(ay0, by0)
+            if (a, b) in UNDER_MODULE or (b, a) in UNDER_MODULE:
+                continue
             if ox > -gap and oy > -gap:
                 problems.append(
                     f"{a} overlaps {b} by {max(ox, 0):.1f} x {max(oy, 0):.1f} mm"
@@ -249,40 +414,41 @@ def build_board() -> Board:
     board = Board.create_new()
     outline(board)
 
-    placed, missing, extents = [], [], {}
-    for ref, spec, x, y, rot in PLACEMENT:
+    placed, missing, extents, pads = [], [], {}, {}
+
+    def put(ref, spec, x, y, rot):
         try:
             fp = load_footprint(spec)
         except FileNotFoundError as e:
             missing.append(f"{ref}: {e}")
-            continue
-        ext = footprint_extent(fp, x, y, rot)
-        if ext:
-            extents[ref] = ext
-        # KiCad 10 footprints carry graphic groups whose ids kiutils writes
-        # back as `(id )`, which KiCad then refuses to parse. They only group
-        # silkscreen items for editing convenience, so dropping them costs
-        # nothing here and makes the file loadable.
+            return
         fp.groups = []
-
-        # 03 specifies the NON-WIRELESS Pico 2. RaspberryPi_Pico_Common_THT is
-        # shared with the Pico W, so it carries the W's "Antenna Copper Keep
-        # Out" zone. On a board with no radio that zone is not a real
-        # constraint, and leaving it produces DRC violations against parts
-        # that are perfectly legal here. The "USB Cable" zone goes with it.
         if ref == "U2" and getattr(fp, "zones", None):
             dropped = [getattr(z, "name", "?") for z in fp.zones]
             fp.zones = []
             print(f"  U2: dropped Pico-W-only zones {dropped} (non-wireless Pico 2)")
+        ext = footprint_extent(fp, x, y, rot)
+        if ext:
+            extents[ref] = ext
+        for pin, pos in pad_positions(fp, x, y, rot).items():
+            pads[(ref, pin)] = pos
+        fp.properties["Reference"] = ref
         fp.position = Position(x, y, rot)
         fp.layer = "F.Cu"
-        # fp.properties is a DICT, not a list of objects. Iterating it yields
-        # key strings, so the obvious loop silently sets nothing and every
-        # footprint stays REF** -- which DRC reports but does not fail on.
-        # The silkscreen text is "${REFERENCE}" and resolves from this.
-        fp.properties["Reference"] = ref
         board.footprints.append(fp)
         placed.append(ref)
+
+    # Pass 1: anchors at absolute positions.
+    for ref, spec, x, y, rot in ANCHORS:
+        put(ref, spec, x, y, rot)
+
+    # Pass 2: satellites, resolved against their anchor's real pad.
+    for ref, spec, a_ref, a_pin, dx, dy, rot in SATELLITES:
+        base = pads.get((a_ref, a_pin))
+        if base is None:
+            missing.append(f"{ref}: anchor pad {a_ref}.{a_pin} not found")
+            continue
+        put(ref, spec, base[0] + dx, base[1] + dy, rot)
 
     if missing:
         raise RuntimeError("missing footprints:\n  " + "\n  ".join(missing))
@@ -293,6 +459,13 @@ def build_board() -> Board:
         hit, miss = assign_nets(board, netmap)
         print(f"  nets: {len(board.nets) - 1} nets, {hit} pads assigned, "
               f"{miss} pads left unconnected")
+        net_issues = check_critical_nets(pads, netmap)
+        if net_issues:
+            print(f"\n!! ELECTRICAL LAYOUT: {len(net_issues)} rule(s) violated")
+            for i in net_issues:
+                print(f"   - {i}")
+            raise SystemExit(1)
+        print("  electrical layout: critical nets within their limits")
 
     return board, placed, extents
 
