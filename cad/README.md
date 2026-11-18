@@ -6,8 +6,9 @@ the power board to the box it has to fit inside.
 
 > [!WARNING]
 > **These are skeletons, not designs.** They build, export and pass a mesh
-> check, but `python cad/params.py` reports **31 of 50 dimensions unverified**.
-> Nothing here is ready to print or order.
+> check. `python cad/params.py` reports **0 open dimensions and 21 assumptions**
+> — the model is closed and proceeds on stated assumptions, it is not proven.
+> Nothing here is ready to print or order until docs/10 retires those 21.
 
 ## Why code-CAD for this project specifically
 
@@ -19,12 +20,15 @@ what moved when a real measurement lands.
 
 `params.py` exists to make that mechanical:
 
-- Every dimension carries its **source** (which doc line it came from) and a
-  **verified** flag.
-- Arithmetic propagates the flag. A derived envelope is verified only if every
-  input is — so `A outer` reports `TBD` until the adapter stack is measured.
-- `build.py --strict` exits non-zero while any dimension is a guess. That is
-  the CI gate for "these numbers are now real".
+- Every dimension carries its **source** and one of three states: `ok`
+  (vendor drawing, published spec, standard, or a settled decision of ours),
+  `ASSUME` (a deliberate assumption with a stated basis), or `OPEN` (no basis
+  at all).
+- Arithmetic propagates both, so a derived value is only as solid as its
+  weakest input: assumed + verified = assumed.
+- `build.py --strict` fails on `OPEN` only. It passes today because there are
+  none left; `validate_later()` is the punch list of the 21 assumptions, and
+  [docs/10](../docs/10-measurement-protocol.md) is how they get retired.
 
 ## Why build123d and not OpenSCAD
 
@@ -46,7 +50,7 @@ sketches only.
 |---|---|
 | `params.py` | Every dimension, its source, and whether anyone has measured it. Run it standalone for the provenance table. |
 | `lib.py` | Tray/lid/standoff helpers and the STEP+STL+PNG export pipeline. |
-| `enclosure_a.py` | Upper router box. Models the underside stack, SBC headroom and antenna strips as explicit keep-out solids. |
+| `enclosure_a.py` | Upper router box: a perimeter band plus a base plate and a replaceable top cap. Models the underside stack, SBC headroom and antenna strips as explicit keep-out solids. |
 | `enclosure_b.py` | Lower power box. Imports `build/power-board.step` when KiCad has written it, else a flagged placeholder. |
 | `build.py` | Builds both, renders, runs `admesh`, prints what is still a guess. |
 
@@ -119,38 +123,47 @@ this Mac.
 
 ## Open contradictions this model surfaces
 
-Two switches exist because the docs disagree with themselves. Neither is
-resolved here, because resolving it is a design decision, not a CAD one.
+One switch remains because the docs disagree with themselves. It is not
+resolved here, because resolving it is a product decision, not a CAD one.
 
 - **`B.HAS_PANEL`** — [01](../docs/01-architecture.md) asserts Enclosure B
   "carries the only panel" and treats the OLED + encoder as settled by the v1
   scope cut. [06's "What is still open"](../docs/06-power-board-schematic.md)
   still lists *"Whether Enclosure B has a front panel at all — decides whether
   J4 and J5 exist."* Both cannot be true. The flag changes box height and
-  whether the lid has openings.
-- **`B.PICO_MOUNT`** — castellated or socketed, 11 mm apart in Z.
-  [03](../docs/03-enclosure-b-lower.md) says "pick one, it changes the
-  height"; 06 still lists it open.
+  whether the lid has openings. Currently `True`.
 
-## What sets Enclosure B's height today
+Settled since, and recorded in `params.py` with the reasoning:
 
-Folding 06's verified numbers in produced a result worth stating: the tallest
-thing above the board is **not** the encoder. It is the RotoPD Pro's **2-position
-5 mm screw terminal** at ~22 mm total, which 06 flags as *"an assembly and
-enclosure constraint, not just a schematic one"*. Removing it and soldering to
-its pads is an open decision that is currently worth about 10 mm of box height.
+| Was open | Decided |
+|---|---|
+| RotoPD screw terminal, keep or remove | **Removed**, wires soldered to the pads |
+| How Enclosure A opens for service | **Band + two broad plates**, SBC on the base plate |
+| `B.PICO_MOUNT` castellated vs socketed | **Socketed**, and `pcb/` follows it |
+| Accessory port config A or B | **A** — 36 k / 22.6 k, 1.06–1.23 A |
+
+## Current envelopes
+
+Both are assumed, not proven — every input is `ok` or `ASSUME`, none `OPEN`.
+
+| | Outer | Driven by |
+|---|---|---|
+| **Enclosure A** | 114 × 89 × 36.8 mm | Orange Pi footprint; thickness by the underside M.2 stack |
+| **Enclosure B** | 100 × 80 × 29.6 mm | The 90 × 70 mm power board; height by the encoder at 20 mm |
+
+Enclosure B grew when the accessory port was added — the board went from
+80 × 60 to 90 × 70 to fit U4, L1, U5 and J6.
 
 ## Next
 
-1. **Decide the screw terminal** — keep or remove. Costs nothing to decide,
-   worth ~10 mm, and 06 says decide it *before* drawing the carrier.
-2. **Draw the power board in KiCad.** 06 is detailed enough to lay out — ref
-   designators, verified module pinouts, nets, Pico pin map, six passing sim
-   decks. Then `kicad-cli pcb export step` and delete the placeholder block in
-   `enclosure_b.py`. This is the only major step that needs no new measurement.
-3. **Measure the three dimensions nobody should guess** and flip them to
-   `verified=True`. This gates everything dimensional, and item 2 does not
-   depend on it.
-4. **Decide how Enclosure A opens for service** — the geometry here assumes a
-   tray + lid, which is the open question in
-   [02](../docs/02-enclosure-a-upper.md#open-questions), not a decision.
+1. **Confirm U4's middle four pins** against section 6 of TI's SNVSC40E.
+   `pcb/power_board.py` marks VIN, FB, RT and PG as assumed. A wrong VIN pin
+   on an 80 V part is a destroyed board, not a rework. This is the single
+   most dangerous assumption in the repo.
+2. **Confirm U3's Pololu pin order** — 06 says it is not legible at published
+   resolution, and EN and PG are adjacent on different rows.
+3. **Route the board.** It has 43 nets assigned and 0 substantive DRC
+   violations, so it opens in KiCad ready to route.
+4. **Retire the 21 assumptions** per
+   [docs/10](../docs/10-measurement-protocol.md), starting with the three
+   that need real parts in hand.

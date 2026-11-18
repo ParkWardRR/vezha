@@ -39,8 +39,8 @@ import sys
 from pathlib import Path
 
 from skidl import (
-    ERC, KICAD9, Net, Part, generate_netlist, lib_search_paths, reset,
-    set_default_tool,
+    ERC, KICAD9, SKIDL, Net, Part, Pin, generate_netlist, lib_search_paths,
+    reset, set_default_tool,
 )
 
 KICAD_SYMBOLS = "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols"
@@ -73,6 +73,15 @@ FP_JST_SH4 = "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
 #: 06 warns separately that J6's HRO 16-pin part must be checked against its
 #: drawing -- that applies to the deferred accessory port, not to this one.
 FP_USBC_6P = "Connector_USB:USB_C_Receptacle_GCT_USB4125-xx-x_6P_TopMnt_Horizontal"
+FP_SOIC8_EP = "Package_SO:SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.34x2.34mm"
+FP_SOT23_6 = "Package_TO_SOT_SMD:SOT-23-6"
+FP_IND = "Inductor_SMD:L_7.3x7.3_H4.5"
+FP_C1210 = "Capacitor_SMD:C_1210_3225Metric"
+FP_C0805 = "Capacitor_SMD:C_0805_2012Metric"
+#: 06 names HRO TYPE-C-31-M-12 (LCSC C165948) and warns it must be checked
+#: against the drawing. KiCad ships that exact part, so this is the real
+#: footprint rather than a generic 16P stand-in.
+FP_USBC_16P = "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"
 
 # =======================================================================
 # UNVERIFIED PIN MAPS — the one place to fix when the real boards arrive
@@ -96,6 +105,26 @@ U3 = {
     "GND_C": 9, "GND_D": 10,
     "VOUT_C": 11, "VOUT_D": 12,
 }
+
+#: U4 TI LMR38020FDDAR, 8-pin HSOIC with PowerPAD (DDA).
+#: CONFIRMED from the datasheet: GND=1, EN=2, BOOT=7, SW=8, and BOOT takes a
+#: 100 nF cap to SW. The remaining four (VIN, FB, RT/SYNC, PG) were not
+#: readable in a form I could confirm, so they are ASSUMED here.
+#: Check section 6 of SNVSC40E before fabricating -- a wrong VIN pin on an
+#: 80 V part is a destroyed board, not a rework.
+U4_PINS_ASSUMED = True
+U4 = {
+    "GND": 1, "EN": 2,                      # confirmed
+    "RT": 3, "FB": 4, "PG": 5, "VIN": 6,    # ASSUMED ordering
+    "BOOT": 7, "SW": 8,                     # confirmed
+}
+
+#: U5 TI TPS2553DBVR, SOT-23-6 (DBV). CONFIRMED from the datasheet:
+#: IN=1, GND=2, EN=3, FAULT=4, ILIM=5, OUT=6.
+#: Also confirmed: the TPS2553 is the ACTIVE-HIGH enable variant (the TPS2552
+#: is active low). That agrees with 06's pin map calling GP8 "EN (active
+#: high)", so the part number and the pin map are consistent.
+U5 = {"IN": 1, "GND": 2, "EN": 3, "FAULT": 4, "ILIM": 5, "OUT": 6}
 
 #: U1 RotoPD Pro 1x8 header. 06 §U1 — VERIFIED from the vendor pinout artwork.
 U1 = {
@@ -303,6 +332,144 @@ def build_netlist():
         flt += cap[1], u2[gpio]
         cap[2] += gnd
     j5[4] += gnd
+
+    # =====================================================================
+    # 06 §Accessory USB-C output port (J6) -- Config A
+    # =====================================================================
+    # 06 leaves "Accessory port config A or B" open and says "A is the
+    # recommendation ... A needs nothing; B needs the thermal measurement
+    # first". Config A chosen: R3/R4 = 36k, R5 = 22.6k, limit 1.06-1.23 A.
+    #
+    # U4 and U5 have no KiCad symbols, so they are built here from their
+    # datasheet pin tables. U5's is confirmed; U4's middle four pins are the
+    # assumption flagged in U4 above.
+    #
+    # 06 declines to enumerate U4/U5 support passives, saying they "come from
+    # the TI datasheets' typical-application tables". Those are computed below
+    # from the standard buck equations at the stated operating point, NOT
+    # copied from a table I cannot see. Each is marked ASSUMED.
+    v5_acc = Net("+5V_ACC")
+    sw_node = Net("ACC_SW")
+    boot_node = Net("ACC_BOOT")
+    fb_node = Net("ACC_FB")
+    cc1, cc2 = Net("ACC_CC1"), Net("ACC_CC2")
+    n_u4en, n_u5en, n_flt = Net("U4_EN"), Net("U5_EN"), Net("U5_FAULT")
+
+    u4 = Part(name="LMR38020FDDAR", ref="U4", tool=SKIDL, footprint=FP_SOIC8_EP,
+              value="LMR38020FDDAR",
+              pins=[Pin(num=U4["GND"], name="GND", func=Pin.types.PWRIN),
+                    Pin(num=U4["EN"], name="EN", func=Pin.types.INPUT),
+                    Pin(num=U4["RT"], name="RT_SYNC", func=Pin.types.INPUT),
+                    Pin(num=U4["FB"], name="FB", func=Pin.types.INPUT),
+                    Pin(num=U4["PG"], name="PG", func=Pin.types.OPENCOLL),
+                    Pin(num=U4["VIN"], name="VIN", func=Pin.types.PWRIN),
+                    Pin(num=U4["BOOT"], name="BOOT", func=Pin.types.PASSIVE),
+                    Pin(num=U4["SW"], name="SW", func=Pin.types.OUTPUT)])
+
+    u5 = Part(name="TPS2553DBVR", ref="U5", tool=SKIDL, footprint=FP_SOT23_6,
+              value="TPS2553DBVR",
+              pins=[Pin(num=U5["IN"], name="IN", func=Pin.types.PWRIN),
+                    Pin(num=U5["GND"], name="GND", func=Pin.types.PWRIN),
+                    Pin(num=U5["EN"], name="EN", func=Pin.types.INPUT),
+                    Pin(num=U5["FAULT"], name="FAULT", func=Pin.types.OPENCOLL),
+                    Pin(num=U5["ILIM"], name="ILIM", func=Pin.types.INPUT),
+                    Pin(num=U5["OUT"], name="OUT", func=Pin.types.PWROUT)])
+
+    # Config A values, straight from 06.
+    r3 = R("R3", "36k")      # CC1 Rp to +3V3 -- SIM-03
+    r4 = R("R4", "36k")      # CC2 Rp to +3V3 -- SIM-03
+    r5 = R("R5", "22.6k")    # R_ILIM -> 1.06/1.14/1.23 A
+    r6 = R("R6", "100k")     # FAULT pull-up
+
+    # ASSUMED support passives. Operating point: VIN up to 48 V, VOUT 5.0 V,
+    # IOUT 2 A, f_sw 400 kHz.
+    #   D = 5/48 = 0.104
+    #   L = Vout(1-D)/(f*dI) with dI = 30% of 2 A = 0.6 A  ->  18.7 uH -> 22 uH
+    #   FB divider for a 1.0 V reference: Vout = Vref(1+Rt/Rb), Rt/Rb = 4
+    #                                     -> 100k / 24.9k
+    l1 = Part("Device", "L", ref="L1", value="22u", footprint=FP_IND)
+    c4 = Part("Device", "C", ref="C4", value="2.2u/100V", footprint=FP_C1210)
+    c5 = Part("Device", "C", ref="C5", value="2.2u/100V", footprint=FP_C1210)
+    c6 = Part("Device", "C", ref="C6", value="100n/100V", footprint=FP_C0603)
+    c7 = Part("Device", "C", ref="C7", value="47u/16V", footprint=FP_C1210)
+    c8 = Part("Device", "C", ref="C8", value="100n", footprint=FP_C0603)
+    c9 = Part("Device", "C", ref="C9", value="100n", footprint=FP_C0603)  # BOOT
+    r17 = R("R17", "100k")   # RT -- ASSUMED, sets ~400 kHz; check the RT table
+    r18 = R("R18", "100k")   # FB top
+    r19 = R("R19", "24.9k")  # FB bottom
+    r20 = R("R20", "100k")   # U4 PG pull-up
+    r21 = R("R21", "200")    # 06: D+/D- shorted, the BC1.2 DCP signature
+
+    j6 = Part("Connector", "USB_C_Receptacle_USB2.0_16P", ref="J6",
+              value="accessory out", footprint=FP_USBC_16P)
+
+    # --- U4: VBUS_PD -> +5V_ACC ------------------------------------------
+    # 06: "U4 is an 80 V part because VBUS reaches 48 V." A 32 V part would be
+    # destroyed by an EPR contract.
+    u4["VIN"] += vbus_pd
+    u4["GND"] += gnd
+    u4["EN"] += n_u4en
+    n_u4en += u2["GPIO10"]
+    u4["SW"] += sw_node
+    u4["BOOT"] += boot_node
+    boot_node += c9[1]
+    c9[2] += sw_node
+    sw_node += l1[1]
+    l1[2] += v5_acc
+    for c in (c4, c5, c6):
+        c[1] += vbus_pd
+        c[2] += gnd
+    for c in (c7, c8):
+        c[1] += v5_acc
+        c[2] += gnd
+    u4["FB"] += fb_node
+    fb_node += r18[2], r19[1]
+    r18[1] += v5_acc
+    r19[2] += gnd
+    u4["RT_SYNC"] += r17[1]
+    r17[2] += gnd
+    u4["PG"] += r20[1]
+    r20[2] += v3v3
+
+    # --- U5: current limit + FAULT ---------------------------------------
+    u5["IN"] += v5_acc
+    u5["GND"] += gnd
+    u5["EN"] += n_u5en
+    n_u5en += u2["GPIO8"]
+    u5["FAULT"] += n_flt
+    n_flt += u2["GPIO9"], r6[1]
+    r6[2] += v3v3
+    u5["ILIM"] += r5[1]
+    r5[2] += gnd
+
+    # --- J6 accessory receptacle ------------------------------------------
+    # Power only: no VCONN, no data. 06: Rp references +3V3, not 5 V, because
+    # the 5 V rail is the thing being decided and is not available pre-attach.
+    for pin in ("A4", "B4", "A9", "B9"):
+        j6[pin] += u5["OUT"]
+    for pin in ("A1", "B1", "A12", "B12"):
+        j6[pin] += gnd
+    j6["SH"] += gnd
+    # SBU1/SBU2 (A8/B8) deliberately left unconnected: power-only port, no
+    # VCONN, no data. Note a discrepancy worth checking at layout -- 06 says
+    # the HRO 16-pin part has "SBU and the SuperSpeed pairs simply absent",
+    # but KiCad's generic USB2.0_16P symbol does carry SBU1/SBU2. Verify the
+    # footprint against the HRO drawing, as 06 separately instructs.
+    j6["A5"] += cc1
+    j6["B5"] += cc2
+    cc1 += r3[1], u2["GPIO26_ADC0"]
+    cc2 += r4[1], u2["GPIO27_ADC1"]
+    r3[2] += v3v3
+    r4[2] += v3v3
+    # BC1.2 DCP signature: D+ shorted to D- through R21, so a phone that
+    # ignores CC still charges above 100 mA.
+    dp, dm = Net("ACC_DP"), Net("ACC_DM")
+    j6["A6"] += dp
+    j6["B6"] += dp
+    j6["A7"] += dm
+    j6["B7"] += dm
+    dp += r21[1]
+    r21[2] += dm
 
     # --- 06 §Telemetry (J3) — populated, unwired in Rev A -----------------
     u2["GPIO0"] += r14[1]

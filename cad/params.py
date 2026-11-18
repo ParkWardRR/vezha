@@ -335,9 +335,9 @@ class B:
     # and let enclosure_b.py import the real solid.
     pcb_t = D("pcb_t", 1.6, "DRAWN -- standard 1.6 mm FR-4, KiCad board default",
         verified=True)
-    pcb_x = D("pcb_x", 80.0, "DRAWN -- pcb/layout.py board outline",
+    pcb_x = D("pcb_x", 90.0, "DRAWN -- pcb/layout.py board outline",
         verified=True)
-    pcb_y = D("pcb_y", 60.0, "DRAWN -- pcb/layout.py board outline",
+    pcb_y = D("pcb_y", 70.0, "DRAWN -- pcb/layout.py board outline",
         verified=True)
     pcb_margin = D("pcb_margin", 3.0, "CHOSEN -- assembly margin around the power board",
         verified=True)

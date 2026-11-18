@@ -45,7 +45,7 @@ from pathlib import Path
 
 from kiutils.board import Board
 from kiutils.footprint import Footprint
-from kiutils.items.common import Position
+from kiutils.items.common import Net, Position
 from kiutils.items.gritems import GrLine
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "cad"))
@@ -63,47 +63,65 @@ BOARD_Y = float(B.pcb_y)
 #: (ref, "Lib:Footprint", x, y, rotation). Origin is the board's top-left in
 #: KiCad's y-down page coordinates; values are mm from that corner.
 PLACEMENT = [
-    # --- PD inlet edge (x small): U1's own USB-C jack is the inlet --------
-    ("U1",  pb.FP_HDR_1X8,  6.0, 20.0, 0.0),     # RotoPD signal header
-    ("U1P", pb.FP_HDR.format(n=2), 6.0, 44.0, 0.0),   # RotoPD VBUS pads
-    ("J1",  pb.FP_JST_SH4,  10.0, 10.0, 0.0),    # Qwiic alt to U1
-    ("JP1", pb.FP_R0603,    10.0, 42.0, 0.0),    # DNP in Rev A
+    # ================= accessory port chain, top strip ==================
+    # VBUS_PD enters at the x-small wall and the port exits at x-large, so
+    # the chain runs left to right and the heavy input caps sit on U4's pin.
+    ("C4",  pb.FP_C1210, 28.0, 8.0, 0.0),
+    ("C5",  pb.FP_C1210, 28.0, 13.0, 0.0),
+    ("C6",  pb.FP_C0603, 28.0, 17.0, 0.0),
+    ("U4",  pb.FP_SOIC8_EP, 35.0, 12.0, 0.0),     # LMR38020, 80 V buck
+    ("C9",  pb.FP_C0603, 35.0, 6.0, 0.0),         # BOOT cap, close to the pin
+    ("R17", pb.FP_R0603, 35.0, 18.0, 0.0),        # RT
+    ("R20", pb.FP_R0603, 30.0, 20.0, 0.0),        # U4 PG pull-up
+    ("L1",  pb.FP_IND,   45.0, 12.0, 0.0),        # 22 uH
+    ("C7",  pb.FP_C1210, 53.0, 9.0, 0.0),
+    ("C8",  pb.FP_C0603, 53.0, 14.0, 0.0),
+    ("R18", pb.FP_R0603, 48.0, 19.0, 0.0),        # FB top
+    ("R19", pb.FP_R0603, 52.0, 19.0, 0.0),        # FB bottom
+    ("U5",  pb.FP_SOT23_6, 61.0, 12.0, 0.0),      # TPS2553 limiter
+    ("R5",  pb.FP_R0603, 61.0, 17.0, 0.0),        # R_ILIM, Config A
+    ("R6",  pb.FP_R0603, 65.0, 17.0, 0.0),        # FAULT pull-up
+    ("R3",  pb.FP_R0603, 70.0, 6.0, 0.0),         # CC1 Rp
+    ("R4",  pb.FP_R0603, 70.0, 9.0, 0.0),         # CC2 Rp
+    ("R21", pb.FP_R0603, 70.0, 12.0, 0.0),        # D+/D- BC1.2 short
+    ("J6",  pb.FP_USBC_16P, 82.0, 12.0, 0.0),     # accessory out, x-large wall
 
-    # --- U3 adjacent to U1: shortest heavy VBUS_PD path ------------------
-    ("U3",  pb.FP_HDR_2X6,  20.0, 22.0, 0.0),    # Pololu carrier
-    ("R1",  pb.FP_R0603,    27.0, 24.0, 0.0),    # EN pull-down, SIM-01
-    ("R2",  pb.FP_R0603,    27.0, 27.0, 0.0),    # PG pull-up
-    ("R16", pb.FP_R0603,    27.0, 30.0, 0.0),    # NTC divider top leg
-    ("RT1", pb.FP_R0603,    27.0, 33.0, 0.0),    # against U3's thermal pad
-    ("D1",  pb.FP_SMA,      15.0, 47.0, 0.0),    # aux 5V -> VSYS
+    # ================= PD inlet edge (x small) ==========================
+    ("U1",  pb.FP_HDR_1X8,  6.0, 24.0, 0.0),
+    ("U1P", pb.FP_HDR.format(n=2), 6.0, 48.0, 0.0),
+    ("J1",  pb.FP_JST_SH4,  12.0, 10.0, 0.0),
+    ("JP1", pb.FP_R0603,    12.0, 46.0, 0.0),
 
-    # --- rail sense, in series between U3 VOUT and the seam --------------
-    ("R13", pb.FP_R2512,    45.0, 27.0, 0.0),    # 2 mohm shunt
-    ("U6",  pb.FP_VSSOP10,  45.0, 33.0, 0.0),    # INA226 beside its shunt
+    # ================= router rail ======================================
+    ("U3",  pb.FP_HDR_2X6,  20.0, 26.0, 0.0),     # Pololu carrier
+    ("R1",  pb.FP_R0603,    27.0, 26.0, 0.0),
+    ("R2",  pb.FP_R0603,    27.0, 29.0, 0.0),
+    ("R16", pb.FP_R0603,    27.0, 32.0, 0.0),
+    ("RT1", pb.FP_R0603,    27.0, 35.0, 0.0),
+    ("D1",  pb.FP_SMA,      14.0, 52.0, 0.0),
+    ("R13", pb.FP_R2512,    44.0, 30.0, 0.0),     # 2 mohm shunt in the rail
+    ("U6",  pb.FP_VSSOP10,  45.0, 36.0, 0.0),
+    ("J2",  pb.FP_USBC_6P,  83.0, 36.0, 0.0),     # seam out, x-large wall
 
-    # --- seam out edge (x large) -----------------------------------------
-    ("J2",  pb.FP_USBC_6P,  73.0, 30.0, 0.0),
+    # ================= console row ======================================
+    ("J3",  pb.FP_HDR.format(n=3), 34.0, 24.0, 0.0),
+    ("R14", pb.FP_R0603,    38.0, 24.0, 0.0),
+    ("R15", pb.FP_R0603,    38.0, 27.0, 0.0),
+    ("R7",  pb.FP_R0603,    50.0, 24.0, 0.0),
+    ("R8",  pb.FP_R0603,    50.0, 27.0, 0.0),
+    ("R9",  pb.FP_R0603,    50.0, 30.0, 0.0),
+    ("R10", pb.FP_R0603,    54.0, 24.0, 0.0),
+    ("R11", pb.FP_R0603,    54.0, 27.0, 0.0),
+    ("R12", pb.FP_R0603,    54.0, 30.0, 0.0),
+    ("C1",  pb.FP_C0603,    58.0, 24.0, 0.0),
+    ("C2",  pb.FP_C0603,    58.0, 27.0, 0.0),
+    ("C3",  pb.FP_C0603,    58.0, 30.0, 0.0),
+    ("J5",  pb.FP_HDR.format(n=4), 64.0, 24.0, 0.0),
+    ("J4",  pb.FP_JST_SH4,  72.0, 26.0, 0.0),
 
-    # --- controller: rot 90 lays the Pico's long axis along X ------------
-    ("U2",  pb.PICO_FP,     28.0, 58.0, 90.0),
-    ("J7",  pb.FP_HDR.format(n=3), 22.0, 50.0, 0.0),  # SWD
-
-    # --- panel / console row along the y-small edge ----------------------
-    ("J3",  pb.FP_HDR.format(n=3), 30.0, 6.0, 0.0),   # telemetry
-    ("R14", pb.FP_R0603,    36.0, 6.0, 0.0),
-    ("R15", pb.FP_R0603,    36.0, 9.0, 0.0),
-    ("J5",  pb.FP_HDR.format(n=4), 62.0, 6.0, 0.0),   # encoder
-    ("J4",  pb.FP_JST_SH4,  70.0, 10.0, 0.0),         # OLED
-    # encoder RC per channel -- SIM-05 fixes 10k / 1k / 100n
-    ("R7",  pb.FP_R0603, 50.0, 6.0, 0.0),
-    ("R8",  pb.FP_R0603, 50.0, 9.0, 0.0),
-    ("R9",  pb.FP_R0603, 50.0, 12.0, 0.0),
-    ("R10", pb.FP_R0603, 54.0, 6.0, 0.0),
-    ("R11", pb.FP_R0603, 54.0, 9.0, 0.0),
-    ("R12", pb.FP_R0603, 54.0, 12.0, 0.0),
-    ("C1",  pb.FP_C0603, 58.0, 6.0, 0.0),
-    ("C2",  pb.FP_C0603, 58.0, 9.0, 0.0),
-    ("C3",  pb.FP_C0603, 58.0, 12.0, 0.0),
+    # ================= controller =======================================
+    ("U2",  pb.PICO_FP,     30.0, 64.0, 90.0),
+    ("J7",  pb.FP_HDR.format(n=3), 22.0, 52.0, 0.0),
 ]
 
 
@@ -173,6 +191,50 @@ def load_footprint(spec: str) -> Footprint:
     return Footprint.from_file(str(path))
 
 
+def parse_netlist(net_file: Path) -> dict[tuple[str, str], str]:
+    """(ref, pin) -> net name, read from the generated KiCad netlist."""
+    import re
+
+    mapping: dict[tuple[str, str], str] = {}
+    for block in net_file.read_text().split("(net\n")[1:]:
+        m = re.search(r'\(name "([^"]+)"\)', block)
+        if not m:
+            continue
+        name = m.group(1)
+        refs = re.findall(r'\(ref "([^"]+)"\)', block)
+        pins = re.findall(r'\(pin "([^"]+)"\)', block)
+        for ref, pin in zip(refs, pins):
+            mapping[(ref, pin)] = name
+    return mapping
+
+
+def assign_nets(board: Board, netmap: dict[tuple[str, str], str]) -> tuple[int, int]:
+    """Write net names onto every pad, so the board is routable and DRC real.
+
+    Without this, pads sit on "<no net>" and KiCad reports clearance and
+    solder-mask-bridge errors between pads that are electrically the same
+    point -- J6's A1/B12 and A4/B9 are stacked by design on the HRO part.
+    """
+    names = sorted({n for n in netmap.values()})
+    board.nets = [Net(number=0, name="")]
+    numbers = {}
+    for i, name in enumerate(names, start=1):
+        board.nets.append(Net(number=i, name=name))
+        numbers[name] = i
+
+    hit = miss = 0
+    for fp in board.footprints:
+        ref = fp.properties.get("Reference", "")
+        for pad in fp.pads:
+            name = netmap.get((ref, str(pad.number)))
+            if name is None:
+                miss += 1
+                continue
+            pad.net = Net(number=numbers[name], name=name)
+            hit += 1
+    return hit, miss
+
+
 def outline(board: Board) -> None:
     """Board edge on Edge.Cuts. Without this, STEP export produces nothing."""
     corners = [(0, 0), (BOARD_X, 0), (BOARD_X, BOARD_Y), (0, BOARD_Y), (0, 0)]
@@ -224,6 +286,14 @@ def build_board() -> Board:
 
     if missing:
         raise RuntimeError("missing footprints:\n  " + "\n  ".join(missing))
+
+    net_file = BUILD / "vezha-power.net"
+    if net_file.exists():
+        netmap = parse_netlist(net_file)
+        hit, miss = assign_nets(board, netmap)
+        print(f"  nets: {len(board.nets) - 1} nets, {hit} pads assigned, "
+              f"{miss} pads left unconnected")
+
     return board, placed, extents
 
 
@@ -314,9 +384,15 @@ def main() -> int:
         return 1
     import collections, re as _re
     kinds = collections.Counter(_re.findall(r"^\[([a-z_]+)\]", rpt.read_text(), _re.M))
+    # Three classes. Silkscreen is reference text over pads -- a finishing
+    # task. unconnected_items is every ratsnest line on an unrouted board,
+    # which is what this is. Anything else is a real fault and fails.
     silk = {k: v for k, v in kinds.items() if k.startswith("silk")}
-    hard = {k: v for k, v in kinds.items() if not k.startswith("silk")}
+    unrouted = {k: v for k, v in kinds.items() if k == "unconnected_items"}
+    hard = {k: v for k, v in kinds.items()
+            if not k.startswith("silk") and k != "unconnected_items"}
     print(f"  DRC: {sum(silk.values())} silkscreen (cosmetic), "
+          f"{sum(unrouted.values())} unrouted ratsnest (expected), "
           f"{sum(hard.values())} substantive")
     if hard:
         for k, v in sorted(hard.items(), key=lambda kv: -kv[1]):
