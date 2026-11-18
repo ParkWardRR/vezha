@@ -16,6 +16,7 @@ ordered.**
 | 🟡 **Chosen** | Decided, not purchased |
 | 🔵 **Candidate** | Proposed, not validated |
 | 🔴 **Unresolved** | No part selected |
+| ⬜ **Dropped** | Previously considered, now superseded |
 
 ## Enclosure A — upper router box
 
@@ -30,7 +31,7 @@ ordered.**
 | Antenna alt | TE/Linx ANT-W63WS1-SMA | 🔵 Candidate | $12.27 ea | Blade, needs MHF4→SMA bulkheads. Not pocketable. |
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
-| Display | — | 🔴 **Unresolved** | — | Waveshare 3.5" HDMI touchscreen discussed. Own bracket required. |
+| Display | — | 🔴 **Unresolved** | — | Waveshare 3.5" HDMI touchscreen discussed. **May be superseded by the PCB 2 OLED console** — see [05](05-pcb-2-power.md#unresolved-conflicts). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
 ## PCB 1 — front control board

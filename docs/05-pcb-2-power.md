@@ -1,121 +1,273 @@
 # 05 · PCB 2 — Power Board
 
-A custom carrier board in Enclosure B that mounts three modules and wires them
-into one controlled power chain.
+A custom carrier in [Enclosure B](03-enclosure-b-lower.md) that mounts three
+modules, drives a small console, and gates power to the router.
 
 Read [01-architecture.md](01-architecture.md) first.
 
-> [!NOTE]
-> **This supersedes the earlier version of this document,** which said the
-> power board was blocked on measurement with no architecture chosen. The
-> architecture is now settled: RotoPD Pro → Pololu → detachable connector,
-> with a Pico 2 as controller. Measurement is still required to *validate* it,
-> but layout can begin.
-
 ## What the board is
 
-A carrier. It does not implement PD or regulation itself — it mounts modules
-that do, and provides the interconnect, the control wiring, and the mechanical
-anchor.
+A carrier plus a power-sequencing controller. It does not implement PD or
+regulation itself — it mounts modules that do, and provides interconnect,
+control wiring, a front-panel console, and the mechanical anchor.
 
 | Module | Function |
 |---|---|
-| **CentyLab RotoPD Pro** | Negotiates a PD contract with the external USB-C charger; provides a **switched** output |
-| **Raspberry Pi Pico 2** (non-wireless) | Controller. Talks to the RotoPD Pro over 3.3 V I²C, gates the router rail |
-| **Pololu D42V55F5** (#5571) | Steps the negotiated PD voltage down to **regulated 5 V** |
+| **CentyLab RotoPD Pro** | Negotiates a PD contract over its **built-in USB-C jack**; provides switched VBUS |
+| **Raspberry Pi Pico 2** | Controller. Sequences the rail, drives the console, talks to the router |
+| **Pololu D42V55F5** (#5571) | Steps negotiated VBUS down to **regulated 5 V @ 4 A** for the Orange Pi |
+| **Adafruit 5297 OLED** | Front-panel display |
+| **Alps Alpine EC11E15244B2** | Front-panel push encoder, 30 detents |
+| **HRO TYPE-C-31-M-12** (`C165948`) | Side-facing 5 V accessory output |
 
-## Power chain
+## Module interfaces
 
-```
-external USB-C charger
-  → RotoPD Pro        PD negotiation, switched output
-  → Pololu D42V55F5   regulated 5 V
-  → seam connector    keyed, latching, 5 V + GND only
-  → Orange Pi         dedicated USB-C power input
-```
+### CentyLab RotoPD Pro
 
-### Control topology
+- **Use its built-in USB-C jack as the PD input.** No separate input
+  receptacle on PCB 2 — bring the RotoPD's own jack to the enclosure wall.
+- Route **negotiated VBUS and ground to the buck's VIN/GND.**
+- **SDA/SCL to the Pico.**
 
-The Pico is **a controller beside the path, not a load inside it.**
+### Raspberry Pi Pico 2 (non-wireless)
 
-- **Pico ← RotoPD Pro auxiliary 5 V output, into VSYS.** Not the Pololu rail.
-- **Pico ↔ RotoPD Pro over 3.3 V I²C**, via Qwiic/STEMMA QT or the
-  corresponding pins.
+- **Keep the USB port accessible for programming.** Bring it to a wall opening
+  or it is access in name only.
+- **Keyed 3-pin UART connector — TX, RX, GND** — for Orange Pi telemetry.
+- **The Pico and display boot before the Orange Pi.** This is a sequencing
+  requirement, not a preference.
+- Powered from the **RotoPD auxiliary 5 V into VSYS** — see
+  [the three rules](#three-rules-that-must-survive-layout).
+
+### Pololu D42V55F5
+
+- Supplies **5 V / 4 A to the Orange Pi** through a **dedicated keyed 2-pin
+  power connector.**
+- **EN and PG both interface to the Pico.**
+- **The buck defaults off at startup.**
+
+> [!CAUTION]
+> **"Defaults off" is a layout requirement, not firmware.** The Pico's GPIO is
+> high-impedance at reset, so **EN needs a pull-down to ground** on the board.
+> Without it the rail state during Pico reset is undefined, and the router can
+> come up before any PD contract has been validated.
+>
+> **PG is an input to the Pico** — it is how firmware confirms the rail
+> actually came up, rather than assuming it did after asserting EN.
+
+### Adafruit 5297 OLED
+
+- **4-pin JST-SH STEMMA QT / Qwiic cable: 3.3 V, GND, SDA, SCL.**
+- **Use the Pico's second I²C bus** — keeps the console off the bus that talks
+  to the RotoPD Pro, so a wedged display cannot block PD control.
+
+### Alps Alpine EC11E15244B2
+
+- Push encoder, **30 detents**.
+- **Keyed 4-pin harness: A, B, push switch, GND.**
+- A, B and the switch need pull-ups and debouncing — RC on-board or internal
+  pull-ups plus firmware debounce. Decide before layout; the RC parts need
+  footprints.
+
+## Accessory USB-C output port
+
+Side-facing, **power only**, 5 V. Part is HRO `TYPE-C-31-M-12`, JLCPCB
+`C165948`.
+
+> [!CAUTION]
+> **Do not connect this port to raw PD VBUS.** VBUS may be at 9, 12, 15 or
+> 20 V depending on the negotiated contract. Putting that on a port a user
+> plugs a phone into destroys the phone.
+
+### Requirements
+
+- **USB-C source detection** — Rp pull-ups on **both CC1 and CC2** (the
+  receptacle is reversible, so both must be presented). Apply VBUS only after
+  a sink's Rd is detected.
+- **Current limiting** — a load switch or eFuse with a defined limit, not just
+  a fuse.
+- Verify the receptacle's actual pin count and footprint from the HRO drawing
+  before layout.
+
+### Proposed current limit
+
+Here is the analysis behind the recommendation.
+
+| Scenario | Total on the 5 V rail | As % of the buck's 6 A figure |
+|---|---|---|
+| Orange Pi alone | 4.0 A | 67 % |
+| Pi + 0.5 A accessory | 4.5 A | 75 % |
+| Pi + 0.9 A accessory | 4.9 A | 82 % |
+| Pi + 1.5 A accessory | 5.5 A | 92 % |
+| Pi + 3.0 A accessory | 7.0 A | **117 % — over** |
+
+That table flatters the design, because **6 A is a *typical maximum*, not a
+rating in a sealed printed box with no airflow:**
+
+| Derating of the 6 A figure | Usable cap | Headroom above the Pi's 4 A |
+|---|---|---|
+| 90 % | 5.4 A | +1.4 A |
+| 80 % | 4.8 A | +0.8 A |
+| 70 % | 4.2 A | +0.2 A |
+| **60 %** | **3.6 A** | **−0.4 A — short of the Pi alone** |
+
+> [!WARNING]
+> **At 60 % derating the buck cannot supply the Orange Pi by itself.** The
+> accessory port is not the first thing at risk here — the router rail is.
+> This is unmeasured, and it is the single most important measurement on this
+> board.
+
+### Recommendation: give the accessory port its own regulator
+
+**Yes — the accessory port needs its own regulator.** Feed a small dedicated
+buck from PD VBUS, in parallel with the Pololu, rather than tapping the 5 V
+router rail.
+
+Four reasons:
+
+1. **The margin being spent is unmeasured.** Adding a second variable load to
+   a rail whose real capacity is unknown spends headroom that may not exist.
+2. **Fault isolation.** A shorted or inrushing accessory on a shared rail
+   causes a voltage dip *before* any limiter reacts. On the router rail, that
+   is an unplanned reboot. A separate regulator contains it.
+3. **Thermal separation.** Two converters each running moderately warm is a
+   better thermal outcome in a sealed box than one running hard.
+4. **It costs almost nothing extra.** "Do not connect to raw PD VBUS" already
+   requires conversion or switching between VBUS and the port. Making that a
+   dedicated buck rather than a load switch buys isolation for a handful of
+   parts.
+
+**Proposed figures for the dedicated regulator:**
+
+| Parameter | Value |
+|---|---|
+| Advertised | **5 V @ 1.0 A** — Rp for Default USB (**56 kΩ ±20 %** to 5 V on CC1 and CC2) |
+| Current limit | **~1.25 A** — trips *above* the advertised value, not at it |
+| Raise to 1.5 A? | Only with **22 kΩ ±5 % Rp** and after the thermal measurement below |
+
+**If a dedicated regulator is rejected** and the port must share the router
+rail: hard-limit it to **0.5 A**, advertise Default USB, and treat it as a
+trickle-charge port only — and do not do even that until the Pololu's real
+derated capacity in the closed enclosure has been measured.
 
 ## Three rules that must survive layout
 
 > [!CAUTION]
-> **1 · Do not power the Pico from the Pololu rail.**
-> The Pico may be required to help bring that rail up. A controller that
-> depends on the rail it controls cannot start the system.
+> **1 · Do not power the Pico from the Pololu rail.** The Pico brings that
+> rail up; a controller that depends on its own output cannot start the
+> system. Pico runs off the **RotoPD auxiliary 5 V into VSYS.**
 
 > [!CAUTION]
-> **2 · The auxiliary output is 0.4 A continuous.**
-> It powers the controller. It is **not** a source for the Orange Pi, and not
-> somewhere to hang additional loads without re-checking the budget.
+> **2 · The auxiliary output is 0.4 A continuous.** It powers the controller
+> and the console. It is **not** a source for the Orange Pi, and the OLED and
+> encoder must fit inside that budget.
 
 > [!CAUTION]
-> **3 · The Pico verifies an adequate PD contract before enabling the router
-> rail.** Bringing the Orange Pi up on an insufficient contract is the exact
-> failure this architecture exists to prevent. Sequencing is a firmware
-> requirement, but it constrains the board: the enable path must be under Pico
-> control, not hard-wired.
+> **3 · The Pico verifies an adequate PD contract before asserting EN.**
+> Bringing the Orange Pi up on an insufficient contract is the failure this
+> architecture exists to prevent. The buck defaults off; the Pico confirms the
+> contract, asserts EN, then checks PG.
 
-## Carrier wiring
+## Boot sequence
 
-| Net | Requirement |
-|---|---|
-| RotoPD switched output → Pololu VIN/GND | Main power path. **Use both sets of the Pololu's duplicated VIN, VOUT and GND pins** — do not rely on a single generic header contact. |
-| Pololu VOUT → seam connector | Full router current. Conductor sizing and connector rating both matter here. |
-| RotoPD aux 5 V → Pico VSYS | Controller supply only. |
-| Pico ↔ RotoPD I²C | 3.3 V. Check pull-ups once both are populated. |
-| Pico enable → RotoPD switched output | The gating path for rule 3. |
+```
+power applied
+  → RotoPD Pro negotiates PD contract
+  → aux 5 V brings up Pico 2 + OLED          ← console is live first
+  → Pico reads contract over I²C bus 1
+  → contract adequate?  ── no ──→ report on OLED, leave EN low
+            │ yes
+  → Pico asserts buck EN
+  → Pico checks PG                            ← confirms, not assumes
+  → 5 V reaches Orange Pi over the seam
+  → Orange Pi boots, telemetry over UART
+```
 
-## Headroom is not proven
+## Connectors
+
+| Connector | Pins | Carries | Keyed |
+|---|---:|---|---|
+| Router power | 2 | 5 V, GND to Orange Pi | **Yes** |
+| Router telemetry | 3 | UART TX, RX, GND | **Yes** |
+| OLED | 4 | 3.3 V, GND, SDA, SCL (JST-SH STEMMA QT) | Yes, by type |
+| Encoder | 4 | A, B, push switch, GND | **Yes** |
+| RotoPD I²C | — | SDA, SCL to Pico bus 1 | — |
+
+> [!IMPORTANT]
+> **The UART changes the seam.** Enclosure A and B were specified as a
+> **power-only** boundary. Telemetry between the Pico and the Orange Pi means
+> **four conductors now cross it** — 5 V, GND, TX, RX — across two keyed
+> connectors. The detach story still works, but the seam spec in
+> [01](01-architecture.md) and [02](02-enclosure-a-upper.md) has changed and
+> the connector count with it. See [Unresolved conflicts](#unresolved-conflicts).
+
+## I²C bus allocation
+
+| Bus | Devices | Rationale |
+|---|---|---|
+| **Bus 1** | RotoPD Pro | Power control. Must not be blocked by UI traffic. |
+| **Bus 2** | Adafruit 5297 OLED | Console. A wedged display must not stall PD control. |
+
+Check pull-ups on each bus once populated — the RotoPD and the STEMMA QT
+cable may both carry their own.
+
+## Headroom summary
 
 | Figure | Standing |
 |---|---|
-| Orange Pi 5 Plus | Specifies **5 V at 4 A** |
-| Pololu D42V55F5 | **6 A is a *typical maximum*** — not a guarantee, and not inside a sealed compact enclosure |
-| RotoPD aux output | **0.4 A continuous**, controller only |
-
-The margin between a 4 A requirement and a 6 A typical maximum is thinner than
-it looks once enclosure temperature is included. **It is not validated.**
+| Orange Pi 5 Plus | **5 V at 4 A** specified |
+| Pololu D42V55F5 | **6 A typical maximum** — unvalidated in enclosure |
+| RotoPD auxiliary | **0.4 A continuous** — Pico + OLED + encoder only |
+| Accessory port | **1.0 A proposed**, on its own regulator |
 
 ## Measurement, before trusting any of this
 
 Measure voltage **at the Orange Pi** — not at the regulator, not at the
 charger. Cable and connector drop at several amps is the failure mode.
 
-Record under all three conditions:
-
 1. **Cold boot** — the inrush case
 2. **Both radios active**, passing traffic simultaneously on 5 GHz
 3. **Intended USB load applied**
+4. **Buck case temperature in the closed enclosure at sustained 4 A** — this
+   produces the real derating figure and decides whether the accessory port is
+   viable at all
 
-Also confirm which PD profiles the chosen charger or bank *actually* offers,
-from the device itself rather than its marketing copy.
+Also confirm which PD profiles the chosen charger actually offers, from the
+device rather than its marketing copy.
 
-## What this board has to power
+## Unresolved conflicts
 
-| Load | Notes |
-|---|---|
-| Orange Pi 5 Plus (RK3588) | 5 V at 4 A specified |
-| 2 × M.2 Wi-Fi cards | **Both transmitting at once** is the worst case and the one most likely to be under-budgeted |
-| Storage | eMMC discussed, unconfirmed |
-| Display | Optional touchscreen adds to the budget |
-| USB peripherals | Unquantified |
-| PCB 1 indicators | Four RGB LEDs off the 5 V rail — small, not zero |
+> [!WARNING]
+> Two things in this specification contradict the rest of the repo and need a
+> decision before layout.
+
+**1 · Seam is no longer power-only.** See the connector note above. The
+governing rule in [01](01-architecture.md) says only power crosses; UART
+telemetry now does too.
+
+**2 · Two user interfaces are specified.** This board carries an OLED and a
+push encoder on a front panel. [PCB 1](04-pcb-1-front-control.md) carries an
+ANO navigation wheel, three keys, four RGB indicators, and assumes a separate
+display in Enclosure A. It is not stated whether:
+
+- the OLED and EC11 are a **separate power-box console**, additional to PCB 1; or
+- they **replace** PCB 1's wheel and the Enclosure A display, consolidating the
+  UI onto the Pico.
+
+The second reading is consistent with the UART telemetry link and with "the
+Pico and display boot before the Orange Pi" — a console that shows PD status
+before the router exists. **Until this is resolved, do not lay out either
+front panel.**
 
 ## Open questions
 
-- **RotoPD Pro mounting pattern, outline, and height** — blocks the carrier
-  footprint and the enclosure
-- Pico mounting: castellated-edge solder vs. 2.54 mm sockets
-- Seam connector part
-- Actual measured system draw — still unmeasured
-- Regulator thermal path at sustained current
-- Whether an internal cell is added, and the charge management that would need
-- Firmware: PD contract validation thresholds and the enable sequence
+- **Which enclosure's front panel** carries the OLED and encoder
+- Whether PCB 1's ANO wheel survives
+- RotoPD Pro mounting pattern, outline, height — still blocking
+- Dedicated accessory regulator part
+- Seam connector parts, now ×2
+- Encoder debounce: RC on board vs. firmware
+- Measured buck derating in the closed enclosure
+- Pico mounting: castellated vs. 2.54 mm sockets
 
 Mechanical context in [03-enclosure-b-lower.md](03-enclosure-b-lower.md).

@@ -14,11 +14,19 @@ A compact **two-piece** travel router.
 | | Enclosure | Holds | Detachable? |
 |---|---|---|---|
 | **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, the M-key→E-key adapter, all four antennas, storage, display, faceplate with controls and indicators | No — this is the router |
-| **B** | **Lower power box** | PCB 2: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator | **Yes** |
+| **B** | **Lower power box** | PCB 2: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
 
 **The governing rule:** both radios and all antennas stay in the upper
 enclosure, so **the power box comes off without disturbing any PCIe or
-antenna connection.** Only power crosses the seam.
+antenna connection.** Only power and telemetry cross the seam — never RF.
+
+> [!WARNING]
+> **Enclosure B also carries a console.** PCB 2 drives an OLED and a push
+> encoder, and the Pico boots before the Orange Pi so that console is live
+> first. Whether that console is *additional to* or *replaces* the controls in
+> Enclosure A is **unresolved** — see
+> [05 · Unresolved conflicts](05-pcb-2-power.md#unresolved-conflicts).
+> Do not lay out either front panel until it is settled.
 
 ```mermaid
 flowchart TB
@@ -29,9 +37,13 @@ flowchart TB
         ROTO["<b>CentyLab RotoPD Pro</b><br/>PD negotiation + switched output"]:::pwr
         PICO["<b>Raspberry Pi Pico 2</b><br/>controller"]:::ctl
         POLOLU["<b>Pololu D42V55F5</b><br/>regulated 5 V out"]:::pwr
+        CON["<b>OLED + encoder</b><br/>console, live first"]:::ctl
+        ACC["<b>accessory USB-C</b><br/>5 V out, own regulator"]:::pwr
         ROTO -->|switched PD| POLOLU
         ROTO -.->|"aux 5 V, 0.4 A max<br/>→ Pico VSYS"| PICO
-        PICO <-.->|"3.3 V I²C"| ROTO
+        PICO <-.->|"I²C bus 1"| ROTO
+        PICO <-.->|"I²C bus 2"| CON
+        ROTO --> ACC
     end
 
     subgraph A["ENCLOSURE A — upper router box"]
@@ -50,7 +62,8 @@ flowchart TB
     end
 
     CHG ==>|USB-C| ROTO
-    POLOLU ==>|"5 V · detachable keyed connector<br/>→ Orange Pi USB-C power input"| PI
+    POLOLU ==>|"5 V · keyed connector<br/>→ Orange Pi USB-C power input"| PI
+    PICO <-.->|"UART telemetry<br/>keyed 3-pin"| PI
 
     classDef ext fill:#f1f5f9,stroke:#64748b,color:#0f172a
     classDef pwr fill:#fee2e2,stroke:#dc2626,color:#0f172a
@@ -91,7 +104,7 @@ One path, in one direction:
 external USB-C charger
    → RotoPD Pro (negotiates PD, switched output)
       → Pololu D42V55F5 (regulated 5 V)
-         → detachable keyed connector across the enclosure seam
+         → keyed 2-pin connector across the enclosure seam
             → Orange Pi dedicated USB-C power input
 ```
 
@@ -120,16 +133,27 @@ active, and with the intended USB load applied. See
 
 ## What crosses the seam
 
-Only **5 V and ground**, through a connector that must be:
+> [!IMPORTANT]
+> **Revised.** The seam was originally specified as power-only. PCB 2 now
+> carries a UART telemetry link to the Orange Pi, so **four conductors cross
+> the boundary across two keyed connectors.**
 
-- **Keyed** — not connectable backwards
+| Connector | Pins | Carries |
+|---|---:|---|
+| **Power** | 2 | 5 V, GND → Orange Pi dedicated USB-C power input |
+| **Telemetry** | 3 | UART TX, RX, GND → Orange Pi |
+
+Both must be:
+
+- **Keyed** — not connectable backwards, and not inter-mateable with each other
 - **Latching** — it is a handheld device
-- **Rated for the full load**, with a short lead to the Orange Pi's USB-C
-  power input
-- Sized **as a mated pair with its cable** when the case is drawn — not as a
-  PCB footprint
+- **Rated for the full load** (power connector), with a short lead to the
+  Orange Pi
+- Sized **as mated pairs with their cables** when the case is drawn — not as
+  PCB footprints
 
-No data, no control, no RF crosses the boundary.
+**No RF crosses the boundary.** The detach rule still holds: the power box
+comes off without disturbing any PCIe or antenna connection.
 
 ## The three dimensions nobody should guess
 
@@ -149,6 +173,8 @@ to take, not values to look up:
 - AX210 in the top-side E-key socket; second radio on an adapter underneath
 - Power chain: RotoPD Pro → Pololu → detachable connector → Orange Pi
 - Pico 2 as controller, powered from RotoPD auxiliary via VSYS
+- Buck defaults off; Pico validates the PD contract, asserts EN, confirms PG
+- Accessory USB-C output gets its **own regulator**, never raw PD VBUS
 - Four internal flex antennas, two per radio, inside the narrow walls
 
 **Open — do not design against these**
@@ -159,6 +185,7 @@ to take, not values to look up:
 - Specific M-key-to-E-key adapter
 - Power source: external bank vs. internal cell, and therefore whether
   Enclosure B ever contains a battery
+- **Which enclosure's front panel carries the OLED and encoder** — blocks both
 - Display model, thermal solution, final antenna SKU
 - JLCPCB assembly sourcing for several PCB 1 parts
 

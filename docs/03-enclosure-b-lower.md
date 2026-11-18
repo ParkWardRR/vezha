@@ -72,16 +72,50 @@ Three measurements gate this box, and only one of them is about a PCB:
 Draw this enclosure around the **mated** hardware. PCB footprints alone will
 produce a box that does not close.
 
-## USB-C input
+## Wall openings
 
-The RotoPD Pro's USB-C input sits at the enclosure wall. Points to settle:
+This box has **four** things reaching a wall, not one. All four constrain the
+shell before PCB 2's outline does.
 
-- Whether the receptacle is the RotoPD's own, brought to a wall cutout, or a
-  panel-mount part wired to it
-- Cable strain relief — this is the connector a handheld device gets yanked by
-- [C3445864](08-sourcing.md#c3445864--usb-c-receptacle) was looked up as a
-  candidate receptacle. **Its 48 V / 5 A rating is a contact rating, not a PD
-  capability.** It is not selected.
+| Opening | Part | Face |
+|---|---|---|
+| **PD input** | RotoPD Pro's **own built-in USB-C jack** | Input end |
+| **Accessory output** | HRO TYPE-C-31-M-12 | **Side**-facing |
+| **Programming** | Pico 2 Micro-USB, overhanging | Wherever the Pico lands |
+| **Console** | OLED window + encoder shaft | **Front panel** |
+
+### PD input
+
+**Resolved:** the RotoPD Pro's **built-in USB-C jack is the PD input.** There
+is no separate input receptacle on PCB 2 — bring the module's own jack to the
+wall. That fixes the RotoPD's position relative to the shell, so its
+unverified outline now constrains the enclosure in two ways at once.
+
+Cable strain relief still matters — this is the connector a handheld device
+gets yanked by.
+
+> [!NOTE]
+> [C3445864](08-sourcing.md#c3445864--usb-c-receptacle) is **no longer a
+> candidate for the input.** The RotoPD's own jack supersedes it.
+
+### Accessory output
+
+Side-facing, **5 V power only**, on its **own regulator** — never raw PD
+VBUS, which can be at 20 V. Electrical requirements and the proposed 1.0 A
+limit are in [05-pcb-2-power.md](05-pcb-2-power.md#accessory-usb-c-output-port).
+
+### Front-panel console
+
+> [!WARNING]
+> **Unresolved:** whether this console is *additional to* the controls in
+> Enclosure A, or *replaces* them. See
+> [05 · Unresolved conflicts](05-pcb-2-power.md#unresolved-conflicts). Do not
+> cut a front panel for either box until this is settled — it decides whether
+> Enclosure B has a user-facing face at all.
+
+If it stays: the OLED needs a window and bracket, the encoder needs a bushing
+cutout and knob clearance, and both must be reachable with the box attached to
+Enclosure A.
 
 ## Thermal
 
@@ -93,7 +127,10 @@ sustained load before closing the design.
 ## Open questions
 
 - RotoPD Pro physical envelope and mounting — **blocking**
-- Seam connector selection
+- Seam connector selection — now **two** connectors, 2-pin power and 3-pin UART
+- **Whether Enclosure B has a front panel at all** — blocking
+- Accessory port regulator, and its thermal contribution in this box
+- OLED bracket and encoder knob
 - Pico mounting style
 - Whether an internal cell is ever added, which would change this box entirely
 - Charging behaviour: does the unit run while the bank is charging, through
