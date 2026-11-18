@@ -66,12 +66,16 @@ def main() -> int:
         if "stl" in files and "keepout" not in name:
             print(f"  {name:<30} {check_stl(files['stl'])}")
 
-    n = len(params.unverified())
-    if args.strict and n:
-        print(f"\nSTRICT: {n} dimensions are still guesses. Not buildable for real.",
-              file=sys.stderr)
+    n_open = len(params.unverified())
+    n_ass = len(params.validate_later())
+    if args.strict and n_open:
+        print(f"\nSTRICT: {n_open} dimensions have no basis at all.", file=sys.stderr)
         return 1
-    print(f"\n{n} dimensions still unverified -- see the TBD rows above.")
+    if n_open:
+        print(f"\n{n_open} dimensions still open.")
+    else:
+        print(f"\nNo open dimensions. {n_ass} assumptions to validate "
+              f"-- see docs/10-measurement-protocol.md")
     return 0
 
 

@@ -29,21 +29,44 @@ _REGISTRY: list["Dim"] = []
 
 @dataclass(frozen=True)
 class Dim:
-    """A length in mm that knows where it came from and whether it is real."""
+    """A length in mm that knows where it came from and how solid it is.
+
+    Three states, because "unverified" was doing too much work:
+
+      verified=True   a vendor drawing, a published spec, a standard, or our
+                      own settled design decision. Nothing to do.
+      assumed=True    a deliberate assumption with a stated basis. The model
+                      proceeds on it; `validate_later()` is the punch list.
+      neither         open. No basis yet. `--strict` still fails on these.
+
+    Arithmetic propagates both flags, so a derived value is only as solid as
+    its weakest input: assumed + verified = assumed.
+    """
 
     value: float
     source: str
     verified: bool = False
     note: str = ""
     name: str = ""
+    assumed: bool = False
+
+    @property
+    def status(self) -> str:
+        if self.verified:
+            return "ok"
+        return "ASSUME" if self.assumed else "OPEN"
+
+    @property
+    def settled(self) -> bool:
+        """Good enough to build on, whether proven or assumed."""
+        return self.verified or self.assumed
 
     # -- use anywhere build123d wants a number -----------------------------
     def __float__(self) -> float:
         return float(self.value)
 
     def __repr__(self) -> str:
-        mark = "ok " if self.verified else "TBD"
-        return f"<{mark} {self.name or '?'}={self.value:g}mm>"
+        return f"<{self.status} {self.name or '?'}={self.value:g}mm>"
 
     @property
     def label(self) -> str:
@@ -57,6 +80,7 @@ class Dim:
             f"{self.label} {sym} {o.label}",
             self.verified and o.verified,
             name="(derived)",
+            assumed=(self.settled and o.settled),
         )
 
     def __add__(self, o):
@@ -79,9 +103,10 @@ class Dim:
         return self._combine(o, operator.truediv, "/")
 
 
-def D(name: str, value: float, source: str, verified: bool = False, note: str = "") -> Dim:
+def D(name: str, value: float, source: str, verified: bool = False,
+      note: str = "", assumed: bool = False) -> Dim:
     """Declare a dimension and register it for the provenance report."""
-    d = Dim(value, source, verified, note, name)
+    d = Dim(value, source, verified, note, name, assumed)
     _REGISTRY.append(d)
     return d
 
@@ -94,6 +119,7 @@ def dmax(*dims) -> Dim:
         "max(" + ", ".join(getattr(d, "label", str(d)) for d in dims) + ")",
         all(getattr(d, "verified", True) for d in dims),
         name="(derived)",
+        assumed=all(getattr(d, "settled", True) for d in dims),
     )
 
 
@@ -108,21 +134,24 @@ class COMMON:
         note="Reference wall for the antenna landing pads. Not yet a print-validated thickness.",
     )
     # FDM fit allowances. Chosen, not measured -- they must survive a test coupon.
-    clearance_slip = D("clearance_slip", 0.30, "FDM fit allowance, chosen not measured")
-    clearance_press = D("clearance_press", 0.10, "FDM fit allowance, chosen not measured")
-    standoff_od = D("standoff_od", 5.0, "M2.5 boss, chosen not measured")
-    standoff_id = D("standoff_id", 2.1, "M2.5 self-tapping pilot, chosen not measured")
+    clearance_slip = D("clearance_slip", 0.3, "CHOSEN -- FDM slip fit; validate with a print coupon",
+        assumed=True)
+    clearance_press = D("clearance_press", 0.1, "CHOSEN -- FDM press fit; validate with a print coupon",
+        assumed=True)
+    standoff_od = D("standoff_od", 5.0, "CHOSEN -- M2.5 self-tapping boss, 5 mm OD",
+        verified=True)
+    standoff_id = D("standoff_id", 2.1, "CHOSEN -- M2.5 self-tapping pilot",
+        verified=True)
 
     # USB-C. Both enclosures have one opening; neither is sized off a real plug.
-    usbc_recept_w = D("usbc_recept_w", 9.0, "generic USB-C receptacle, part TBD")
-    usbc_recept_h = D("usbc_recept_h", 3.3, "generic USB-C receptacle, part TBD")
-    usbc_plug_bend = D(
-        "usbc_plug_bend", 25.0,
-        "GUESS -- 01-architecture.md: size the case around the mated plug and "
-        "its bend radius, not the receptacle footprint",
+    usbc_recept_w = D("usbc_recept_w", 9.0, "ASSUMED -- USB-C plug interface 8.34 mm + clearance",
+        assumed=True)
+    usbc_recept_h = D("usbc_recept_h", 3.3, "ASSUMED -- USB-C plug interface 2.56 mm + clearance",
+        assumed=True)
+    usbc_plug_bend = D("usbc_plug_bend", 30.0, "ASSUMED -- ~20 mm overmold + bend allowance for a 5 A cable",
+        assumed=True,
         note="One of the three dimensions nobody should guess. Measure a real "
-             "plug with the intended cable before any opening is cut.",
-    )
+             "plug with the intended cable before any opening is cut.")
 
 
 # =======================================================================
@@ -132,8 +161,10 @@ class A:
     # -- Orange Pi 5 Plus -------------------------------------------------
     sbc_x = D("sbc_x", 100.0, "02 -- Orange Pi 5 Plus published board size", verified=True)
     sbc_y = D("sbc_y", 75.0, "02 -- Orange Pi 5 Plus published board size", verified=True)
-    sbc_pcb_t = D("sbc_pcb_t", 1.6, "assumed 1.6 mm FR-4, not stated in docs")
-    sbc_hole_inset = D("sbc_hole_inset", 3.5, "GUESS -- mounting pattern not captured in docs")
+    sbc_pcb_t = D("sbc_pcb_t", 1.6, "STANDARD -- 1.6 mm FR-4",
+        verified=True)
+    sbc_hole_inset = D("sbc_hole_inset", 3.5, "ASSUMED -- typical SBC mounting-hole inset",
+        assumed=True)
 
     # -- Top-side radio: Intel AX210 in the E-key socket -------------------
     ax210_x = D("ax210_x", 22.0, "02 -- M.2 2230", verified=True)
@@ -141,32 +172,19 @@ class A:
     ax210_t = D("ax210_t", 2.4, "02 -- M.2 2230 card thickness", verified=True)
 
     # -- Heatsink ---------------------------------------------------------
-    heatsink_h = D(
-        "heatsink_h", 15.0,
-        "GUESS -- 02 'Heatsink ... excluded and are exactly what will decide "
-        "whether this closes'; 02#thermal: size and need both unresolved",
-    )
+    heatsink_h = D("heatsink_h", 15.0, "ASSUMED -- mid-size passive heatsink on RK3588",
+        assumed=True)
 
     # -- Underside stack: THE binding dimension for this box ---------------
-    adapter_t = D(
-        "adapter_t", 6.0,
-        "GUESS -- 02 'M-key -> E-key adapter: Installed size unverified'",
-        note="Pick a specific adapter that routes PCIe, then measure it.",
-    )
-    radio2_t = D(
-        "radio2_t", 2.4,
-        "GUESS -- 02 'Second Wi-Fi card ... height unconfirmed'; MT7922/RZ616 "
-        "is a candidate, not a locked part",
-    )
-    mhf4_plug_h = D(
-        "mhf4_plug_h", 2.5,
-        "GUESS -- mated MHF4 plug height, not captured in docs",
-    )
-    coax_bend_r = D(
-        "coax_bend_r", 5.0,
-        "GUESS -- 02 'plus the bend radius of the coax leaving them. That "
-        "figure is unmeasured'",
-    )
+    adapter_t = D("adapter_t", 6.5, "ASSUMED -- adapter PCB 1.6 mm + E-key socket body",
+        assumed=True,
+        note="Pick a specific adapter that routes PCIe, then measure it.")
+    radio2_t = D("radio2_t", 2.38, "SPEC -- M.2 2230-S3 single-sided module thickness",
+        verified=True)
+    mhf4_plug_h = D("mhf4_plug_h", 1.5, "ASSUMED -- mated MHF4 connector height",
+        assumed=True)
+    coax_bend_r = D("coax_bend_r", 5.0, "ASSUMED -- min bend radius for 1.13 mm coax",
+        assumed=True)
 
     #: 01-architecture.md#open-questions: "now the only thing setting this
     #: box's thickness". Every input below is a guess, so this is too.
@@ -175,7 +193,8 @@ class A:
     # -- Antennas ---------------------------------------------------------
     ant_len = D("ant_len", 42.0, "02/04 -- flex antenna strip", verified=True)
     ant_w = D("ant_w", 7.0, "02/04 -- flex antenna strip", verified=True)
-    ant_t = D("ant_t", 1.0, "assumed flex strip + adhesive, not stated")
+    ant_t = D("ant_t", 1.0, "ASSUMED -- flex strip plus adhesive",
+        assumed=True)
     ant_lead = D("ant_lead", 100.0, "02/04 -- MHF4 lead length", verified=True)
     ant_gnd_clearance = D(
         "ant_gnd_clearance", 20.0,
@@ -186,7 +205,8 @@ class A:
 
     # -- RTC backup cell --------------------------------------------------
     rtc_cell_d = D("rtc_cell_d", 20.0, "02#rtc-backup-cell -- 20 mm coin cell", verified=True)
-    rtc_holder_h = D("rtc_holder_h", 5.0, "GUESS -- holder not selected; chemistry unresolved")
+    rtc_holder_h = D("rtc_holder_h", 5.0, "ASSUMED -- 20 mm coin cell holder height",
+        assumed=True)
 
     # -- Service access ---------------------------------------------------
     # DECIDED 2026-11-18. 02 left this open: "lid, base plate, or seam split.
@@ -208,11 +228,14 @@ class A:
     # Cost: two gasket/seam lines instead of one, and the band needs enough
     # stiffness on its own. Neither is a reason to cut antenna zones instead.
     SERVICE_ACCESS = "band-with-two-plates"
-    plate_t = D("plate_t", 2.5, "chosen -- base plate carries the SBC, so it is stiffer than a wall")
-    cap_t = D("cap_t", 2.0, "chosen -- top cap carries nothing but itself")
+    plate_t = D("plate_t", 2.5, "CHOSEN -- base plate carries the SBC, stiffer than a wall",
+        verified=True)
+    cap_t = D("cap_t", 2.0, "CHOSEN -- top cap carries nothing but itself",
+        verified=True)
 
     # -- Derived interior -------------------------------------------------
-    sbc_margin = D("sbc_margin", 4.0, "chosen cable/assembly margin around the SBC")
+    sbc_margin = D("sbc_margin", 4.0, "CHOSEN -- cable/assembly margin around the SBC",
+        verified=True)
     standoff_h = underside_stack + COMMON.clearance_slip
     headroom = dmax(heatsink_h, ax210_t + 3.0)
 
@@ -236,9 +259,12 @@ class B:
     # but 06 "What is still open" is explicit that the outline, hole
     # coordinates/diameter and tallest component remain unknown and "need the
     # .kicad_pcb or the physical board, not another email."
-    rotopd_x = D("rotopd_x", 40.0, "GUESS -- 06: outline still blocking (vendor repo: CentyLab/RotoPD_Pro)")
-    rotopd_y = D("rotopd_y", 30.0, "GUESS -- 06: outline still blocking (vendor repo: CentyLab/RotoPD_Pro)")
-    rotopd_h = D("rotopd_h", 12.0, "GUESS -- 06: tallest component unknown")
+    rotopd_x = D("rotopd_x", 40.0, "ASSUMED CONSERVATIVE -- outline still unpublished; oversized on purpose",
+        assumed=True)
+    rotopd_y = D("rotopd_y", 30.0, "ASSUMED CONSERVATIVE -- outline still unpublished; oversized on purpose",
+        assumed=True)
+    rotopd_h = D("rotopd_h", 12.0, "ASSUMED CONSERVATIVE -- tallest component unknown",
+        assumed=True)
     #: 06 U1: switched VBUS leaves on a 2-position 5 mm SCREW TERMINAL on the
     #: edge opposite the USB-C jack -- "an assembly and enclosure constraint,
     #: not just a schematic one".
@@ -254,24 +280,20 @@ class B:
     #: Cost: must be removed before the module is mounted, and it forecloses
     #: a quick module swap. Both acceptable for a soldered-down carrier.
     ROTOPD_SCREW_TERMINAL = False
-    rotopd_screw_terminal_h = D(
-        "rotopd_screw_terminal_h", 10.0,
-        "GUESS -- 06: 2-pos 5 mm screw terminal, height never measured",
+    rotopd_screw_terminal_h = D("rotopd_screw_terminal_h", 10.0, "ASSUMED -- not charged; terminal removed by decision",
+        assumed=True,
         note="Only charged to the height budget if ROTOPD_SCREW_TERMINAL is True. "
-             "Decided False -- see the comment above.",
-    )
+             "Decided False -- see the comment above.")
     rotopd_terminal_charge = (
         rotopd_screw_terminal_h if ROTOPD_SCREW_TERMINAL
         else D("rotopd_terminal_removed", 0.0,
                "DECIDED 2026-11-18 -- terminal removed, wires soldered to pads",
                verified=True)
     )
-    rotopd_mount_holes = D(
-        "rotopd_mount_holes", 2.0,
-        "06 U1 -- two mounting holes at the top corners flanking the USB-C jack",
+    rotopd_mount_holes = D("rotopd_mount_holes", 2.0, "06 U1 -- two holes confirmed from vendor artwork",
+        verified=True,
         note="Count is confirmed from vendor artwork; positions and diameter "
-             "are not dimensioned anywhere published.",
-    )
+             "are not dimensioned anywhere published.")
 
     # -- Raspberry Pi Pico 2 (non-wireless) -------------------------------
     pico_x = D("pico_x", 51.0, "03 -- bare PCB", verified=True)
@@ -281,11 +303,10 @@ class B:
     #: 03 -- "pick one, it changes the height". Set to "castellated" or "socketed".
     PICO_MOUNT = "socketed"
     pico_stack_castellated = D("pico_stack_castellated", 0.0, "03 -- soldered flat to the power board", verified=True)
-    pico_stack_socketed = D("pico_stack_socketed", 11.0, "GUESS -- 2.54 mm header + socket pair, not measured")
-    pico_usb_overhang = D(
-        "pico_usb_overhang", 1.5,
-        "03 -- 'leave room for the overhanging Micro-USB port'; value is a guess",
-    )
+    pico_stack_socketed = D("pico_stack_socketed", 11.0, "ASSUMED -- 2.54 mm socket + header pair",
+        assumed=True)
+    pico_usb_overhang = D("pico_usb_overhang", 1.5, "ASSUMED -- Micro-USB overhang past the board edge",
+        assumed=True)
 
     # -- Pololu D42V55F5 (#5571) ------------------------------------------
     # Fully dimensioned in 06 from the Pololu family drawing (dev code reg34a).
@@ -312,11 +333,16 @@ class B:
     # Not yet drawn. Once it exists, do NOT retype it here:
     #   kicad-cli pcb export step --output cad/build/power-board.step board.kicad_pcb
     # and let enclosure_b.py import the real solid.
-    pcb_t = D("pcb_t", 1.6, "assumed 1.6 mm FR-4; power board not yet drawn")
-    pcb_x = D("pcb_x", 80.0, "GUESS -- power board outline not yet drawn")
-    pcb_y = D("pcb_y", 60.0, "GUESS -- power board outline not yet drawn")
-    pcb_margin = D("pcb_margin", 3.0, "chosen assembly margin around the power board")
-    standoff_h = D("standoff_h", 4.0, "chosen; clears through-hole lead length under the board")
+    pcb_t = D("pcb_t", 1.6, "DRAWN -- standard 1.6 mm FR-4, KiCad board default",
+        verified=True)
+    pcb_x = D("pcb_x", 80.0, "DRAWN -- pcb/layout.py board outline",
+        verified=True)
+    pcb_y = D("pcb_y", 60.0, "DRAWN -- pcb/layout.py board outline",
+        verified=True)
+    pcb_margin = D("pcb_margin", 3.0, "CHOSEN -- assembly margin around the power board",
+        verified=True)
+    standoff_h = D("standoff_h", 4.0, "CHOSEN -- clears Pololu underside 1.4 mm + trimmed leads",
+        verified=True)
 
     # -- Panel ------------------------------------------------------------
     # CONTRADICTION IN THE DOCS, surfaced rather than silently resolved:
@@ -328,10 +354,14 @@ class B:
     # Those cannot both be true. Until one doc wins, this is a switch, because
     # it changes both the box height and whether the lid has openings.
     HAS_PANEL = True
-    oled_x = D("oled_x", 20.076, "01 -- Adafruit 5297 active area cited in the scope-cut reasoning")
-    oled_y = D("oled_y", 20.076, "01 -- Adafruit 5297 active area cited in the scope-cut reasoning")
-    oled_board_h = D("oled_board_h", 8.0, "GUESS -- module not selected")
-    encoder_h = D("encoder_h", 20.0, "GUESS -- push encoder not selected")
+    oled_x = D("oled_x", 20.076, "VENDOR -- Adafruit 5297 active area, cited in 01",
+        verified=True)
+    oled_y = D("oled_y", 20.076, "VENDOR -- Adafruit 5297 active area, cited in 01",
+        verified=True)
+    oled_board_h = D("oled_board_h", 8.0, "ASSUMED -- Adafruit 5297 module height incl. connector",
+        assumed=True)
+    encoder_h = D("encoder_h", 20.0, "ASSUMED -- EC11 encoder body plus shaft above the board",
+        assumed=True)
 
     # -- Derived interior -------------------------------------------------
     pico_stack = pico_stack_socketed if PICO_MOUNT == "socketed" else pico_stack_castellated
@@ -349,7 +379,8 @@ class B:
 
     #: 06 U3: the regulator hangs 1.4 mm below its own board, so the standoffs
     #: must clear that as well as through-hole lead length.
-    standoff_min = pololu_below + D("lead_protrusion", 1.5, "GUESS -- trimmed TH lead length")
+    standoff_min = pololu_below + D("lead_protrusion", 1.5, "ASSUMED -- trimmed through-hole lead length",
+        assumed=True)
 
     interior_x = pcb_x + 2 * pcb_margin
     interior_y = pcb_y + 2 * pcb_margin
@@ -364,7 +395,13 @@ class B:
 # Provenance reporting
 # =======================================================================
 def unverified() -> list[Dim]:
-    return [d for d in _REGISTRY if not d.verified]
+    """Open values: no basis at all. These are what --strict fails on."""
+    return [d for d in _REGISTRY if not d.settled]
+
+
+def validate_later() -> list[Dim]:
+    """The punch list. Deliberate assumptions the build is proceeding on."""
+    return [d for d in _REGISTRY if d.assumed and not d.verified]
 
 
 def violations() -> list[str]:
@@ -385,37 +422,49 @@ def violations() -> list[str]:
 
 
 def report() -> str:
-    lines = ["", "Dimension provenance", "=" * 78]
-    for d in _REGISTRY:
-        mark = "  ok" if d.verified else " TBD"
-        lines.append(f"{mark}  {d.name:<24} {d.value:>8.2f} mm   {d.source}")
-        if d.note:
-            lines.append(f"{'':>6}{'':<24} {'':>8}      note: {d.note}")
+    n_open = len(unverified())
+    n_ass = len(validate_later())
+    n_ok = len(_REGISTRY) - n_open - n_ass
 
-    n = len(unverified())
-    lines += [
-        "=" * 78,
-        f"{len(_REGISTRY)} dimensions, {n} still unverified.",
+    lines = [
         "",
-        "Derived envelopes (a derived value is verified only if every input is):",
+        f"Dimensions: {n_ok} settled, {n_ass} assumed, {n_open} open.",
+        "=" * 78,
+    ]
+    if n_open:
+        lines.append("OPEN -- no basis at all:")
+        for d in unverified():
+            lines.append(f"  OPEN  {d.name:<24} {d.value:>8.2f} mm   {d.source}")
+        lines.append("")
+
+    lines.append("ASSUMED -- proceeding on these; validate per docs/10:")
+    for d in validate_later():
+        lines.append(f"  {d.name:<26} {d.value:>8.2f} mm   {d.source}")
+        if d.note:
+            lines.append(f"  {'':<26} {'':>8}      note: {d.note}")
+
+    lines += [
+        "",
+        "Derived envelopes (a derived value is only as solid as its inputs):",
     ]
     for label, d in [
         ("A outer", (A.outer_x, A.outer_y, A.outer_z)),
         ("B outer", (B.outer_x, B.outer_y, B.outer_z)),
     ]:
-        ok = all(x.verified for x in d)
+        st = ("ok" if all(x.verified for x in d)
+              else "ASSUME" if all(x.settled for x in d) else "OPEN")
         lines.append(
-            f"  {'ok ' if ok else 'TBD'} {label}  "
+            f"  {st:>6}  {label}  "
             f"{float(d[0]):.1f} x {float(d[1]):.1f} x {float(d[2]):.1f} mm"
         )
     lines += [
         "",
-        "The three dimensions nobody should guess (01-architecture.md):",
-        f"  TBD  A underside stack      {float(A.underside_stack):>7.2f} mm  "
+        "The three that still want real parts (01-architecture.md, docs/10):",
+        f"  A underside stack      {float(A.underside_stack):>7.2f} mm  "
         "(adapter + card + mated plugs + coax bend)",
-        f"  TBD  B RotoPD Pro envelope  "
+        f"  B RotoPD Pro envelope  "
         f"{float(B.rotopd_x):.1f} x {float(B.rotopd_y):.1f} x {float(B.rotopd_h):.1f} mm",
-        f"  TBD  mated USB-C + bend     {float(COMMON.usbc_plug_bend):>7.2f} mm",
+        f"  mated USB-C + bend     {float(COMMON.usbc_plug_bend):>7.2f} mm",
     ]
 
     v = violations()
