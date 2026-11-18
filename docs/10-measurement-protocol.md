@@ -19,7 +19,7 @@ discovered after a case has been printed or a board fabricated:
 | # | Dimension | Gates | Currently assumed |
 |---|---|---|---|
 | 1 | **Underside M.2 stack** — adapter + card + mated plugs + coax bend | Enclosure A thickness. [02 open questions](02-enclosure-a-upper.md#open-questions) calls it "now the only thing setting this box's thickness" | **15.9 mm**, from four stacked guesses |
-| 2 | **RotoPD Pro envelope** — outline, height, mounting holes | Enclosure B footprint and the power board's carrier | **40 × 30 × 12 mm**, all invented |
+| ~~2~~ | ~~**RotoPD Pro envelope**~~ — **resolved 2026-11-18 from the vendor repo**, no measurement needed | — | **24.40 × 35.80 mm**, real [geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) |
 | 3 | **Mated USB-C plug + cable bend radius** | Every USB-C opening in both boxes | **25 mm** |
 
 Everything else in [02](02-enclosure-a-upper.md) and
@@ -29,8 +29,10 @@ Everything else in [02](02-enclosure-a-upper.md) and
 
 ## 0 · Prerequisite — select the M.2 adapter
 
-**Status: not selected.** This blocks measurement 1 entirely, and it is a
-sourcing decision, not a measurement.
+**Status: candidate proposed 2026-11-18** — the Sintech M-key to A/E-key
+card, [assessed below](#candidate-sintech-m-key-to-ae-key-adapter). This
+blocks measurement 1 until one is in hand, and it is a sourcing decision,
+not a measurement.
 
 ### What the board actually provides
 
@@ -146,28 +148,29 @@ safety here — the clearance allowance is already a separate parameter
 > (`A.heatsink_h`, currently a 15 mm guess) — it is free to take at this point
 > and it sets the other side of the Z stack.
 
-## 2 · RotoPD Pro envelope
+## 2 · RotoPD Pro envelope — resolved, no measurement needed
 
-**Feeds:** `B.rotopd_x`, `B.rotopd_y`, `B.rotopd_h`, and the power board's
-carrier footprint in [`pcb/layout.py`](../pcb/layout.py).
+**Nothing to do here.** On 2026-11-18 the vendor repository turned out to
+ship both the KiCad board and a STEP assembly, so the outline, the
+mounting-hole positions and diameter, the connector placement and every
+component height came straight out of the files.
 
-[06](06-power-board-schematic.md) resolved the *pinout* from vendor artwork but
-states the outline, hole coordinates and diameter "need the `.kicad_pcb` or the
-physical board, not another email."
+The numbers are in
+[06 · U1 · RotoPD Pro mechanical](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo).
+Headlines: **24.40 × 35.80 mm**, two **M2.5** holes **18.00 mm** apart, and a
+**13.00 mm** assembly that drops to **4.70 mm** of components once the screw
+terminal is removed.
 
-**Prefer the vendor PCB files** — <https://github.com/CentyLab/RotoPD_Pro>
-gives exact geometry without tolerance stack-up. Only measure if they are
-unusable.
+> [!NOTE]
+> Worth remembering as a method, not just a result. 06 had concluded these
+> "need the `.kicad_pcb` or the physical board, not another email" — which
+> was right, and the `.kicad_pcb` was publicly available the whole time.
+> **Check the vendor's repository before scheduling a measurement.**
 
-If measuring:
-
-1. Outline X and Y at the extremes, including any overhanging connector body.
-2. **Tallest component above the board**, which sets `B.rotopd_h`.
-3. The two mounting holes flanking the USB-C jack: diameter, and X/Y from a
-   defined board corner. Pick one corner and stay with it.
-4. **Measure with the screw terminal already removed**, per the
-   [2026-11-18 decision](03-enclosure-b-lower.md#the-vbus-screw-terminal) to
-   solder the VBUS path to its pads. Measuring it fitted records ~10 mm that will not exist.
+One thing left to look at, and it does not need calipers: the STEP is
+**0.97 mm longer in Y** than the Edge.Cuts outline, so some part projects
+past a board edge. Identify which before cutting the wall opening for the
+USB-C jack.
 
 ## 3 · Mated USB-C plug and bend radius
 

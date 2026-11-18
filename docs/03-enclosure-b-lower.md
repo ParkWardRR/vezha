@@ -15,7 +15,7 @@ Read [01-architecture.md](01-architecture.md) first.
 
 | Part | Dimensions | Mounting |
 |---|---|---|
-| **CentyLab RotoPD Pro** | **Outline, height, and mounting pattern all unverified** | **USB-C input at the enclosure wall.** Switched PD output to the Pololu's VIN/GND. Pico connects over 3.3 V I²C via Qwiic/STEMMA QT or the corresponding pins. Use the [vendor PCB files](https://github.com/CentyLab/RotoPD_Pro) or measure the actual board before drawing its carrier footprint. |
+| **CentyLab RotoPD Pro** | **24.40 × 35.80 mm**, 2 × M2.5 (⌀2.7 mm) 18.00 mm apart. Assembly spans 13.00 mm; **4.70 mm** once the screw terminal is removed. [Full geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) | **USB-C input at the enclosure wall.** Switched PD output to the Pololu's VIN/GND. Pico connects over 3.3 V I²C via Qwiic/STEMMA QT or the corresponding pins. Use the [vendor PCB files](https://github.com/CentyLab/RotoPD_Pro) or measure the actual board before drawing its carrier footprint. |
 | **Raspberry Pi Pico 2** (non-wireless) | 51 × 21 × 1 mm bare PCB | Two options — see below. |
 | **Pololu D42V55F5** (#5571) | 25.4 × 25.4 × 9 mm | Use [Pololu's drawing](https://www.pololu.com/product/5571) for the 2.54 mm through-hole pattern and the **three M2 mounting holes.** |
 | **Seam output** | USB-C receptacle, part TBD | **5 V power only** to Enclosure A. Recessed contacts, so no exposed-metal hazard when detached. |
@@ -184,7 +184,9 @@ sustained load before closing the design.
 
 ## Open questions
 
-- RotoPD Pro physical envelope and mounting — **blocking**
+- ~~RotoPD Pro physical envelope and mounting~~ — **resolved 2026-11-18**
+  from the vendor repo's KiCad board and STEP assembly. No longer blocking.
+  [Geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo)
 - Seam USB-C receptacle part, and whether the cable is captive
 - ~~**Whether Enclosure B has a front panel at all**~~ — **decided
   2026-11-18: YES.** The OLED and encoder stay. J4 and J5 exist, and this

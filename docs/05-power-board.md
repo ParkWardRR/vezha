@@ -446,13 +446,9 @@ competing interface altogether.
 
 ## Open questions
 
-- RotoPD Pro **outline, mounting-hole coordinates and height** — still
-  blocking. Its **pinout is now resolved** from the vendor artwork — see
-  [11 · U1](06-power-board-schematic.md#u1--rotopd-pro) — along with two findings
-  that were not previously recorded: the switched VBUS output is a **5 mm
-  screw terminal**, not header pins, which constrains both assembly and the
-  enclosure; and there is a **3.3V pin whose direction is undocumented**,
-  handled with a do-not-populate jumper.
+- ~~RotoPD Pro **outline, mounting-hole coordinates and height**~~ —
+  **resolved 2026-11-18** from the vendor repository.
+  [Geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo)
 - **Whether the RotoPD's aux buck survives a contract above 36 V** — it is
   reported to be an LMR51635 fed from VBUS. If so, requesting a 48 V EPR
   contract could cut the Pico's own supply. Until answered, firmware caps

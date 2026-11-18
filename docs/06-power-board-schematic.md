@@ -253,6 +253,56 @@ Also on the board:
 > bench: bring the board up with the link open and measure pin 6. Reads 0 V,
 > populate the jumper. Reads 3.3 V, leave it open forever.
 
+### U1 · RotoPD Pro mechanical — resolved from the vendor repo
+
+**Added 2026-11-18.** This was listed as blocking in [03](03-enclosure-b-lower.md),
+[05](05-power-board.md) and below. It is no longer: the vendor repository ships
+the KiCad board **and** a STEP assembly, so none of it needed the physical part.
+
+Source: [`Hardware/RotoPDPro.kicad_pcb`](https://github.com/CentyLab/RotoPD_Pro)
+and `Documents/RotoPD_Pro.step`. Board-local coordinates below have their
+origin at the outline's minimum corner.
+
+| | |
+|---|---|
+| **Board outline** | **24.40 × 35.80 mm** |
+| Corners | Two rounded, R ≈ 3.2 mm, at the **USB-C end** |
+| **Mounting** | **2 × M2.5, ⌀2.7 mm drill**, **18.00 mm apart**, 3.23 mm from the USB-C edge, ≈3.2 mm in from each side |
+| **Assembly Z span** | **13.00 mm** — from −1.41 mm below the board to +11.60 mm above |
+| Overhang | The STEP is **0.97 mm longer in Y** than the Edge.Cuts outline, so something projects past an edge. Identify it before cutting a wall opening |
+
+Connector positions, board-local, which is what the carrier footprint needs:
+
+| Ref | Part | Position |
+|---|---|---|
+| **J1** | USB-C jack — the PD inlet | (12.24, 7.03) — centred on the board's width |
+| **J4** | 1×8 header, the one [we land on](#u1--rotopd-pro) | (2.10, 8.36) — along one long edge |
+| **J2** | Qwiic / STEMMA QT JST-SH | (3.20, 31.70) |
+| **J3** | Phoenix MK screw terminal | (16.69, 31.90) — opposite edge from the USB-C, as described |
+
+#### The height, and what the terminal decision bought
+
+The tallest items in the STEP, by Z:
+
+| Z above board | What it is |
+|---:|---|
+| **11.60 mm** | The **Phoenix MK screw terminal** body |
+| 11.40 mm ×2 | Its screws |
+| 10.14 mm | The **1×8 header** — a 2.54 × 20.32 mm footprint, i.e. the mating interface itself |
+| 8.00 mm ×2 | More of the terminal block |
+| **4.70 mm** | The tallest *other* on-board component |
+
+> [!NOTE]
+> **This quantifies the 2026-11-18 decision to remove the screw terminal.**
+> It was not merely tall, it was the tallest thing on the module by 1.5 mm,
+> and the whole 11.6 / 11.4 / 8.0 cluster belongs to it. With it gone, the
+> only thing above 4.70 mm is the 1×8 header, which is the interface the
+> module mates through rather than clearance to be found.
+>
+> The earlier working assumption was **12 mm**, chosen deliberately
+> conservative. The real figure for everything except the mating stack is
+> **4.70 mm.**
+
 ### U3 · Pololu D42V55F5 mechanical
 
 Source: [the family dimension drawing](https://www.pololu.com/file/0J2180/d42v55fx-step-down-voltage-regulators-dimensions.pdf)
@@ -857,13 +907,12 @@ drives a laptop's USB rail into an unpowered regulator's output.
 
 Unchanged from 05 and [03](03-enclosure-b-lower.md):
 
-- **RotoPD Pro outline and mounting-hole positions.** Still blocking, and
-  still blocking twice over since its own jack is the PD input. **Narrowed:**
-  the header pinout is now known from the vendor artwork — see
-  [U1 · RotoPD Pro](#u1--rotopd-pro) — and there are two holes at the USB-C
-  end. What remains unknown is the outline, the hole coordinates and diameter,
-  and the tallest component. Those need the `.kicad_pcb` or the physical board,
-  not another email.
+- ~~**RotoPD Pro outline and mounting-hole positions.**~~ — **resolved
+  2026-11-18 from the vendor repository**, which ships both the KiCad board
+  and a STEP assembly. Outline, hole positions and diameter, connector
+  placement and component heights are all in
+  [U1 · RotoPD Pro mechanical](#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo).
+  No physical part was needed.
 - **Whether U1 pin 6 (3.3V) is an input or an output.** Handled by making JP1
   a DNP jumper, so this no longer blocks layout — but it must be measured
   before the board is trusted.
