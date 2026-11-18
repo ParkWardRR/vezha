@@ -107,7 +107,9 @@ the RF test in [06-antennas.md](06-antennas.md) rather than by assumption.
 - Installed stack height on the underside (adapter + card + mated plugs)
 - Which M-key-to-E-key adapter, confirmed to route PCIe
 - Second radio part, form factor height, and antenna connector type
-- Display model and bracket geometry
+- ~~Display model~~ — settled, Waveshare 4.26" e-paper
+  ([10](10-display.md)). **Bracket geometry still open**, and the glass
+  outline needs measuring.
 - Heatsink size and whether active cooling is needed
 - PCB 1 outline and standoff height — the latter is set by the RGB optics,
   see [04-pcb-1-front-control.md](04-pcb-1-front-control.md)

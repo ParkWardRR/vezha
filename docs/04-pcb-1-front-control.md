@@ -204,6 +204,112 @@ module on its own standoffs — none were ever machine-placed parts.
 Both are `expand` library parts, so the quote carries an extended-part feeder
 fee per distinct part. Confirm stock in the quote itself, not from the catalog.
 
+## Electrical design, simulated
+
+Three analog questions on this board were open. All three are now answered by
+ngspice decks in [`sim/`](../sim/), run 2026-11-18. Each deck carries its own
+question, device facts, pass criteria and result in its header.
+
+| Deck | Question | Answer |
+|---|---|---|
+| `04-i2c-pullups.cir` | Combined bus pull-up with ANO + TLC59116 | **Fit 2.2 kΩ on PCB 1.** The bus as drawn does not work. |
+| `05-led-driver-thermal.cir` | TLC59116 dissipation on a 5 V anode | **Cap full-white brightness at 75%** in firmware. |
+| `06-key-debounce.cir` | RC debounce on board or in firmware | **Firmware.** Hardware RC cannot work here. |
+
+### I²C: the bus as drawn does not work
+
+With only the ANO module's ~10 kΩ pull-ups — the only ones currently in the
+design — rise time at a realistic 150 pF is **1271 ns**. That fails even
+100 kHz (limit 1000 ns), and 400 kHz fails at *every* bus capacitance including
+an optimistic 50 pF.
+
+| R_total | t_r @150 pF | 100 kHz | 400 kHz |
+|---|---|---|---|
+| 10 kΩ *(as drawn)* | 1271 ns | ❌ | ❌ |
+| 4.7 kΩ | 597 ns | ✅ | ❌ |
+| **1.8 kΩ** *(2.2 k ∥ ANO 10 k)* | **229 ns** | ✅ | ✅ |
+
+**Fit 2.2 kΩ on PCB 1.** In parallel with the ANO's 10 kΩ that lands at 1.8 kΩ,
+229 ns, sinking 1.6 mA — comfortably inside the 3 mA budget.
+
+> [!WARNING]
+> **Do not go below 2.2 kΩ, and measure the SBC header first.** If the Orange
+> Pi also fits 2.2 kΩ, then 1.8 kΩ on PCB 1 puts the parallel total at 901 Ω —
+> under the 967 Ω floor needed for a valid logic low at 3 mA. Whether the
+> Orange Pi 5 Plus fits header I²C pull-ups at all is unverified.
+
+The ANO's 10 kΩ figure is *typical for Adafruit STEMMA QT breakouts*, not
+confirmed for #6310. Verify it on the board before trusting the parallel value.
+
+### LED driver: red is the hot channel
+
+A constant-current sink burns whatever the LED does not. On the specified 5 V
+anode rail that means **3.0 V across the chip per red channel** against 1.9 V
+for green and blue — so four red channels produce 44% of the total heat despite
+being the dimmest colour. That is not visible from the schematic.
+
+All 12 channels at 20 mA is **0.544 W in a TSSOP-28**:
+
+| Ambient | Tj @ θ 80 °C/W | Verdict |
+|---|---|---|
+| 25 °C | 69 °C | fine |
+| 50 °C | 94 °C | fine |
+| 60 °C | **104 °C** | over the 100 °C target |
+
+Under the 125 °C absolute max, but Enclosure A is a sealed print with an RK3588
+in it and **no measured thermal solution**, so 60 °C internal ambient is the
+honest worst case.
+
+Cheapest fix first:
+
+1. **Cap global brightness at 75% in firmware** → 0.408 W, Tj 93 °C. No BOM
+   change. This is the recommendation.
+2. **100 Ω ballast on the four red channels** → 0.384 W, keeping 1.0 V of output
+   headroom. 120 Ω leaves only 0.6 V and is too tight.
+
+And the honest framing: **white-at-full is not a real state for a status panel.**
+One red indicator lit is 0.060 W at Tj 65 °C. The thermal case exists only for a
+full-white self-test, so bounding that one state is sufficient.
+
+Why not just drop the anodes to 3.3 V: blue and green need 2.9–3.4 V plus the
+driver's own headroom. A 3.3 V rail cannot guarantee full current into a 3.4 V
+blue die. 5 V is right for blue and wasteful for red, and that asymmetry is
+exactly what the ballast option addresses.
+
+### Keys: debounce in firmware, not hardware
+
+**Hardware RC debounce cannot work on these inputs**, and the reason is
+structural rather than a sizing mistake.
+
+On a switch-to-ground input, the series resistor must be much smaller than the
+pull-up or the closed switch cannot pull a valid low — with 1 kΩ against a
+10 kΩ pull-up the low already sits at 0.30 V. But that same small series
+resistor is what discharges the filter capacitor, so the discharge time constant
+is *forced* to be far shorter than the charge one. Sweeping 10 nF to 470 nF
+never masks a 5 ms bounce burst: the minimum only moves from 0.300 V to 0.407 V,
+still far below V_IL. Sizing the series resistor up to 10 kΩ would put the
+closed-switch level at 1.65 V — above V_IL, so the key would never register.
+
+So:
+
+- **Debounce in firmware.** Do not fit debounce capacitors.
+- **Keep a 10 kΩ external pull-up** anyway — not for bounce, but so the input
+  has a defined level before pinmux runs. It also settles in 0.84 ms against
+  7.35 ms for an 80 kΩ internal pull-up.
+- An optional 10–100 nF to ground is defensible for **ESD/EMI only**. It buys
+  nothing for bounce and should not be labelled debounce.
+
+This answers [PCB 2's identical open question](05-pcb-2-power.md#open-questions)
+about the EC11 encoder the same way, for the same reason.
+
+### Running these
+
+```sh
+rsync -az sim/ fucina:~/builds/vezha-sim/sim/
+ssh fucina 'cd ~/builds/vezha-sim && \
+  podman run --rm -v ./sim:/work:z vezha-sim sh /work/run.sh'
+```
+
 ## Mechanical test coupon
 
 Buy the ANO and switches **before** freezing the mechanical stack. Print a small
@@ -265,8 +371,11 @@ the full printed wall.
   [10](10-display.md#what-this-does-to-the-ui).
 - RGB LED part and its matching optic — must be chosen as a pair, and they set
   the standoff height.
-- I²C address strapping for the TLC59116 (must not collide with ANO `0x49`),
-  and combined bus pull-up value with both devices populated.
+- I²C address strapping for the TLC59116 (must not collide with ANO `0x49`).
+- ~~Combined bus pull-up value~~ — **answered: 2.2 kΩ on PCB 1**, see
+  [Electrical design, simulated](#electrical-design-simulated). Still needs the
+  SBC's own pull-ups *measured*, and the ANO's 10 kΩ confirmed.
+- ~~Key debounce in hardware or firmware~~ — **answered: firmware.**
 - Whether Rev A carries the watchdog-reset footprint for the LED driver.
 - NKK MN12LL4G01 full panel cutout and max panel thickness, from the current
   drawing (nominal is Ø6.5 mm).

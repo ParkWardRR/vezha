@@ -1,0 +1,162 @@
+* SIM-04  PCB 1 shared I2C bus: pull-up sizing and rise time
+*
+* QUESTION
+*   docs/04-pcb-1-front-control.md lists as an open question: "combined bus
+*   pull-up value with both devices populated". The ANO module and the
+*   TLC59116 share the Orange Pi's 3.3 V I2C bus. Nobody has picked a value
+*   and nobody has checked whether the bus can even run at 400 kHz.
+*
+* WHAT IS ON THE BUS
+*   - Adafruit #6310 ANO I2C module (Seesaw), addr 0x49, via STEMMA QT cable
+*   - TI TLC59116 LED driver, strapped to some other address
+*   - the Orange Pi 5 Plus 40-pin header, over the keyed harness
+*
+*   UNVERIFIED, so both are swept as parameters rather than assumed:
+*     * Adafruit STEMMA QT breakouts normally carry 10 k pull-ups to 3.3 V.
+*       Treat 10 k as typical-not-confirmed for #6310.
+*     * Whether the Orange Pi 5 Plus fits header I2C pull-ups at all, and at
+*       what value, is not established. RK3588 boards vary; some have 2.2 k,
+*       some rely on nothing.
+*   TLC59116 has no internal pull-ups.
+*
+* BUS CAPACITANCE
+*   Each device pin ~10 pF; STEMMA QT cable and PCB trace ~1 pF/cm; the
+*   harness to the SBC is the biggest unknown. 50 pF is optimistic, 150 pF is
+*   realistic for this topology, 400 pF is the I2C spec ceiling. Swept.
+*
+* PASS CRITERIA (NXP UM10204, rise measured 0.3 Vdd -> 0.7 Vdd)
+*   Standard mode  100 kHz : t_r <= 1000 ns
+*   Fast mode      400 kHz : t_r <=  300 ns
+*   Also: total pull-up must not exceed the 3 mA sink budget at V_OL 0.4 V,
+*   i.e. R_total >= (3.3 - 0.4) / 3 mA = 967 ohm. Below that the weakest
+*   device on the bus may not pull a valid low.
+*
+* NOTE
+*   An open-drain bus only drives low; the rising edge is RC. So the rise
+*   time is set entirely by R_total * C_bus, which is what this sweeps.
+*
+* RESULT (run 2026-11-18 on fucina)
+*   The bus AS DRAWN DOES NOT WORK. With only the ANO's ~10 k pull-ups,
+*   t_r at a realistic 150 pF is 1271 ns, which fails even 100 kHz, and
+*   400 kHz fails at every capacitance including 50 pF.
+*   ACTION: fit 2.2 k pull-ups on PCB 1. In parallel with the ANO's 10 k
+*   that gives 1.8 k -> 229 ns at 150 pF, passes 400 kHz, sinks 1.6 mA.
+*   DO NOT go below 2.2 k: if the Orange Pi also turns out to fit 2.2 k,
+*   1.8 k on PCB 1 would put the parallel total at 901 ohm, under the
+*   967 ohm sink floor (SIM-04d). Measure the SBC header first.
+
+.title SIM-04 PCB1 I2C pull-up sizing
+
+.param RPU = 10k
+.param CB  = 100p
+
+Vdd   vdd  0  DC 3.3
+Rpu   vdd  sda  {RPU}
+Cb    sda  0    {CB}
+
+* Open-drain driver: closed = device pulling the line low, then released.
+Vctl  ctl  0  PULSE(3 0 1u 10n 10n 20u 40u)
+Sdrv  sda  0  ctl 0 swmod
+.model swmod sw vt=1.5 ron=20 roff=1e12
+
+.control
+echo "@@=============================================================="
+echo "@@ SIM-04  PCB 1 shared I2C bus - pull-up sizing"
+echo "@@ Rise measured 0.3*Vdd (0.990 V) -> 0.7*Vdd (2.310 V)"
+echo "@@ Limits: 1000 ns @100 kHz, 300 ns @400 kHz, R_total >= 967 ohm"
+echo "@@=============================================================="
+
+echo "@@"
+echo "@@--- SIM-04a  rise time vs total pull-up and bus capacitance ---"
+echo "@@"
+echo "@@   R_total    C=50pF     C=100pF    C=150pF    C=250pF    C=400pF"
+foreach rpu 10k 4.7k 3.3k 2.2k 1.8k 1.5k 1.0k
+  alterparam RPU = $rpu
+  set tl = ""
+  foreach cb 50p 100p 150p 250p 400p
+    alterparam CB = $cb
+    reset
+    tran 5n 40u
+    meas tran tr TRIG v(sda) VAL=0.990 RISE=1 TARG v(sda) VAL=2.310 RISE=1 > /dev/null
+    let trns = tr * 1e9
+    set tl = "$tl  $&trns"
+  end
+  echo "@@   $rpu  $tl"
+end
+
+echo "@@"
+echo "@@--- SIM-04b  verdict per candidate value, at C=150 pF (realistic) ---"
+echo "@@"
+echo "@@   R_total   t_r(ns)   sink_mA   100kHz   400kHz   >=967ohm"
+alterparam CB = 150p
+foreach rpu 10k 4.7k 3.3k 2.2k 1.8k 1.5k 1.0k 820
+  alterparam RPU = $rpu
+  reset
+  tran 5n 40u
+  meas tran tr TRIG v(sda) VAL=0.990 RISE=1 TARG v(sda) VAL=2.310 RISE=1 > /dev/null
+  let trns  = tr * 1e9
+  let isink = (3.3 - 0.4) / $rpu * 1000
+  * build the three verdicts
+  if ($&trns <= 1000)
+    set v100 = "PASS"
+  else
+    set v100 = "FAIL"
+  end
+  if ($&trns <= 300)
+    set v400 = "PASS"
+  else
+    set v400 = "FAIL"
+  end
+  if ($rpu >= 967)
+    set vsink = "ok"
+  else
+    set vsink = "TOO LOW"
+  end
+  echo "@@   $rpu    $&trns   $&isink   $v100   $v400   $vsink"
+end
+
+echo "@@"
+echo "@@--- SIM-04c  what the as-drawn bus does (ANO 10k only, nothing else) ---"
+echo "@@"
+echo "@@   C_bus     t_r(ns)   100kHz   400kHz"
+alterparam RPU = 10k
+foreach cb 50p 100p 150p 250p 400p
+  alterparam CB = $cb
+  reset
+  tran 5n 40u
+  meas tran tr TRIG v(sda) VAL=0.990 RISE=1 TARG v(sda) VAL=2.310 RISE=1 > /dev/null
+  let trns = tr * 1e9
+  if ($&trns <= 1000)
+    set v100 = "PASS"
+  else
+    set v100 = "FAIL"
+  end
+  if ($&trns <= 300)
+    set v400 = "PASS"
+  else
+    set v400 = "FAIL"
+  end
+  echo "@@   $cb     $&trns   $v100   $v400"
+end
+
+echo "@@"
+echo "@@--- SIM-04d  stacking risk: ANO 10k || PCB1 Rx || OrangePi 2.2k ---"
+echo "@@ If the SBC turns out to fit 2.2k AND PCB 1 adds its own, the"
+echo "@@ parallel total can drop under the 967 ohm sink floor."
+echo "@@"
+echo "@@   PCB1_R    R_total(ohm)   sink_mA   verdict"
+foreach r1 10k 4.7k 3.3k 2.2k 1.8k
+  * 1/Rtot = 1/10k + 1/r1 + 1/2.2k
+  let rtot = 1 / (1/10000 + 1/$r1 + 1/2200)
+  let isink = (3.3 - 0.4) / rtot * 1000
+  if ($&rtot >= 967)
+    echo "@@   $r1     $&rtot   $&isink   ok"
+  else
+    echo "@@   $r1     $&rtot   $&isink   BELOW 967 ohm FLOOR"
+  end
+end
+
+quit
+.endc
+
+.end
