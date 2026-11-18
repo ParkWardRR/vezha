@@ -1,0 +1,103 @@
+# CAD — programmatic enclosures and board interchange
+
+Code-defined geometry for [Enclosure A](../docs/02-enclosure-a-upper.md) and
+[Enclosure B](../docs/03-enclosure-b-lower.md), plus the STEP path that joins
+the power board to the box it has to fit inside.
+
+> [!WARNING]
+> **These are skeletons, not designs.** They build, export and pass a mesh
+> check, but `python cad/params.py` reports **31 of 50 dimensions unverified**.
+> Nothing here is ready to print or order.
+
+## Why code-CAD for this project specifically
+
+Every enclosure document opens with a warning that its numbers are published
+part figures, not installed measurements — the underside M.2 stack, the RotoPD
+Pro outline, the mated USB-C plug and its bend radius. A GUI model hides that;
+a parameter file makes it the first thing you see, and a git diff shows exactly
+what moved when a real measurement lands.
+
+`params.py` exists to make that mechanical:
+
+- Every dimension carries its **source** (which doc line it came from) and a
+  **verified** flag.
+- Arithmetic propagates the flag. A derived envelope is verified only if every
+  input is — so `A outer` reports `TBD` until the adapter stack is measured.
+- `build.py --strict` exits non-zero while any dimension is a guess. That is
+  the CI gate for "these numbers are now real".
+
+## Why build123d and not OpenSCAD
+
+build123d sits on OpenCASCADE, so it **imports STEP**. OpenSCAD cannot. That
+single fact decides it:
+
+```
+kicad-cli pcb export step --subst-models -o cad/build/power-board.step power-board.kicad_pcb
+   → enclosure_b.py imports the real solid, not a retyped rectangle
+   → boolean against the tray interior = a clash check, not an argument
+```
+
+The board outline is never typed in twice. OpenSCAD is installed for throwaway
+sketches only.
+
+## Layout
+
+| File | Role |
+|---|---|
+| `params.py` | Every dimension, its source, and whether anyone has measured it. Run it standalone for the provenance table. |
+| `lib.py` | Tray/lid/standoff helpers and the STEP+STL+PNG export pipeline. |
+| `enclosure_a.py` | Upper router box. Models the underside stack, SBC headroom and antenna strips as explicit keep-out solids. |
+| `enclosure_b.py` | Lower power box. Imports `build/power-board.step` when KiCad has written it, else a flagged placeholder. |
+| `build.py` | Builds both, renders, runs `admesh`, prints what is still a guess. |
+
+## Running
+
+```sh
+cad/.venv/bin/python cad/params.py        # provenance table only
+cad/.venv/bin/python cad/build.py         # STEP + STL + PNG into cad/build/
+cad/.venv/bin/python cad/build.py --strict  # fails today, by design
+```
+
+`cad/build/` and `cad/.venv/` are gitignored. Geometry is regenerated, not
+committed.
+
+## Toolchain
+
+Installed and verified on this machine:
+
+| Tool | Version | Role |
+|---|---|---|
+| build123d | 0.13.0 | parametric solids, STEP in/out (venv: `cad/.venv`) |
+| KiCad / `kicad-cli` | 10.0.6 | schematic, layout, **STEP export** |
+| FreeCAD | 1.1.4 | GUI inspection of STEP, `freecadcmd` headless |
+| f3d | 4.0.1 | headless PNG renders |
+| admesh | 0.98.5 | manifold / edge checks on exported STL |
+| OrcaSlicer | 2.5.1 | printability, wall thickness, overhangs |
+| OpenSCAD | snapshot | sketches only — no STEP, dead end for the fit loop |
+| atopile | 0.12.6 | code-defined schematic (venv) — not yet adopted |
+| SKiDL | 3.0.0 | Python → KiCad netlist (venv) — not yet adopted |
+
+### Two things that will bite
+
+**`pcbnew` is not importable from the venv.** It ships only inside KiCad's
+bundled Python **3.9** at
+`/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3`,
+which cannot share an environment with build123d on 3.13. Use `kicad-cli` for
+anything scriptable; treat `pcbnew` work as a separate, older interpreter.
+
+**kibot does not run on macOS here.** It is installed in the venv but imports
+`wx` and `pcbnew`, neither of which is present — `kibot --version` raises
+`ModuleNotFoundError: No module named 'wx'`. It is designed to run in its own
+container. Per the project build rule that belongs on **fucina** in podman,
+alongside the existing ngspice container in [`sim/`](../sim/run.sh) — not on
+this Mac.
+
+## Next
+
+1. Measure the three dimensions nobody should guess, and flip them to
+   `verified=True` in `params.py`.
+2. Draw the power board in KiCad; export STEP; delete the placeholder block in
+   `enclosure_b.py`.
+3. Decide how Enclosure A opens for service — the geometry here assumes a
+   tray + lid, which is the open question in
+   [02](../docs/02-enclosure-a-upper.md#open-questions), not a decision.

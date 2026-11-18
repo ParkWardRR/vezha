@@ -1,2 +1,6 @@
 .nimbalyst/
 .svgpreview/
+cad/.venv/
+cad/build/
+__pycache__/
+*.pyc
