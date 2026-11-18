@@ -189,6 +189,8 @@ not values to look up:
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Background](docs/09-background.md) | Context | Original handoff. Partly superseded — kept for the *why* |
 | **10** | [Display](docs/10-display.md) | Mechanical + software | 4.26" e-paper: dimensions, SPI wiring, refresh discipline, what it does to the UI |
+| **11** | [PCB 2 — schematic](docs/11-pcb-2-schematic.md) | PCB | Net-by-net power board, every passive calculated or simulated, Pico 2 pin map |
+| **12** | [PCB 1 — schematic](docs/12-pcb-1-schematic.md) | PCB | Net-by-net front panel, reference designators, host interface, simulation results |
 
 ## Decision status
 

@@ -3,6 +3,10 @@
 The front panel of [Enclosure A](02-enclosure-a-upper.md). Read
 [01-architecture.md](01-architecture.md) first.
 
+**The net-by-net schematic is [12-pcb-1-schematic.md](12-pcb-1-schematic.md).**
+This document covers requirements, part choices and the reasoning; 12 covers the
+electrical design that follows from them.
+
 
 Status: **design settled enough to buy test parts; mechanics not frozen.**
 Buy the switches and wheel *before* committing the mechanical stack. Panel
