@@ -33,9 +33,9 @@ control wiring, a front-panel console, and the mechanical anchor.
 
 - **Keep the USB port accessible for programming.** Bring it to a wall opening
   or it is access in name only.
-- **Reserve an unpopulated 3-pin footprint (TX, RX, GND).** Telemetry across
-  the seam is **dropped** — the seam is USB-C power only. The footprint keeps
-  it a cable job rather than a respin if it is wanted later.
+- **Populate a 3-pin TX/RX/GND header** — see
+  [Telemetry header](#telemetry-header) below. Telemetry across the seam is
+  **dropped**, but the header costs cents and makes it a jumper job later.
 - **The Pico and display boot before the Orange Pi.** This is a sequencing
   requirement, not a preference.
 - Powered from the **RotoPD auxiliary 5 V into VSYS** — see
@@ -56,6 +56,107 @@ control wiring, a front-panel console, and the mechanical anchor.
 >
 > **PG is an input to the Pico** — it is how firmware confirms the rail
 > actually came up, rather than assuming it did after asserting EN.
+
+### Telemetry header
+
+The seam carries no signal, so this header is **not wired in Rev A.** Populate
+it anyway — a 3-pin header is cents, and the alternative later is soldering to
+bare pads inside a closed enclosure.
+
+**On the Orange Pi side there is probably nothing to install.** The 5 Plus
+ships with its 40-pin GPIO header populated, and Orange Pi boards usually carry
+a separate 3-pin debug UART header as well. Verify both before buying anything.
+
+> [!CAUTION]
+> **Do not use the debug/console UART for telemetry.** It carries boot logs and
+> a login prompt — telemetry would be interleaved with console output, and you
+> would lose the console you actually want when something goes wrong. Pick a
+> second UART off the 40-pin header and disable the console on it in the device
+> tree.
+
+**Three cheap things that prevent the usual mistakes:**
+
+| Problem | Fix | Cost |
+|---|---|---|
+| Header plugged in **backwards** — TX driven into GND | **4-position header with one position blanked** as a key, or a shrouded JST-PH 3-pin instead of bare pins | ~free |
+| TX wired to TX | Silkscreen the pin by **its own** function *and* its destination: `TX→RX`, `RX→TX` | free |
+| Fault current if either of the above happens anyway | **100–330 Ω series resistors** on TX and RX | ~2 ¢ |
+
+Both sides are 3.3 V, so **no level shifting.** Keep 5 V off this header
+entirely — TX/RX/GND only means the worst wiring error is survivable.
+
+Ground is already shared through the USB-C power cable, so this GND is a signal
+reference, not a return path. Do not rely on it to carry current.
+
+## Cheap insurance worth adding now
+
+Each of these is small money at design time and expensive or impossible once
+the boards are made and the boxes are closed. Ranked by value.
+
+### 1 · INA226 current and voltage monitor — the standout
+
+**~$1–2.** Put it high-side in the 5 V output path, between the Pololu's VOUT
+and the USB-C seam receptacle, so it measures exactly what the Orange Pi
+receives.
+
+This directly answers **the project's biggest open question** — whether the Pi
+stays under USB-C's 3 A limit at 5 V, see
+[01 · The 3 A problem](01-architecture.md#the-3-a-problem). Instead of a
+one-off bench measurement with a meter in the lid, the board measures it
+continuously, with the case closed, under real load, and shows it on the OLED.
+
+| Shunt | Drop at 4 A | % of INA226 range | Resolution | Loss at 4 A |
+|---|---|---|---|---|
+| 1 mΩ | 4.0 mV | 4.9 % | 2.50 mA | 16 mW |
+| **2 mΩ** | **8.0 mV** | **9.8 %** | **1.25 mA** | **32 mW** |
+| 5 mΩ | 20.0 mV | 24.4 % | 0.50 mA | 80 mW |
+
+**Use 2 mΩ.** Negligible loss, 1.25 mA resolution, and nearly 10× headroom for
+inrush peaks that would clip a larger shunt.
+
+It also gives the Pico a basis for **overcurrent shutdown**, and a peak-hold
+figure worth logging.
+
+### 2 · NTC thermistor on the Pololu — ~10 ¢
+
+The other large unknown is **thermal derating in a sealed box** — the 6 A
+figure is a typical maximum and the enclosure is not vented. Mount an NTC
+against the regulator's thermal pad and run it to a Pico ADC.
+
+This measures the derating **with the lid closed**, which is the condition you
+cannot easily probe any other way, and lets the Pico fold back or shut down on
+overtemperature rather than finding the limit by failing.
+
+### 3 · Test points on every rail — free
+
+Named, probe-able pads on **PD VBUS, Pololu VOUT, 3.3 V**, and several **GND**.
+
+Add a pair **right at the USB-C seam output.** The measurement plan calls for
+voltage *at the Orange Pi* under load; without pads that means probing
+connector pins or cutting a cable.
+
+### 4 · Pico SWD header — ~10 ¢
+
+Three pins: SWCLK, SWDIO, GND. The USB bootloader is fine until firmware
+crashes before it enumerates — then SWD is the only way in, and the board is
+inside a closed box.
+
+### 5 · Smaller items
+
+- **0 Ω jumpers** on buck EN and each I²C bus, so sections can be isolated for
+  bench bring-up
+- **Reset pad or button** on the Pico's RUN pin — BOOTSEL is unreachable once
+  enclosed
+- **Spare Pico GPIO** broken out to a header — free optionality
+- **Fiducials and mounting holes** — assembly basics
+
+### What these add up to
+
+With the INA226 and the NTC fitted, the Pico can enforce the limits it is
+already gating: refuse to enable on an inadequate PD contract *(already
+specified)*, shut down on overcurrent, and fold back on overtemperature. The
+OLED gets something genuinely worth showing, and the two measurements the
+project most needs stop depending on someone remembering to take them.
 
 ### Adafruit 5297 OLED
 
@@ -208,11 +309,14 @@ power applied
 
 | Bus | Devices | Rationale |
 |---|---|---|
-| **Bus 1** | RotoPD Pro | Power control. Must not be blocked by UI traffic. |
-| **Bus 2** | Adafruit 5297 OLED | Console. A wedged display must not stall PD control. |
+| **Bus 1** | RotoPD Pro, **INA226** | Rail-critical: anything needed to control power safely. |
+| **Bus 2** | Adafruit 5297 OLED | Reporting only. A wedged display must not stall PD control. |
 
 Check pull-ups on each bus once populated — the RotoPD and the STEMMA QT
 cable may both carry their own.
+
+**Verify the INA226's address does not collide with the RotoPD Pro's.** The
+INA226 defaults to `0x40` and is strappable across `0x40`–`0x4F`.
 
 ## Headroom summary
 
@@ -258,6 +362,9 @@ state, so it cannot substitute for a router UI. The split is clean:
 - RotoPD Pro mounting pattern, outline, height — still blocking
 - Dedicated accessory regulator part
 - Seam USB-C receptacle part, and whether the Pi stays under 3 A
+- INA226 address vs. the RotoPD Pro's
+- NTC part and how it mounts against the regulator's thermal pad
+- Whether Rev A populates the telemetry header's series resistors
 - Encoder debounce: RC on board vs. firmware
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets
