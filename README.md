@@ -12,21 +12,27 @@ there isn't one yet.
 <br>
 
 [![Scope](https://img.shields.io/badge/scope-2%20enclosures%20%2B%202%20PCBs-0F766E?style=flat-square)](#scope-of-work)
-[![Stage](https://img.shields.io/badge/stage-Rev%20A%20design-orange?style=flat-square)](#what-is-decided-vs-open)
-[![Mechanical](https://img.shields.io/badge/mechanical-not%20started-red?style=flat-square)](#scope-of-work)
-[![PCB 1](https://img.shields.io/badge/PCB%201-spec%20ready-success?style=flat-square)](docs/controls.md)
-[![PCB 2](https://img.shields.io/badge/PCB%202-blocked%20on%20measurement-red?style=flat-square)](docs/power.md)
-[![Prototype](https://img.shields.io/badge/prototype-coupons%20first-yellow?style=flat-square)](#ground-rules)
+[![Stage](https://img.shields.io/badge/stage-Rev%20A%20design-orange?style=flat-square)](#decision-status)
+[![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
+[![Enclosure A](https://img.shields.io/badge/enclosure%20A-ready%20to%20design-success?style=flat-square)](docs/02-enclosure-a-upper.md)
+[![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%203%20dims-red?style=flat-square)](docs/03-enclosure-b-lower.md)
+[![PCB 1](https://img.shields.io/badge/PCB%201-spec%20ready-success?style=flat-square)](docs/04-pcb-1-front-control.md)
+[![PCB 2](https://img.shields.io/badge/PCB%202-spec%20ready-success?style=flat-square)](docs/05-pcb-2-power.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
-[![Host](https://img.shields.io/badge/host-Orange%20Pi%205%20Plus-F47B20?style=flat-square)](#what-the-device-does)
-[![SoC](https://img.shields.io/badge/SoC-Rockchip%20RK3588-0E7C7B?style=flat-square)](#what-the-device-does)
-[![Radios](https://img.shields.io/badge/radios-2%C3%97%20M.2%20PCIe-0071C5?style=flat-square)](#constraints-that-drive-the-design)
-[![Antennas](https://img.shields.io/badge/antennas-4%C3%97%20internal%20flex-blueviolet?style=flat-square)](docs/antennas.md)
-[![Power](https://img.shields.io/badge/power-USB--C%20PD%20%E2%86%92%205%20V-333333?style=flat-square)](docs/handoff.md#power-and-portability)
-[![Controls](https://img.shields.io/badge/controls-toggle%20%2B%203%20keys%20%2B%20wheel-795548?style=flat-square)](docs/controls.md)
-[![Indicators](https://img.shields.io/badge/indicators-4%C3%97%20RGB%20I%C2%B2C-FF6F00?style=flat-square)](docs/controls.md#rgb-indicators)
-[![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/controls.md#before-sending-the-board-to-jlcpcb)
+[![Host](https://img.shields.io/badge/host-Orange%20Pi%205%20Plus-F47B20?style=flat-square)](docs/02-enclosure-a-upper.md)
+[![SoC](https://img.shields.io/badge/SoC-Rockchip%20RK3588-0E7C7B?style=flat-square)](docs/02-enclosure-a-upper.md)
+[![Uplink](https://img.shields.io/badge/uplink-AX210%20·%20top%20E--key-0071C5?style=flat-square&logo=intel&logoColor=white)](docs/01-architecture.md#radio-topology)
+[![AP](https://img.shields.io/badge/AP-MT7922%20·%20M%E2%86%92E%20adapter-EC1C24?style=flat-square)](docs/01-architecture.md#radio-topology)
+[![Bands](https://img.shields.io/badge/5%20GHz-simultaneous%20up%20%2B%20down-success?style=flat-square)](#the-hard-requirement)
+[![Antennas](https://img.shields.io/badge/antennas-4%C3%97%20internal%20flex-blueviolet?style=flat-square)](docs/06-antennas.md)
+
+[![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-pcb-2-power.md)
+[![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-pcb-2-power.md)
+[![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-pcb-2-power.md)
+[![Controls](https://img.shields.io/badge/controls-toggle%20%2B%203%20keys%20%2B%20wheel-795548?style=flat-square)](docs/04-pcb-1-front-control.md)
+[![Indicators](https://img.shields.io/badge/indicators-4%C3%97%20RGB%20I%C2%B2C-FF6F00?style=flat-square)](docs/04-pcb-1-front-control.md#rgb-indicators)
+[![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/07-bom.md)
 
 [![Last commit](https://img.shields.io/github/last-commit/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
 [![Issues](https://img.shields.io/github/issues/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/issues)
@@ -37,137 +43,127 @@ there isn't one yet.
 ---
 
 > [!IMPORTANT]
-> **Read this first.** Every part number, price, and dimension in this repo is
-> a *candidate*, not a verified selection. Nothing has been bought, printed,
-> or bench-tested. Panel cutouts must come from current manufacturer drawings,
-> never from the nominal figures quoted here. Where a document says a value is
-> unverified, it means exactly that — do not design against it.
+> **Read this first.** Every part number, price, and dimension here is a
+> *candidate* unless marked otherwise. Nothing has been bought, printed, or
+> bench-tested. Panel cutouts come from current manufacturer drawings, never
+> from the nominal figures quoted here. Where a document says a value is
+> unverified, it means exactly that — **do not design against it.**
+
+## Start here
+
+**→ [docs/01-architecture.md](docs/01-architecture.md)** — the system split,
+radio topology, and power path. Everything else assumes it.
 
 ## Scope of work
 
-Two enclosures and two PCBs, designed to go together.
+A **two-piece** handheld router: two enclosures, two PCBs, designed together.
 
-### Enclosures
-
-| | Enclosure | Contents | Notes |
+| | Deliverable | Contents | Status |
 |---|---|---|---|
-| **A** | **Upper router box** | Orange Pi 5 Plus, two M.2 Wi-Fi cards, four internal antennas, storage, display, front faceplate with all controls and indicators | Carries everything electronic except power. The **faceplate is removable** and is its own part. |
-| **B** | **Lower power box** | Battery / USB-C PD input, power conversion to regulated 5 V | **Detachable from A.** No controls, no indicators, no radios mount here. |
+| **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, M→E adapter, four antennas, storage, display, removable faceplate | Ready to design |
+| **B** | **Lower power box** | PCB 2 only — detachable | Blocked on 3 measurements |
+| **1** | **Front control board** | 3 key switches, 4 RGB indicators + TLC59116 driver, toggle landing, ANO header, harness to the Pi | Spec ready |
+| **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
 
-The two boxes stack into one handheld unit. **Nothing from the upper box may
-depend on the lower box being attached** beyond power.
+**The governing rule:** both radios and all antennas stay in Enclosure A, so
+**the power box detaches without disturbing any PCIe or antenna connection.**
+Only 5 V and ground cross the seam.
 
-### PCBs
+## The hard requirement
 
-| | Board | Function | Lives in |
-|---|---|---|---|
-| **1** | **Front control board** | APEM 6C switches (3 populated of 5), four RGB indicators, TI TLC59116 I²C LED driver, landing pads for the NKK toggle leads, STEMMA QT header to the ANO wheel, one keyed harness connector to the Orange Pi | Enclosure **A**, on standoffs behind the faceplate |
-| **2** | **Power board** | USB-C PD sink and negotiation, conversion to regulated 5 V, box-to-box power interconnect | Enclosure **B** |
+**Two independent Wi-Fi radios, both on 5 GHz, at the same time** — a 5 GHz
+upstream client *and* a 5 GHz downstream private AP, concurrently.
 
-> [!NOTE]
-> Board 1 is specified in detail in [controls.md](docs/controls.md) and is
-> ready to design against. Board 2 is scoped in [power.md](docs/power.md) but
-> **blocked** — its design cannot start until the system's actual current draw
-> is measured. Enclosure B's dimensions are an output of that work, not an
-> input.
+A 2.4 + 5 GHz split does not meet it. A shared-radio repeater does not meet
+it. This single requirement is why there are two M.2 cards on opposite faces
+of the board, four antennas, and a thermal case nobody has measured.
 
-## What the device does
+## Radio topology
 
-Enough context to make the mechanical decisions make sense.
+The thing most likely to be got wrong:
 
-Vezha is a battery-powered travel router. One Wi-Fi card joins the hotel or
-public network as a client; the second broadcasts a private network for the
-owner's own devices. **Both must operate on 5 GHz simultaneously** — that
-single requirement is why there are two M.2 cards, four antennas, and a
-thermal problem worth taking seriously.
+| Radio | Role | Socket |
+|---|---|---|
+| **Intel AX210** | Hotel uplink | Orange Pi **top-side M.2 E-key**, directly |
+| **MT7922 / RZ616** | Private AP | **Underside M-key** → **M→E adapter** → adapter's E-key |
 
-```mermaid
-flowchart TB
-    subgraph A["ENCLOSURE A — upper router box"]
-        direction TB
-        FACE["<b>Faceplate</b> (removable part)<br/>toggle · 3 keys · ANO wheel · 4 RGB windows · display"]:::face
-        PCB1["<b>PCB 1</b> — front control board<br/>switches · RGB · TLC59116 · ANO header"]:::pcb
-        PI["<b>Orange Pi 5 Plus</b><br/>2 × M.2 Wi-Fi · storage"]:::core
-        ANT["<b>4 × flex antennas</b><br/>top · left wall · right wall · bottom"]:::ant
-        FACE --- PCB1
-        PCB1 -->|keyed harness| PI
-        PI --- ANT
-    end
-    subgraph B["ENCLOSURE B — lower power box (detachable)"]
-        PCB2["<b>PCB 2</b> — power board<br/>USB-C PD sink → regulated 5 V"]:::pcb
-        BATT["battery"]:::core
-        BATT --- PCB2
-    end
-    PCB2 ==>|"5 V, box-to-box<br/>power only"| PI
+One radio sits **above** the Orange Pi; the other hangs **below** it on an
+adapter. The board cannot mount flat against a floor or a lid, and the
+published 100 × 75 mm figure excludes heatsink, adapter, and cable bends.
 
-    classDef face fill:#ede9fe,stroke:#7c3aed,color:#0f172a
-    classDef pcb fill:#dcfce7,stroke:#16a34a,color:#0f172a
-    classDef core fill:#dbeafe,stroke:#2563eb,color:#0f172a
-    classDef ant fill:#ffedd5,stroke:#ea580c,color:#0f172a
+## Power path
+
+```
+external USB-C charger
+  → RotoPD Pro        PD negotiation, switched output
+  → Pololu D42V55F5   regulated 5 V
+  → seam connector    keyed, latching, 5 V + GND only
+  → Orange Pi         dedicated USB-C power input
 ```
 
-## Constraints that drive the design
+The **Pico 2 sits beside that path, not in it** — it controls the RotoPD Pro
+over I²C and gates the router rail. It is powered from the RotoPD's auxiliary
+5 V into VSYS, **never** from the Pololu rail it may be needed to bring up.
 
-These are the requirements most likely to be violated by a reasonable-looking
-design, so they are called out rather than left in the detail docs.
+## The three dimensions nobody should guess
 
-| # | Constraint | Consequence for the build |
-|---|---|---|
-| 1 | **Two M.2 PCIe Wi-Fi cards must fit and enumerate together** | Slot/adapter topology and physical clearance are unresolved. This is the first thing to confirm, before any shell geometry. |
-| 2 | **Four internal antennas, two per radio, kept apart** | Antennas go inside the *narrow walls* — top edge, left wall, right wall, bottom edge. Broad screen and back faces stay clear. Do not bunch all four under one cap to simplify routing. |
-| 3 | **Antenna leads are 100 mm** | Mock up cable routes **before** fixing board and antenna positions. The leads may not reach every corner. |
-| 4 | **No metal or carbon-filled filament in antenna zones** | Keep antennas away from display, battery, and heatsink. Target ~20 mm from the main ground plane where practical. |
-| 5 | **Display mounts on its own bracket** | Pressing a button must not flex the display mount or load its ribbon. |
-| 6 | **Display opening separate from control openings** | A display change must not force a new button PCB. |
-| 7 | **Toggle clamps to the faceplate, not the PCB** | Its solder lugs run as leads to PCB 1. For a printed prototype, use a thin mounting land or metal insert — do not assume its nut clears the full printed wall. |
-| 8 | **Indicator light must not leak** | RGB light goes through a flush diffuser above each label, with opaque walls between indicators. Keycaps stay opaque. No glow around the cap. |
-| 9 | **Low power, no dedicated cooling preferred** | Hardware selection favours parts that do not need active cooling — but two 6E radios under simultaneous load is an untested thermal case. |
+These decide **whether the two boxes actually close.** Measurements to take,
+not values to look up:
 
-## Document map
+1. **CentyLab RotoPD Pro** mounting pattern, outline, and height
+2. **Underside adapter stack height** — adapter + card + mated antenna plugs
+3. **Mated power connector clearance** — connector *and* cable bend
 
-| Document | For whom | Contents |
-|---|---|---|
-| **[controls.md](docs/controls.md)** | **PCB + mechanical** | The most complete spec here. Faceplate concept, control BOM with exact part numbers, switch/cap/toggle mounting, RGB indicator design and driver, JLCPCB assembly caveats, test coupons. |
-| **[antennas.md](docs/antennas.md)** | **Mechanical** | Antenna candidates with published gain, the four-position internal layout with a sketch, wall/clearance rules, and the RF bench test that must pass before the enclosure is frozen. |
-| **[power.md](docs/power.md)** | **PCB 2 + mechanical** | What the power board must do, what it has to power, why its design is blocked on measurement, and the box-to-box interconnect requirements. |
-| **[handoff.md](docs/handoff.md)** | Background | Project-wide state: hardware status, power budget, software plans, open questions. Start here for *why*, not *what to build*. |
-| **[parts-sourcing.md](docs/parts-sourcing.md)** | Procurement | How to query JLCPCB/LCSC for availability and price, and parts checked so far. |
+## Documents
 
-## What is decided vs open
+| | Document | For | Contents |
+|---|---|---|---|
+| **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, decision status. **Read first.** |
+| **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the double-sided board problem, antenna zones, faceplate, seam, thermal |
+| **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, USB-C input |
+| **04** | [PCB 1 — front control](docs/04-pcb-1-front-control.md) | PCB + mechanical | Switches, caps, toggle, ANO wheel, RGB indicators and driver, assembly caveats, test coupons |
+| **05** | [PCB 2 — power](docs/05-pcb-2-power.md) | PCB | Carrier wiring, the three rules that must survive layout, headroom, measurement plan |
+| **06** | [Antennas](docs/06-antennas.md) | RF + mechanical | Four placements with orientation, candidates and gain, tri-band clarification, RF bench test |
+| **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, price, and what is unresolved |
+| **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
+| **09** | [Background](docs/09-background.md) | Context | Original handoff. Partly superseded — kept for the *why* |
 
-**Decided enough to design around**
+## Decision status
 
-- Two enclosures (upper router box + detachable power box), two PCBs
-- Removable faceplate as a separate part
-- Control set: locking `AIRPLANE` toggle, three action keys (`LINK`, `MAC`,
-  `★`), ANO navigation wheel
-- One RGB indicator per control, lit through the faceplate, not the keycap
-- Four internal flex antennas, two per radio, in the narrow walls
+**Settled — design against these**
 
-**Open — do not design against these yet**
+- Two enclosures, two PCBs, power-only seam
+- Both radios and all antennas in Enclosure A
+- AX210 top-side E-key; second radio on an underside M→E adapter
+- RotoPD Pro → Pololu → detachable connector → Orange Pi
+- Pico 2 controller, powered from RotoPD auxiliary via VSYS
+- Four internal flex antennas, two per radio, inside the narrow walls
+- Controls: locking `AIRPLANE` toggle, three keys, ANO wheel, one RGB
+  indicator per control lit through the faceplate
 
-- M.2 slot topology and whether both cards physically fit
-- Final antenna SKU and geometry
-- USB-C PD profile, converter, battery, and therefore the size of Enclosure B
-- Display model, and whether it gains real menus (which would change the
-  control layout)
-- Thermal solution
-- JLCPCB assembly sourcing for the 6C switches, the TLC59116, and the RGB LEDs
+**Open — do not design against these**
+
+- Second radio part and height; antenna connector type unconfirmed
+- Which M→E adapter (must route PCIe)
+- RotoPD Pro physical envelope — **blocks Enclosure B**
+- Seam connector, display model, thermal solution, final antenna SKU
+- Power source: external bank vs. internal cell
+- JLCPCB assembly sourcing for the 6C switches, TLC59116, and RGB LEDs
 
 ## Ground rules
 
 1. **Coupons before parts.** Print a faceplate coupon with the wheel opening,
-   two cap openings (one flush, one recessed), and one light pipe. Check the
-   optics in a dark room *and* in daylight before ordering the real faceplate.
-2. **Drawings, not nominals.** Every panel cutout comes from the current
-   manufacturer drawing. The NKK toggle's Ø6.5 mm and the 6C's 8 × 8 × 2.5 mm
-   body are **not** cutout dimensions.
-3. **Choose optics and LED together.** They set the standoff height, so they
-   cannot be picked after the stack is frozen.
-4. **Confirm sourcing in the assembly quote**, not from a datasheet link.
-5. **Freeze the enclosure last.** The RF bench test in
-   [antennas.md](docs/antennas.md) can still move antenna positions, and
-   antenna positions move walls.
+   two cap openings (flush and recessed), and one light pipe. Check optics in
+   a dark room *and* daylight before ordering the real faceplate.
+2. **Drawings, not nominals.** The NKK toggle's Ø6.5 mm and the 6C's
+   8 × 8 × 2.5 mm body are **not** cutout dimensions.
+3. **Choose optics and LED together** — they set standoff height.
+4. **Measure mated hardware.** Size both boxes around connectors *with* their
+   cables, not around PCB footprints.
+5. **Confirm sourcing in the assembly quote**, not from a datasheet link.
+6. **Freeze the enclosures last.** The RF test in
+   [06](docs/06-antennas.md) can still move antenna positions, and antenna
+   positions move walls.
 
 ## License
 

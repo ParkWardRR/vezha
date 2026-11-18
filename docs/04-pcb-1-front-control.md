@@ -1,4 +1,8 @@
-# Vezha — Physical Controls and Faceplate
+# 04 · PCB 1 — Front Control Board
+
+The front panel of [Enclosure A](02-enclosure-a-upper.md). Read
+[01-architecture.md](01-architecture.md) first.
+
 
 Status: **design settled enough to buy test parts; mechanics not frozen.**
 Buy the switches and wheel *before* committing the mechanical stack. Panel
@@ -178,4 +182,4 @@ the full printed wall.
 - Whether 3.6 N is acceptable, or the build moves to the C&K KSC at ~2 N with a
   new footprint and plunger.
 - How `AIRPLANE` is read and enforced in software, and what drives the
-  confirmed-off LED. Relates to uplink recovery in [handoff.md](handoff.md).
+  confirmed-off LED. Relates to uplink recovery in [09-background.md](09-background.md).

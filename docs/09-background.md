@@ -1,4 +1,21 @@
-# Vezha — Travel Router Project Handoff
+# 09 · Background — Project Handoff
+
+> [!WARNING]
+> **Historical context, partly superseded.** This was the original project
+> handoff, written before the mechanical and power architecture was settled.
+> Keep it for the *why* — goals, constraints, software direction, open design
+> tasks. For *what to build*, the current documents win wherever they
+> disagree:
+>
+> | This document says | Superseded by |
+> |---|---|
+> | Power is a 5 V / 5 A bench-supply target, converter undecided | [01](01-architecture.md) · [05](05-pcb-2-power.md) — RotoPD Pro → Pololu → Pico-gated rail |
+> | Radio fit and slot topology undetermined | [01](01-architecture.md) · [02](02-enclosure-a-upper.md) — AX210 top-side E-key, second radio on an underside adapter |
+> | A battery lives in the portable build | [03](03-enclosure-b-lower.md) — external USB-C source; internal cell is an open question |
+> | Repo owner, URL and creation status unverified | Repo exists and is public |
+>
+> The software, captive-portal, and VPN sections below are **not** superseded —
+> nothing has been implemented.
 
 ## Goal
 
