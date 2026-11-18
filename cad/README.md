@@ -73,7 +73,32 @@ Installed and verified on this machine:
 | f3d | 4.0.1 | headless PNG renders |
 | admesh | 0.98.5 | manifold / edge checks on exported STL |
 | OrcaSlicer | 2.5.1 | printability, wall thickness, overhangs |
-| OpenSCAD | snapshot | sketches only — no STEP, dead end for the fit loop |
+| OpenSCAD | 2026.10.11 | sketches only — no STEP, dead end for the fit loop |
+
+The STEP round-trip is verified end to end: build123d writes
+`enclosure-a-tray.step`, and FreeCAD's headless interpreter reads it back as a
+single valid solid (48 670 mm³). The two kernels agree, which is what makes the
+KiCad fit check trustworthy.
+
+### Paths worth knowing
+
+**`freecadcmd` is not on `PATH`.** The cask links only the GUI. The headless
+interpreter — and a useful set of bundled binaries — live here:
+
+```sh
+/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd  script.py
+```
+
+That directory also ships **`ccx` (CalculiX)** and **`gmsh`**, neither of which
+is in brew core as a formula. If a drop test or a thermal study on Enclosure A
+ever becomes worth doing — [02 calls thermal "unresolved and
+untested"](../docs/02-enclosure-a-upper.md#thermal) — the solver is already
+installed, no extra dependency.
+
+**The `openscad` cask is disabled**, as of 2026-09-01: *"does not pass the
+macOS Gatekeeper check"*. Use `openscad@snapshot`, which links
+`/opt/homebrew/bin/openscad` normally and renders headless
+(`openscad -o out.stl in.scad`).
 | atopile | 0.12.6 | code-defined schematic (venv) — not yet adopted |
 | SKiDL | 3.0.0 | Python → KiCad netlist (venv) — not yet adopted |
 
