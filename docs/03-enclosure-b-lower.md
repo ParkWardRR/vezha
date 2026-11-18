@@ -127,7 +127,7 @@ sustained load before closing the design.
 ## Open questions
 
 - RotoPD Pro physical envelope and mounting — **blocking**
-- Seam connector selection — now **two** connectors, 2-pin power and 3-pin UART
+- Seam connector selection — pogo array vs. Micro-Fit cable for Rev A
 - **Whether Enclosure B has a front panel at all** — blocking
 - Accessory port regulator, and its thermal contribution in this box
 - OLED bracket and encoder knob

@@ -72,15 +72,26 @@ tiny and they are the thing that will break during service.
 
 ## Power entry
 
-Enclosure A receives **5 V and ground only**, from Enclosure B, through a
-keyed latching connector at the seam. A short lead runs from that connector to
-the Orange Pi's **dedicated USB-C power input.**
+Enclosure A receives **5 V, ground, and UART telemetry** from Enclosure B
+through **one combined 7-contact connector** at the seam. A short lead runs
+from the power contacts to the Orange Pi's **dedicated USB-C power input**,
+and from TX/RX to the Pi's UART pins.
 
-Size the case around the **mated connector and its cable**, not the connector
-footprint.
+Full contact map, staggering and safety rules:
+[01 · Crossing the seam](01-architecture.md#crossing-the-seam).
 
-Nothing else crosses the seam — the power box must come off without
-disturbing any PCIe or antenna connection.
+**Mechanical consequences for this shell:**
+
+- **Spring pins live on this side**, flat pads on Enclosure B — Enclosure A
+  has no power source of its own, so its pins are dead metal when detached
+- **The enclosure latch retains the boxes, not the connector**
+- A **DETECT contact is tied to GND inside this box.** That is how Enclosure B
+  knows it is safe to energise the rail — so this shell must guarantee the
+  contact is made whenever the boxes are latched
+- Size the case around the **mated pair with its cable**, not the footprint
+
+**No RF crosses the seam** — the power box must come off without disturbing
+any PCIe or antenna connection.
 
 ## Thermal
 

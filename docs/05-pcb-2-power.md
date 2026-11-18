@@ -177,6 +177,8 @@ power applied
   → Pico reads contract over I²C bus 1
   → contract adequate?  ── no ──→ report on OLED, leave EN low
             │ yes
+  → Enclosure A present? ── no ──→ report on OLED, leave EN low
+            │ yes                   (never energise exposed contacts)
   → Pico asserts buck EN
   → Pico checks PG                            ← confirms, not assumes
   → 5 V reaches Orange Pi over the seam
@@ -187,19 +189,20 @@ power applied
 
 | Connector | Pins | Carries | Keyed |
 |---|---:|---|---|
-| Router power | 2 | 5 V, GND to Orange Pi | **Yes** |
-| Router telemetry | 3 | UART TX, RX, GND | **Yes** |
+| **Seam — combined** | 7 | 2× GND, 2× +5 V, UART TX, UART RX, **DETECT** | **Yes**, staggered contact lengths |
 | OLED | 4 | 3.3 V, GND, SDA, SCL (JST-SH STEMMA QT) | Yes, by type |
 | Encoder | 4 | A, B, push switch, GND | **Yes** |
 | RotoPD I²C | — | SDA, SCL to Pico bus 1 | — |
 
 > [!IMPORTANT]
-> **The UART changes the seam.** Enclosure A and B were specified as a
-> **power-only** boundary. Telemetry between the Pico and the Orange Pi means
-> **four conductors now cross it** — 5 V, GND, TX, RX — across two keyed
-> connectors. The detach story still works, but the seam spec in
-> [01](01-architecture.md) and [02](02-enclosure-a-upper.md) has changed and
-> the connector count with it. See [Unresolved conflicts](#unresolved-conflicts).
+> **The UART changed the seam from a power lead into a hot-pluggable
+> interface.** It is now **one** combined 7-contact connector with staggered
+> lengths so ground makes first and breaks last, plus a DETECT contact that
+> gates the rail. Full specification in
+> [01 · Crossing the seam](01-architecture.md#crossing-the-seam).
+>
+> **PCB 2 side:** series resistors on TX/RX, and DETECT routed to a Pico GPIO
+> with a pull-up — it reads low only when Enclosure A is attached.
 
 ## I²C bus allocation
 
@@ -265,7 +268,7 @@ front panel.**
 - Whether PCB 1's ANO wheel survives
 - RotoPD Pro mounting pattern, outline, height — still blocking
 - Dedicated accessory regulator part
-- Seam connector parts, now ×2
+- Seam connector part — pogo array vs. Micro-Fit for Rev A
 - Encoder debounce: RC on board vs. firmware
 - Measured buck derating in the closed enclosure
 - Pico mounting: castellated vs. 2.54 mm sockets

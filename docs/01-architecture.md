@@ -131,26 +131,97 @@ Measure voltage **at the Orange Pi** during cold boot, with both radios
 active, and with the intended USB load applied. See
 [05-pcb-2-power.md](05-pcb-2-power.md).
 
-## What crosses the seam
+## Crossing the seam
 
 > [!IMPORTANT]
-> **Revised.** The seam was originally specified as power-only. PCB 2 now
-> carries a UART telemetry link to the Orange Pi, so **four conductors cross
-> the boundary across two keyed connectors.**
+> **Revised twice.** The seam was originally power-only. PCB 2's UART
+> telemetry link means signal crosses too — and that changes the connector
+> from a power lead into a hot-pluggable interface with a sequencing problem.
 
-| Connector | Pins | Carries |
-|---|---:|---|
-| **Power** | 2 | 5 V, GND → Orange Pi dedicated USB-C power input |
-| **Telemetry** | 3 | UART TX, RX, GND → Orange Pi |
+### One connector, not two
 
-Both must be:
+**Use a single combined connector.** Two separate connectors on a box that
+detaches as a normal operation means a user can mate one and not the other,
+and gives the mechanical design two alignment problems instead of one.
 
-- **Keyed** — not connectable backwards, and not inter-mateable with each other
-- **Latching** — it is a handheld device
-- **Rated for the full load** (power connector), with a short lead to the
-  Orange Pi
-- Sized **as mated pairs with their cables** when the case is drawn — not as
-  PCB footprints
+The signal here is low-speed telemetry. There is no crosstalk argument for
+separating it from the 5 V pins.
+
+### Contact map
+
+**Seven contacts**, with **three different lengths** to force the mating order:
+
+| # | Signal | Length | Why |
+|---|---|---|---|
+| 1 | **GND** | **Long** | Mates first, breaks last |
+| 2 | +5 V | Medium | |
+| 3 | +5 V | Medium | Two pins share the current |
+| 4 | UART TX | Short | Signal mates last, breaks first |
+| 5 | UART RX | Short | |
+| 6 | **GND** | **Long** | Return current matches the two +5 V pins; a GND at each end survives angled separation |
+| 7 | **DETECT** | **Shortest** | Tied to GND inside Enclosure A. Breaks before anything else |
+
+An eighth contact as a spare costs little and is worth having.
+
+### Why the staggered lengths matter
+
+> [!CAUTION]
+> **Ground must make first and break last.** If GND opens while TX or RX is
+> still connected, return current finds its way through the UART pins' ESD
+> diodes. That damages both ends.
+
+Staggering gives the correct order automatically:
+
+```
+connect:     GND  →  +5 V  →  TX/RX  →  DETECT
+disconnect:  DETECT  →  TX/RX  →  +5 V  →  GND
+```
+
+### DETECT is a safety interlock, not a convenience
+
+This is the part that matters most.
+
+Enclosure B is the powered box. Without a detect contact, **separating the
+boxes leaves 4 A available on exposed metal** — a short across those contacts
+in a bag is a real hazard.
+
+> [!CAUTION]
+> **The Pico must not assert the buck's EN unless Enclosure A is detected
+> present.** The gate is now two conditions, not one: an adequate PD contract
+> **and** a present enclosure. See
+> [05 · Boot sequence](05-pcb-2-power.md#boot-sequence).
+
+Because DETECT is the shortest contact, it opens *before* the power pins on
+separation, so the rail is already shutting down as the boxes part.
+
+### Mating style
+
+| Option | Use | Trade-off |
+|---|---|---|
+| **Spring-loaded (pogo) contact array** — *recommended* | Production intent | Blind-mates as the boxes stack; no dangling cable; pin length is how the staggering is achieved. Needs alignment features in both shells and good print tolerance. |
+| **Captive short cable + latching connector** — e.g. Molex Micro-Fit 3.0, 6–8 circuit | **Rev A prototype** | Tolerant of sloppy 3D-printed tolerances. **No contact sequencing** — all pins are the same length, so DETECT and series resistors carry the whole burden. Keyed by housing. |
+
+Start on the cable for Rev A. Blind-mate alignment in a printed enclosure is
+genuinely hard, and discovering that after committing the shells is expensive.
+
+**Put the spring pins on Enclosure A and the flat pads on Enclosure B.**
+Enclosure A has no power source of its own, so its pins are dead metal when
+detached; Enclosure B's pads are flush and de-energised by the DETECT
+interlock. Both sides fail safe.
+
+### Electrical details
+
+- **No level shifting.** Pico and Orange Pi UART are both 3.3 V.
+- **Series resistors, 100–330 Ω, on TX and RX.** If the Orange Pi is ever
+  powered directly through its own USB-C input while Enclosure B is detached,
+  its TX can backfeed into an unpowered Pico. The resistors cap that fault
+  current.
+- **TVS diodes on TX, RX and +5 V** at the Enclosure A entry. Exposed contacts
+  on a handheld are an ESD path.
+- **Mechanical retention is the enclosure latch, not the connector.** No
+  connector should be the thing holding the two boxes together.
+- Expect contact bounce during mating — firmware must resync rather than
+  assume a clean stream.
 
 **No RF crosses the boundary.** The detach rule still holds: the power box
 comes off without disturbing any PCIe or antenna connection.
