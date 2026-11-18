@@ -72,6 +72,18 @@ re-check before ordering.
 | Common-anode RGB LED | — | — | — | — | 🔴 No PN chosen yet |
 | Pololu `D42V55F5`, CentyLab RotoPD | — | — | — | — | Not catalogued — modules, hand-mounted |
 
+Through-hole switch alternatives, checked the same day, since the plan is to
+hand-install them:
+
+| Family | Example | Stock | Note |
+|---|---|---:|---|
+| MEC Multimec 5G | `5GTH935` (`C6075999`) | **0** | Whole 5G range reads 0. Source from DigiKey. |
+| C&K PTS645 | `PTS645TH50` (`C19288452`) | **0** | Entire PTS645 range reads 0. |
+| Alps `SKHH` | `SKHHLWA010` (`C125050`) | 12,834 | The *only* through-hole tactiles in stock. 6 × 6 mm, 1–2.6 N, $0.09–0.17. Generic feel, different cap system. |
+
+So there is **no JLC fallback for a premium through-hole switch** — that path is
+DigiKey-only, by choice rather than by accident.
+
 Three things this settles:
 
 1. **The electronics are all sourceable; the controls are not.** The driver and

@@ -21,7 +21,7 @@ Read [01-architecture.md](01-architecture.md) first.
 | **M-key → E-key adapter** | **Installed size unverified** | Male M-key edge into the Orange Pi's **underside** socket; second radio into the adapter's female E-key socket. The host accepting 2280 modules does **not** tell you the adapter's size or the installed stack height. Choose a specific adapter **that routes PCIe**, then measure it with card and antenna plugs installed. |
 | **4 × flex antennas** | 42 × 7 mm each, 100 mm MHF4 lead | Inside the narrow walls. Full placement in [06-antennas.md](06-antennas.md). |
 | **Storage** | eMMC discussed, unconfirmed | — |
-| **Display** | Model not chosen | **Own bracket.** Pressing a button must not flex the display mount or load its ribbon. |
+| **Display** | Waveshare 4.26" e-Paper, SKU `26376` · active area **92.80 × 55.68 mm** · driver board **107 × 64 mm** · panel envelope quoted at 129.33 × 62.37 × 0.926 mm | **Own bracket.** Pressing a button must not flex the display mount or load its ribbon. The driver board is **wider than the Orange Pi in one axis** and mounts behind the panel. The 129.33 mm figure is 36 mm wider than the active area and probably includes the flex tail — **measure the glass.** Full spec: [10-display.md](10-display.md). |
 | **Faceplate** | Separate removable part | Carries toggle, three keys, ANO wheel, four RGB windows. See [04-pcb-1-front-control.md](04-pcb-1-front-control.md). |
 | **PCB 1** | Outline TBD | On standoffs parallel to the faceplate, behind it. One keyed detachable harness to the Orange Pi. |
 

@@ -259,8 +259,23 @@ display in Enclosure A. It is not stated whether:
 
 The second reading is consistent with the UART telemetry link and with "the
 Pico and display boot before the Orange Pi" — a console that shows PD status
-before the router exists. **Until this is resolved, do not lay out either
-front panel.**
+before the router exists.
+
+> [!NOTE]
+> **The display choice of 2026-11-17 argues for the first reading.** Enclosure A
+> now has a committed display — a [4.26" SPI e-paper panel](10-display.md) — and
+> it **cannot** do this board's job. It hangs off the Orange Pi's SPI, Waveshare
+> documents no Pico support, and a 4 s refresh is useless for live PD reporting.
+> The [boot sequence](#boot-sequence) above requires a console that is live
+> *before* the Orange Pi and can report an inadequate contract while `EN` stays
+> low. Only the OLED can do that.
+>
+> So the two are not substitutes serving one role; they serve different phases.
+> The OLED is the **power-box console**, the e-paper is the **router's display**.
+> That consolidation is off the table — but the ANO wheel versus EC11 encoder
+> overlap is still a real duplication, and still needs a decision.
+
+**Until this is resolved, do not lay out either front panel.**
 
 ## Open questions
 

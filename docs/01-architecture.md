@@ -11,8 +11,8 @@ them, and which decisions are settled.
 
 A compact **two-piece** travel router.
 
-| | Enclosure | Holds | Detachable? |
-|---|---|---|---|
+|  | Enclosure | Holds | Detachable? |
+| --- | --- | --- | --- |
 | **A** | **Upper router box** | Orange Pi 5 Plus, both Wi-Fi radios, the M-key→E-key adapter, all four antennas, storage, display, faceplate with controls and indicators | No — this is the router |
 | **B** | **Lower power box** | PCB 2: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
 
@@ -81,7 +81,7 @@ This is the part most likely to be got wrong, because the two radios attach
 to the Orange Pi in **different ways on opposite faces of the board.**
 
 | Radio | Role | Socket | Path |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Intel AX210** | Hotel / public uplink | Orange Pi **top-side M.2 E-key** socket, directly | Wi-Fi over PCIe; Bluetooth over USB |
 | **MT7922 / RZ616** | Private AP | **Underside M-key** slot → **M-key-to-E-key adapter** → adapter's E-key socket | PCIe, through the adapter |
 
@@ -152,12 +152,12 @@ separating it from the 5 V pins.
 **Seven contacts**, with **three different lengths** to force the mating order:
 
 | # | Signal | Length | Why |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | **GND** | **Long** | Mates first, breaks last |
-| 2 | +5 V | Medium | |
+| 2 | +5 V | Medium |  |
 | 3 | +5 V | Medium | Two pins share the current |
 | 4 | UART TX | Short | Signal mates last, breaks first |
-| 5 | UART RX | Short | |
+| 5 | UART RX | Short |  |
 | 6 | **GND** | **Long** | Return current matches the two +5 V pins; a GND at each end survives angled separation |
 | 7 | **DETECT** | **Shortest** | Tied to GND inside Enclosure A. Breaks before anything else |
 
@@ -197,7 +197,7 @@ separation, so the rail is already shutting down as the boxes part.
 ### Mating style
 
 | Option | Use | Trade-off |
-|---|---|---|
+| --- | --- | --- |
 | **Spring-loaded (pogo) contact array** — *recommended* | Production intent | Blind-mates as the boxes stack; no dangling cable; pin length is how the staggering is achieved. Needs alignment features in both shells and good print tolerance. |
 | **Captive short cable + latching connector** — e.g. Molex Micro-Fit 3.0, 6–8 circuit | **Rev A prototype** | Tolerant of sloppy 3D-printed tolerances. **No contact sequencing** — all pins are the same length, so DETECT and series resistors carry the whole burden. Keyed by housing. |
 
@@ -257,13 +257,20 @@ to take, not values to look up:
 - Power source: external bank vs. internal cell, and therefore whether
   Enclosure B ever contains a battery
 - **Which enclosure's front panel carries the OLED and encoder** — blocks both
-- Display model, thermal solution, final antenna SKU
-- JLCPCB assembly sourcing for several PCB 1 parts
+- 
+- ~~Display model~~ — **settled 2026-11-17:** Waveshare 4.26" e-paper, SKU
+  `26376`, SPI. See [10-display.md](10-display.md). Its 0–50 °C operating range
+  and 4 s refresh are now build constraints.
+- Thermal solution, final antenna SKU
+- ~~JLCPCB assembly sourcing for several PCB 1 parts~~ — checked 2026-11-17, see
+  [08](08-sourcing.md#looked-up-so-far). Driver yes, switch no. The switch's
+  SMD-vs-through-hole decision is the live one:
+  [04](04-pcb-1-front-control.md#switch-options).
 
 ## Where to go next
 
 | You are doing | Read |
-|---|---|
+| --- | --- |
 | Upper enclosure | [02](02-enclosure-a-upper.md) · [06](06-antennas.md) |
 | Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-pcb-2-power.md) |
 | Front control board | [04](04-pcb-1-front-control.md) |

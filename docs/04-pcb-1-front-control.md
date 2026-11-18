@@ -29,6 +29,11 @@ Everything wires to the Orange Pi in the upper box. **Nothing mounts to the
 removable power box.** Keep the display opening separate from the control
 openings so a display change does not force a new button PCB.
 
+The display is a **4.26" SPI e-paper panel** — see
+[10-display.md](10-display.md). Its nine-wire cable is expected to land on
+**this board** and share the single keyed harness to the Orange Pi, rather than
+contending for the same 40-pin header. Reserve the connector.
+
 ## Bill of materials
 
 | Qty | Part | Approx. USD | Where it mounts |
@@ -41,16 +46,47 @@ openings so a display change does not force a new button PCB.
 **Budget ~$45–50** for controls including spares, before cables, shipping, and
 PCB assembly.
 
-### If the 6C feels too firm
+### Switch options
 
-The 6C is firm at about **3.6 N** — test one before committing to the panel.
-The lighter alternative is [C&K KSC series](https://www.ckswitches.com/products/switches/product-details/Tactile/KSC/)
-`KSC221J LFS`, roughly 2 N at about $0.52.
+Three live paths. The 6C is still the default, but it is the only one that
+cannot be machine-assembled *or* hand-soldered with an iron.
 
-It is **not a drop-in replacement**: different footprint, and it needs a
-separate plunger design rather than the MEC cap system. Start with the MEC —
-the switch-and-cap combination is what makes this a straightforward premium
-front panel.
+| | **APEM Ultramec 6C** `6CJ1NOPR` | **MEC Multimec 5G** `5GTH935` | **C&K** `KSC221JLFS` |
+|---|---|---|---|
+| Termination | **J-bend SMD** | **Through-hole** | SMD |
+| Body | 8 × 8 mm, h **2.5 mm** | 10 × 10 mm, h **6.4 mm** | 6.2 × 6.2 mm |
+| Force | ~3.6 N (LCSC lists 3.7 N) | 2.0 / **3.5** / 6.5 N options | ~2 N |
+| Rated life | 3,000,000 cycles | **10,000,000 cycles** | — |
+| Caps | **10G** series (`10G09`/`10G08`) | `1Z` / `1S` families — **not 10G** | None — needs a custom plunger |
+| JLC can place it | ❌ 0 stock | ❌ 0 stock (DigiKey instead) | ✅ 16,623 in stock |
+| Hand assembly | Paste + hot air only | **Iron** | Paste + hot air only |
+
+**The through-hole path is real but it is not a swap.** Multimec 5G is the 6C's
+through-hole sibling and 3.5 N sits right on the 6C's ~3.6 N, so the *feel*
+carries over and rated life triples. What does not carry over:
+
+- **The caps.** APEM lists the 10G series against the 6C and the `1Z`/`1S`
+  families against the 5G, **with no overlap.** `10G09` and `10G08` are not
+  listed as fitting the 5G. Going through-hole means reselecting both caps.
+- **The footprint**, 10 × 10 mm against 8 × 8 mm.
+- **The body height** — 6.4 mm against 2.5 mm. That is **+3.9 mm between the PCB
+  and the faceplate**, which feeds straight into standoff height and the test
+  coupon in [Mechanical test coupon](#mechanical-test-coupon).
+
+Neither APEM page states that the two series are mechanically interchangeable.
+Treat a 6C → 5G move as a footprint and faceplate change, not a part
+substitution. *(APEM's own 5G product page prints "35 N" where the series page
+says 3.5 N — a site glitch, but confirm the force on the datasheet.)*
+
+The C&K alternative stays the only switch here JLC can actually place, at
+~$0.46 in hundreds. It is **not a drop-in** either: different footprint, and it
+needs a separate plunger design rather than the MEC cap system.
+
+So the choice is a three-way trade, not a fallback ladder: **6C** keeps the
+premium cap system and costs you a hot-air station; **5G** gets you an iron and
+longer life at the price of new caps, a new footprint and 3.9 mm more stack;
+**C&K** gets a fully machine-assembled board at a lighter 2 N with plunger
+design work. The test coupon decides it.
 
 ## Control behavior and wiring
 
@@ -74,6 +110,11 @@ Consequence: the `AIRPLANE` indicator must be driven from **confirmed
 radio-off state**, not from switch position. That gives live feedback even when
 the display is showing a stale image. See
 [RGB indicators](#rgb-indicators) below.
+
+With the e-paper display now chosen, **a stale image is the normal state** — a
+full redraw takes 4 s and the panel is not meant to be refreshed constantly.
+That promotes the RGB indicators from a nicety to the only real-time feedback
+the panel has. See [10-display.md](10-display.md#what-this-does-to-the-ui).
 
 ## RGB indicators
 
@@ -139,18 +180,24 @@ JLCPCB catalog check, 2026-11-17 — codes and price ladders in
 | C&K `KSC221JLFS` *(alt)* | `C221726` | ✅ Yes — 16,623 in stock |
 | RGB LED | — | 🔴 No part number chosen |
 
-So the fallback is the live path, not a contingency: **leave the three switch
-positions unpopulated** and install DigiKey parts with paste and hot air or a
-small reflow setup. The switch uses **J-leads**, so do not plan around
-hand-soldering with an iron. The ANO, keycaps, and toggle are final mechanical
-assembly items regardless.
+**Only the switch is a real sourcing problem.** The toggle is panel-mount with
+leads to the board and the caps press on by hand — see the
+[bill of materials](#bill-of-materials) above. Neither was ever going to be
+machine-placed, so their zero stock at JLC is not a blocker, just a note that
+they come from DigiKey. The ANO is a module on its own standoffs.
+
+For the switch, keeping the 6C means **leaving the three positions unpopulated**
+and installing DigiKey parts with paste and hot air or a small reflow setup. The
+6C uses **J-leads**, so do not plan around hand-soldering with an iron — that
+constraint is the strongest argument for the through-hole 5G in
+[Switch options](#switch-options), which an iron handles.
 
 Restocking does not change the economics — JLC quotes the 6C at $3.94 in
-hundreds against $3.07 at DigiKey. The one thing this check does change is the
-C&K alternative's standing: it is the only tactile switch here JLC can actually
-place, at $0.46 in hundreds. That makes it a genuine fork — a fully machine-
-assembled board at ~2 N, or hand-reflowed 6C switches at ~3.6 N. The test coupon
-decides it, not the catalog.
+hundreds against $3.07 at DigiKey.
+
+With the switch hand-installed on any of the three paths, PCB 1's JLC BOM comes
+down to the **driver, the RGB LEDs, passives and connectors** — all placeable
+once the LED is chosen. That is the board to quote.
 
 ## Mechanical test coupon
 
@@ -162,6 +209,9 @@ recessed.** With the real parts mounted, check:
 2. Caps return freely with no preload
 3. The recessed `MAC` position feels distinct from the flush keys
 4. The toggle pulls easily against its locking detent
+
+If the through-hole 5G is in play, **coupon both switch bodies.** They differ by
+3.9 mm in height and take different caps, so one coupon cannot answer for both.
 
 Then set standoff height and PCB outlines.
 
@@ -180,6 +230,10 @@ its **own bracket**, so pressing buttons does not flex the display mount or load
 its ribbon. Toggle leads to the front board, then one keyed, detachable harness
 from that board to the Orange Pi.
 
+The e-paper's **107 × 64 mm driver board** mounts behind the panel and needs its
+own space — it is larger in one axis than the Orange Pi itself. The faceplate's
+minimum size is now set by the display window, not by the control row.
+
 For a printed prototype, print the faceplate separately and use a thin mounting
 land or a small metal insert for the toggle rather than assuming its nut clears
 the full printed wall.
@@ -189,6 +243,15 @@ the full printed wall.
 - ~~JLCPCB assembly sourcing for `6CJ1NOPR` and the TLC59116IPWR driver~~ —
   checked 2026-11-17: driver in stock, switch not. RGB LED sourcing stays open
   because no part number is chosen.
+- **Switch termination: SMD 6C or through-hole 5G.** Decides the footprint, the
+  cap series, and 3.9 mm of standoff height. See
+  [Switch options](#switch-options).
+- Which cap replaces `10G09`/`10G08` if the 5G is chosen — the `1Z` and `1S`
+  families are what APEM lists, none of them verified here.
+- Display connector on this board, and whether SPI is routed through it to the
+  Orange Pi — see [10-display.md](10-display.md#interface-and-wiring).
+- Whether paged e-paper navigation suits the ANO wheel at all —
+  [10](10-display.md#what-this-does-to-the-ui).
 - RGB LED part and its matching optic — must be chosen as a pair, and they set
   the standoff height.
 - I²C address strapping for the TLC59116 (must not collide with ANO `0x49`),

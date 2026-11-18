@@ -48,7 +48,8 @@ and fallback policy have not been selected.
 ## Power and portability
 
 The complete build needs to power the SBC, two radios, storage, and some
-USB peripheral load. A touchscreen may add to that budget.
+USB peripheral load. A touchscreen may add to that budget. *(The chosen
+e-paper display does not — `<35 mW` refreshing, `<0.01 µA` idle.)*
 
 The previous bench supply target was a regulated 5 V / 5 A. This is a
 supply-sizing target, not measured system consumption. The portable
@@ -101,6 +102,11 @@ Optional UI: Waveshare 3.5-inch HDMI touchscreen was suggested. Physical
 controls for radio enable/disable and restarting the hotel-login
 workflow were discussed, including changing the uplink MAC for a fresh
 login. No display, switch wiring, or button assignments are confirmed.
+
+**Superseded 2026-11-17:** the display is now the Waveshare 4.26-inch
+e-Paper HAT (SKU 26376), SPI rather than HDMI and with no touch layer.
+See [10-display.md](10-display.md). The touch load referenced in
+[Power and portability](#power-and-portability) above no longer applies.
 LiDAR-assisted Wi-Fi mapping is a stretch goal and should stay separate
 from the core router bring-up.
 

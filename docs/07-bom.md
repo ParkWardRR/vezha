@@ -31,7 +31,7 @@ ordered.**
 | Antenna alt | TE/Linx ANT-W63WS1-SMA | 🔵 Candidate | $12.27 ea | Blade, needs MHF4→SMA bulkheads. Not pocketable. |
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
 | Storage | eMMC | 🔴 Unresolved | — | Discussed only. |
-| Display | — | 🔴 **Unresolved** | — | Waveshare 3.5" HDMI touchscreen discussed. **May be superseded by the PCB 2 OLED console** — see [05](05-pcb-2-power.md#unresolved-conflicts). |
+| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | 🟡 **Chosen** | $31.99 | 800 × 480 B/W, SPI. Active area 92.80 × 55.68 mm; driver board **107 × 64 mm**. Supersedes the 3.5" HDMI touchscreen. **Own bracket.** Full details and its refresh/temperature limits: [10-display.md](10-display.md). |
 | Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
 
 ## PCB 1 — front control board
@@ -45,7 +45,8 @@ ordered.**
 | LED driver | TI `TLC59116IPWR` | 1 | 🔵 Candidate | — |
 | RGB LEDs | Common-anode SMD | 4 | 🔴 **Unresolved** | — |
 | Light pipes / diffusers | — | 4 | 🔴 **Unresolved** | — |
-| Switch alt | C&K `KSC221J LFS` | — | 🔵 Candidate | ~$0.52 |
+| Switch alt (SMD) | C&K `KSC221J LFS` | — | 🔵 Candidate | ~$0.52 |
+| Switch alt (through-hole) | MEC Multimec 5G `5GTH935` | — | 🔵 Candidate | — |
 
 **Controls subtotal ≈ $45–50** including spares, before cables, shipping, and
 PCB assembly.
@@ -54,6 +55,9 @@ Notes:
 - Populate **3 of 5** switches; keep 2 spare. 6C is firm at ~3.6 N — test one.
   (LCSC's listing says 3.7 N.)
 - C&K alt is **not a drop-in**: different footprint, needs its own plunger.
+- Multimec 5G alt is **through-hole** — solderable with an iron, 3.5 N, 10 M
+  cycles — but it is 10 × 10 × 6.4 mm against the 6C's 8 × 8 × 2.5 mm and takes
+  the `1Z`/`1S` cap families, **not** the 10G caps above. Also not a drop-in.
 - **RGB LED and its optic must be chosen as a pair** — they set standoff height.
 - TLC59116 must be strapped to an address **not** colliding with the ANO's `0x49`.
 
@@ -62,9 +66,13 @@ Notes:
 
 - ✅ `TLC59116IPWR` (`C131194`) in stock, 3,611 · $1.11 @100.
 - ❌ `6CJ1NOPR` (`C5518654`), NKK `MN12LL4G01` (`C20103999`), and both keycaps
-  are **zero stock with no pre-order** — JLC cannot place them. The three switch
-  positions get reflowed by hand; the toggle and caps were always manual
-  assembly.
+  are **zero stock with no pre-order** — JLC cannot place them. Only the switch
+  matters: the toggle is panel-mount and the caps press on by hand, so neither
+  was ever a machine-placed part. Source all three from DigiKey.
+- ❌ The through-hole alternatives are **also** zero stock at LCSC — Multimec
+  `5GTH935`/`5GTH920` and the whole C&K `PTS645` range. Fine if you are hand-
+  sourcing, but there is no JLC fallback for them later. The only through-hole
+  tactiles actually in stock are generic Alps `SKHH` (6 × 6 mm, ~$0.09–0.17).
 - ✅ The C&K alt `KSC221JLFS` (`C221726`) is in stock at 16,623 · $0.46 @100 —
   the only tactile switch here JLC can actually place.
 - Every part checked is an `expand` (extended) library part, so each distinct one

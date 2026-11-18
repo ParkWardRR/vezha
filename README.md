@@ -127,6 +127,7 @@ not values to look up:
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, price, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Background](docs/09-background.md) | Context | Original handoff. Partly superseded — kept for the *why* |
+| **10** | [Display](docs/10-display.md) | Mechanical + software | 4.26" e-paper: dimensions, SPI wiring, refresh discipline, what it does to the UI |
 
 ## Decision status
 
@@ -140,15 +141,19 @@ not values to look up:
 - Four internal flex antennas, two per radio, inside the narrow walls
 - Controls: locking `AIRPLANE` toggle, three keys, ANO wheel, one RGB
   indicator per control lit through the faceplate
+- Display: Waveshare 4.26" e-paper over SPI, no touch — [10](docs/10-display.md)
 
 **Open — do not design against these**
 
 - Second radio part and height; antenna connector type unconfirmed
 - Which M→E adapter (must route PCIe)
 - RotoPD Pro physical envelope — **blocks Enclosure B**
-- Seam connector, display model, thermal solution, final antenna SKU
+- Seam connector, thermal solution, final antenna SKU
 - Power source: external bank vs. internal cell
-- JLCPCB assembly sourcing for the 6C switches, TLC59116, and RGB LEDs
+- **Key switch termination** — SMD 6C (hot air) vs through-hole Multimec 5G
+  (iron, new caps, +3.9 mm stack) vs C&K (machine-placed, lighter touch).
+  [04](docs/04-pcb-1-front-control.md#switch-options)
+- RGB LED part and optic — the last unsourced part on PCB 1
 
 ## Ground rules
 
