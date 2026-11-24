@@ -26,7 +26,7 @@ discovered after a case has been printed or a board fabricated:
 | 1 | **M.2 stack** — adapter + card + mated plugs + coax bend | **Enclosure A depth** (changed 2026-11-23 — it was thickness, before the board was stood [on edge](01-architecture.md#what-on-edge-mounting-means)). The largest untrusted term in the depth budget | **15.9 mm**, from four stacked guesses |
 | ~~2~~ | ~~**RotoPD Pro envelope**~~ — **resolved 2026-11-18 from the vendor repo**, no measurement needed | — | **24.40 × 35.80 mm**, real [geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) |
 | 3 | **Mated USB-C plug + cable bend radius** | Every USB-C opening in both boxes | **25 mm** |
-| **4** | **Thermal stack** — does the fan bolt onto the heatsink? *(added 2026-11-23)* | Enclosure A depth, by 12 mm | **12.6 mm** heatsink; fan **unknown** whether additive |
+| **4** | **Fan-to-heatsink clearance gap** | Enclosure A depth, by a few mm, and fan airflow | Stack order known (fan · gap · heatsink); **gap unspecified** |
 | **5** | **SBC hole pattern and port positions** — *not a measurement; a file to open* | Board retention, every port cutout | **Nothing.** [Drawing not retrieved](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view) |
 
 Everything else in [02](02-enclosure-a-upper.md) and
@@ -37,7 +37,7 @@ Everything else in [02](02-enclosure-a-upper.md) and
 > **with the Wi-Fi cards installed is physically on hand** as of 2026-11-23.
 > The 15.9 mm figure is four stacked guesses and it is the biggest term in a
 > depth budget that currently **does not close** —
-> [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
+> [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close).
 > This is the highest value-per-minute task in the project right now.
 
 > [!TIP]
@@ -170,9 +170,9 @@ safety here — the clearance allowance is already a separate parameter
 > point and all three land in the same depth budget:
 >
 > - **Installed heatsink height** (`A.heatsink_h`). The supplied figure is
->   **12.6 mm**; the older guess was 15 mm. Confirm which is real.
-> - **Whether the fan mounts on top of the heatsink**, and the combined
->   height if so — [measurement 4](#4--the-thermal-stack).
+>   **12.6 mm**. Confirm it.
+> - **The fan-to-heatsink clearance gap** and the combined block height —
+>   [measurement 4](#4--the-fan-to-heatsink-clearance-gap).
 > - **The opposite face's stack**, which on an edge-mounted board adds into
 >   the same axis as everything above.
 
@@ -218,22 +218,20 @@ plug and its bend radius, not the receptacle footprint."*
 4. Repeat for the seam cable in Enclosure B, which is short and therefore
    bends worse. Take the **worst** case.
 
-## 4 · The thermal stack
+## 4 · The fan-to-heatsink clearance gap
 
-**Added 2026-11-23.** **Feeds:** `A.heatsink_h`, `A.fan_h` → Enclosure A
-depth.
+**Feeds:** `A.cooling_block` → Enclosure A depth.
 
-The question is one line long and the answer is worth 12 mm:
+The stack order is settled — **fan, clearance gap, heatsink, board**, with the
+fan drawing intake air through a vented surface and pushing it into the fins.
+What is missing is the gap.
 
-> **Does the Noctua NF-A4x10 5V bolt onto the 50 × 46 × 12.6 mm heatsink, or
-> is 12.6 mm already a finned assembly with a fan in it?**
-
-1. With the heatsink on the board, measure from the **board's top face** to
-   the **highest point of the heatsink**. Expect ~12.6 mm; confirm it.
-2. Offer the fan up in its intended position. Measure the **combined** height
-   the same way, from the board face.
-3. **Record both**, not just the total — the design needs to know whether the
-   fan can be deleted later without a reprint.
+1. With the heatsink fitted, measure from the **board's top face** to the
+   **top of the fins**. Expect ~12.6 mm; confirm it.
+2. Offer the fan up in its intended position and measure the **total** block
+   from the board face. The difference, minus the fan's 12 mm, is the gap.
+3. **Record all three** — heatsink, gap, fan — not just the total. The design
+   needs to know which part is adjustable.
 4. Note how the fan is retained: long screws through the fins, a shroud, or
    adhesive pads. That decides whether the case has to hold it.
 
@@ -241,6 +239,11 @@ The question is one line long and the answer is worth 12 mm:
 > **Measure the fan with its anti-vibration pads fitted.** The part is
 > 40 × 40 × **10 mm** by model name, **11 mm** bare and **12 mm** with pads.
 > The enclosure is being designed to 12 mm.
+
+> [!NOTE]
+> **The gap is not free to shrink.** Too small and the fan is choked against
+> the fins, which costs airflow and adds noise. It is a depth term worth up
+> to a few mm, but it is an airflow parameter first.
 
 ## 5 · The SBC mechanical drawing — a file, not a measurement
 
@@ -285,7 +288,7 @@ Two things to re-check after any of these lands:
 - **Enclosure A's depth** is the sum of both M.2 stacks, the board, the
   heatsink, the fan and the panel. A new figure in any of them moves the whole
   box, and the budget is currently **over** the proposed envelope —
-  [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
+  [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close).
 - **Standoff height in Enclosure B** must still clear the Pololu's **1.4 mm
   below-board protrusion** ([06 · U3](06-power-board-schematic.md)) plus
   trimmed through-hole leads. That constraint is checkable without any

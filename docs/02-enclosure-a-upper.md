@@ -11,7 +11,7 @@ top.
 | **SBC** | Orange Pi 5 Plus, **mounted on edge**, 40-pin header at the bottom |
 | **Front panel** | **OLED**, output only — no keys, wheel, toggle or indicators |
 | **Antennas** | All elements in the **replaceable top cap** |
-| **Cooling** | **Active** — Noctua NF-A4x10 5V plus a 50 × 46 × 12.6 mm heatsink |
+| **Cooling** | **Active** — Noctua NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack |
 | **Bottom** | **Closed, stable foot.** No opening, no header access |
 | **Rear** | Service panel, cap screw ears, and the power module later |
 | **Openings** | OLED window, fan inlet and exhaust, USB-C inlet |
@@ -38,7 +38,7 @@ Read [01-architecture.md](01-architecture.md) first.
 | **Display** · **OLED** | Model not fixed. Adafruit **5297** is the candidate: **20.076 × 20.076 mm** active, −40 to +70 °C, I²C | **Front panel, output only.** Tiny next to the SBC's 100 mm edge, so **it does not drive the footprint** — [The display](#the-display). |
 | **Storage** | **eMMC — now a requirement, not a preference** | The Orange Pi has **one** M.2 M-key socket and the private-AP radio occupies it, so **there is no NVMe slot left**. If NVMe is ever wanted, the radio topology has to change. [10 · What the board provides](10-measurement-protocol.md#what-the-board-actually-provides) |
 | **RTC backup cell** | 20 mm coin cell + holder, or a shrink-wrapped cell on a lead | On the Orange Pi's **2-pin 1.25 mm RTC header**. Placement is a thermal keep-out problem, not a space one — see [RTC backup cell](#rtc-backup-cell). |
-| **Heatsink** — Orange Pi 5 Plus aluminium | **50 × 46 × 12.6 mm** (L × W × H) | Over the SoC. **No SKU or drawing**, and whether the fan stacks on it is unanswered — see the warning below. |
+| **Heatsink** — Orange Pi 5 Plus aluminium | **50 × 46 × 12.6 mm** (L × W × H) | Over the SoC, with the fan above it across a clearance gap — ≈ 27 mm block. **No SKU or drawing.** [Thermal](#thermal) |
 | **No control faceplate** | — | The front face carries an OLED window and nothing else. No keys, wheel, toggle, indicators, plungers or PCB 1. [Retired work](retired/pcb-1-front-control.md) |
 
 > [!CAUTION]
@@ -47,11 +47,9 @@ Read [01-architecture.md](01-architecture.md) first.
 >
 > 1. **It is not a board dimension.** Do not confuse it with the SBC's
 >    100 × 75 mm.
-> 2. **It is not known whether it includes the fan, and that is the biggest
->    open number in the box.** A 12.6 mm heatsink with a 12 mm fan bolted on
->    is a **24.6 mm** thermal block; a 12.6 mm assembly that already contains
->    the fan is half that.
->    [Handoff · Phase 0.2](../handoff/README.md#02--resolve-whether-the-heatsink-and-fan-stack--blocking)
+> 2. **The fan sits above it across a clearance gap**, so the installed
+>    thermal block is ≈ 27 mm, not 12.6 mm. The gap itself has no specified
+>    depth. [Thermal](#thermal)
 
 ## The board mounts on edge
 
@@ -78,10 +76,10 @@ one: service panel, cap screw ears, fan exhaust and the module all want it.
 [Handoff · rear-face congestion](../handoff/README.md#watch-items)
 
 > [!WARNING]
-> **The depth budget does not close.** Both M.2 stacks, the board, the
-> heatsink, the fan and the panel share one axis, landing at **≈ 37–51 mm**
+> **The depth budget does not close.** The M.2 stack, the board, the ≈ 27 mm
+> cooling block and the panel share one axis, landing at **≈ 51–57 mm**
 > against the brief's 30 mm placeholder.
-> [Handoff · the depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close)
+> [Handoff · the depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 
 ## Antenna zones — the top cap
 
@@ -289,10 +287,32 @@ both boxes means one part number, one driver, one spare.
 
 ## Thermal
 
-**Active cooling: a Noctua NF-A4x10 5V fan plus a 50 × 46 × 12.6 mm
+**Active cooling: a Noctua NF-A4x10 5V fan over a 50 × 46 × 12.6 mm
 heatsink.** Planned, **not validated** — two Wi-Fi 6E radios under
 simultaneous sustained load is the case that drove it, and that case has
 never been run.
+
+### The stack
+
+```
+    vented surface → intake air
+            ▼
+    FAN        40 × 40 × 12 mm installed
+            ▼
+    gap        "small" — depth not specified
+    HEATSINK   50 × 46 × 12.6 mm
+    ──────────────────────────────
+    Orange Pi 5 Plus
+```
+
+The fan is in **push/intake** configuration: it draws outside air through a
+vented surface and forces it into the fins, rather than extracting from the
+case. **The block is ≈ 27 mm including the gap** — the largest single term in
+[the depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close).
+
+Two numbers are missing: **the clearance gap**, which is a direct depth term
+and chokes the fan if too small, and **the exhaust**, since only the intake
+is specified.
 
 ### The fan
 
@@ -306,6 +326,7 @@ never been run.
 | **Nominal size** | 40 × 40 × 10 mm |
 | **Without pads** | 40 × 40 × **11** mm |
 | **Installed with pads** | 40 × 40 × **12** mm ← **design to this** |
+| **Mounting** | Above the heatsink, across a small clearance gap |
 | **Input current** | **Not retrieved** — [spec page](https://noctua.at/en/products/nf-a4x10-5v/specifications) rate-limited |
 
 > [!WARNING]
@@ -347,8 +368,9 @@ module lands, so it is deliberately
 [the last phase](../handoff/README.md#phase-5--ventilation-and-airflow). What
 it has to achieve:
 
-- An inlet and an exhaust that are **not adjacent**, so the fan does not
-  recirculate its own air
+- An intake directly above the fan with enough open area not to choke it
+- An exhaust that is **not adjacent** to the intake, or the fan recirculates
+  its own air. **Only the intake is specified** — exhaust position is open
 - A path that **crosses the heatsink** rather than taking a short free route
   between two holes
 - **No conflict with the rear module**, which wants the same face as the
@@ -363,15 +385,16 @@ Resolve it with measurement, not assumption.
 The enclosure work is being executed — [the handoff](../handoff/README.md)
 carries the live version of most of these with phase gates attached.
 
-- **The depth budget does not close.** Both M.2 stacks, the board, the
-  heatsink, the fan and the panel share one axis: **≈ 37–51 mm** against a
-  30 mm placeholder.
-  [Handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close)
+- **The depth budget does not close.** The M.2 stack, the board, the ≈ 27 mm
+  cooling block and the panel share one axis: **≈ 51–57 mm** against a 30 mm
+  placeholder.
+  [Handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 - **Installed M.2 stack height** (adapter + card + mated plugs + coax bend) —
   **15.9 mm of stacked guesses**, and the largest untrusted term in that
   budget. A board with cards installed is on hand; this is measurable today.
   [10 · Measurement 1](10-measurement-protocol.md#1--underside-m2-stack)
-- **Whether the fan stacks on the heatsink** — a 12 mm swing. [Thermal](#thermal)
+- **The fan-to-heatsink clearance gap**, and **which surface the fan draws
+  through** — rear or top. [Thermal](#thermal)
 - **The board's mounting holes and port positions.** The vendor
   [mechanical drawing](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view)
   has **not been retrieved**, and an edge mount needs both

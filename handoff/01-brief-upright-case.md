@@ -9,7 +9,7 @@
 > | `40-PIN HEADER ACCESS OPENING`, and *"provide bottom access"* | **No header access.** The header is **internal only** — [0.5](README.md#05--the-40-pin-header-is-internal-only) |
 > | *"Keep the lower header area available for a future module"* | The power module mounts on the **back** |
 > | Fan at 40 × 40 × 10 mm | **12 mm installed** with its anti-vibration pads |
-> | 30 mm cap depth | Does not survive [the depth budget](README.md#03--run-the-depth-budget--it-does-not-currently-close) |
+> | 30 mm cap depth | Does not survive [the depth budget](README.md#03--run-the-depth-budget--it-does-not-close) |
 >
 > The display is an **OLED**, not e-paper. Ventilation is an explicit final
 > phase — [Phase 5](README.md#phase-5--ventilation-and-airflow).

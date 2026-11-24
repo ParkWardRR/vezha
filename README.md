@@ -186,17 +186,17 @@ These decide **whether the two boxes actually close.**
    part needed
 2. **M.2 adapter stack height** — adapter + card + mated antenna plugs — *Enclosure A*
 3. **Mated USB-C plug clearance** — plug *and* cable bend — *both*
-4. **Does the fan stack on the heatsink?** — 12.6 mm or 24.6 mm — *Enclosure A*
+4. **The fan-to-heatsink clearance gap** — "small" is the only spec, and it is a depth term — *Enclosure A*
 5. **The SBC's mechanical drawing** — hole pattern and port positions. **Not a
    measurement; a [file nobody has opened](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view)**
 
 > [!WARNING]
 > **The Enclosure A depth budget does not currently close.** Both M.2 stacks,
 > the board, the heatsink, the fan and the panel share one axis, landing at
-> **≈ 37–51 mm** against a 30 mm placeholder. Items 2 and 4 above are the two
-> biggest levers, and **both are answerable today** — the board is on the desk
-> with its cards installed.
-> [Handoff · the depth budget](handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close)
+> **≈ 51–57 mm** against a 30 mm placeholder. Item 2 above is the biggest soft
+> term and **it is answerable today** — the board is on the desk with its
+> cards installed.
+> [Handoff · the depth budget](handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 
 Canonical copy, with the reasoning:
 [01 · The dimensions](docs/01-architecture.md#the-dimensions-nobody-should-guess).
@@ -252,10 +252,10 @@ edit it there, not here. The headlines:
 | | |
 |---|---|
 | **Settled · system** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on a far-face M→E adapter. Power-only seam over USB-C. |
-| **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom · **OLED front panel**, output only · all antennas in the **replaceable top cap** · **active cooling** (Noctua NF-A4x10 5V + 50 × 46 × 12.6 mm heatsink) · **closed stable foot**, no header access · **power module mounts on the rear** |
+| **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom · **OLED front panel**, output only · all antennas in the **replaceable top cap** · **active cooling** (NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack) · **closed stable foot**, no header access · **power module mounts on the rear** |
 | **Settled · power** | **U3 = Pololu `D42V55F5` #5571** · RotoPD screw terminal removed · accessory port config A · RotoPD geometry 24.40 × 35.80 mm · Pico gates EN from the RotoPD aux rail · the OLED + encoder console stays on the power board |
 | **Ordered** | Taoglas **FXP830.24.0100B** flex dipoles |
-| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 37–51 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
+| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 51–57 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
 | **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, rear-face allocation, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
 
 > [!CAUTION]
@@ -271,25 +271,6 @@ edit it there, not here. The headlines:
 > the Pi's real peak draw, questioning the 4.75 V target, or moving the
 > regulator into Enclosure A — are in
 > [06 · What is actually left to pull on](docs/06-power-board-schematic.md#what-is-actually-left-to-pull-on).
-
-## Ground rules
-
-1. **Measure mated hardware.** Size both boxes around connectors *with* their
-   cables, not around PCB footprints.
-2. **Drawings, not nominals.** A published body size is never a cutout
-   dimension.
-3. **Confirm sourcing in the assembly quote**, not from a datasheet link.
-4. **Freeze the enclosures last.** The RF test in
-   [06](docs/04-antennas.md) can still move antenna positions, and antenna
-   positions move walls.
-5. **Scope cuts go in the docs, not the bin.** Retired work keeps its document
-   with a banner saying what was learned —
-   [04](docs/retired/pcb-1-front-control.md), [10](docs/retired/display-epaper.md) and
-   [12](docs/retired/pcb-1-schematic.md) are the worked examples.
-
-*Rules about faceplate coupons, plunger lengths and LED optics retired with
-PCB 1. They are preserved in [04](docs/retired/pcb-1-front-control.md) should a
-front panel return.*
 
 ## License
 

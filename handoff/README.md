@@ -124,30 +124,6 @@ module ends up.
 
 ---
 
-## Ground rules
-
-These are the project's standing rules. They exist because of specific past
-near-misses, not as boilerplate.
-
-1. **Measure mated hardware.** Size around connectors *with* their cables, not
-   around footprints.
-2. **Drawings, not nominals.** A published body size is never a cutout
-   dimension. [03](03-parts-and-dimensions.md) tags every figure with its
-   provenance — check the tag before you design to the number.
-3. **Check the vendor's repository before scheduling a measurement.** This
-   project burned time planning to measure a module whose KiCad and STEP files
-   had been public the whole time.
-4. **Freeze the enclosure last.** The RF test in
-   [Phase 3](#phase-3--antenna-placement-and-rf-validation) can still move
-   antenna positions, and antenna positions move walls.
-5. **Coupons before cases.** Print the skirt-fit and heat-set-insert coupons
-   in the final material and orientation before committing a whole shell.
-6. **If a number is tagged 🔴, ask.** The client has the board in hand with
-   the Wi-Fi cards installed and can measure on request. That is faster and
-   cheaper than a reprint.
-
----
-
 ## Phase 0 · Inputs and sanity checks
 
 **No CAD in this phase.** Three numbers need to be unblocked first, and one of
@@ -169,67 +145,97 @@ Useful secondary references while you wait:
 [CNX Software on the M.2 sockets](https://www.cnx-software.com/2023/05/10/orange-pi-5-plus-sbc-switches-to-rockchip-rk3588-soc-brings-dual-hdmi-2-1-dual-2-5gbe-m-2-pcie-sockets/) ·
 [CircuitPython Blinka board listing](https://circuitpython.org/blinka/orange_pi_5_plus/)
 
-### 0.2 · Resolve whether the heatsink and fan stack — blocking
+### 0.2 · The cooling stack — resolved
 
-> [!CAUTION]
-> **This is the largest single uncertainty in the design, and it is one
-> question to the client.**
+**The fan and heatsink are separate parts and they stack**, with the fan
+drawing air in through a vented surface and pushing it down into the fins:
+
+```
+    vented enclosure surface
+            │
+            ▼  intake air
+    ┌───────────────────┐
+    │  FAN  40 × 40     │   Noctua NF-A4x10 5V
+    └───────────────────┘   12 mm installed with pads
+            ▼
+      small clearance gap    ← depth not specified
+    ┌───────────────────┐
+    │ HEATSINK 50 × 46  │   12.6 mm
+    └───────────────────┘
+    ═══════════════════════  Orange Pi 5 Plus
+```
+
+**So the thermal block is `12 + gap + 12.6` ≈ 27 mm**, not 12.6 mm. The fan
+is in **push/intake** configuration — it pulls outside air in and forces it
+through the fins rather than extracting from the case.
+
+| Still open | Why it matters |
+|---|---|
+| **The clearance gap depth** | "Small" is not a number. It is a direct term in the depth budget, and too small chokes the fan |
+| **Which surface is the vented one** | The stack is drawn vertically, but the board stands on edge — so the fan faces **rearward**, not up. See the warning below |
+| **Where the exhaust goes** | Only the intake is specified. Air has to leave somewhere, and that is [Phase 5](#phase-5--ventilation-and-airflow) |
+
+> [!WARNING]
+> **"Lid" is ambiguous and it matters.** The stack above is drawn with intake
+> at the top, but **the top of this device is the antenna cap** and the board
+> stands on edge — which puts the heatsink face, and therefore the fan,
+> pointing at the **rear**, not the sky.
 >
-> The heatsink is **50 × 46 × 12.6 mm**. The fan is **40 × 40 × 12 mm**
-> installed. Nobody has said whether the fan bolts *on top of* the heatsink or
-> whether 12.6 mm already describes a finned assembly with the fan in it.
+> Two readings, and they give different enclosures:
 >
-> - **If they stack:** the thermal block is **24.6 mm** deep.
-> - **If 12.6 mm is the whole thing:** it is **12.6 mm**.
+> 1. **The fan faces rearward** and draws through a vented rear surface. This
+>    follows from the board being on edge — but it collides with the rear
+>    service panel and the Phase 4 power module.
+> 2. **The fan faces upward**, drawing through a vented top. That means
+>    venting the antenna cap or the surface beneath it, and routing intake
+>    past the cable passage.
 >
-> That is a 12 mm swing in a case whose proposed depth is 30 mm.
+> **Confirm which before Phase 1 geometry is cut.** Reading 1 is the one the
+> on-edge board implies.
 
-### 0.3 · Run the depth budget — it does not currently close
+### 0.3 · Run the depth budget — it does not close
 
-Front to back, with every term's provenance. Both columns assume the display
-is at the front and the cooling at the rear, per the
-[side section](01-brief-upright-case.md).
+Front to back, with every term's provenance. Display at the front, cooling at
+the rear, per the [side section](01-brief-upright-case.md).
 
-| Term | Low case | High case | Provenance |
+| Term | Low | High | Provenance |
 |---|---:|---:|---|
 | Front wall | 2.0 | 2.0 | 🟢 Spec |
-| Display module | 2.0 | 3.0 | 🔴 Allowance — OLED module + carrier |
-| Panel mount + air gap | 1.0 | 2.0 | 🔴 Allowance |
+| OLED module + mount | 3.0 | 5.0 | 🔴 Allowance — model not chosen |
 | **Front-face M.2 stack** (adapter + card + mated plugs + coax bend) | 15.9 | 15.9 | 🔴 **Four stacked guesses** |
 | Orange Pi PCB | 1.6 | 1.6 | 🔴 Typical FR4 |
 | **Heatsink** | 12.6 | 12.6 | 🟠 Supplied |
-| **Fan** — *only if it stacks* | 0.0 | 12.0 | 🟠 Supplied |
+| **Clearance gap** | 2.0 | 5.0 | 🔴 "Small" — not specified |
+| **Fan** | 12.0 | 12.0 | 🟠 Supplied, installed with pads |
 | Rear clearance + service panel | 2.0 | 3.0 | 🔴 Allowance |
-| **Total depth** | **≈ 37 mm** | **≈ 51 mm** | |
+| **Total depth** | **≈ 51 mm** | **≈ 57 mm** | |
 
-**The brief proposes 30 mm.** The budget says **37 mm at best and 51 mm at
-worst** — between 7 and 21 mm over.
+**The brief proposes 30 mm.** The budget says **51–57 mm** — roughly double.
 
 > [!IMPORTANT]
 > **This is not a reason to stop; it is a reason to agree the real number
 > before cutting CAD.** The cap brief already says *"match the final
-> width/depth to the main enclosure"* — so the cap follows the case, and the
-> case is deeper than the placeholder. What needs deciding is whether ~37–51 mm
-> is acceptable for a handheld, or whether something gives.
+> width/depth to the main enclosure"*, so the cap follows the case — and the
+> case is much deeper than the placeholder.
 >
-> **The two levers, in order of size:**
+> **The levers, in order of size:**
 >
-> 1. **The front-face M.2 stack at 15.9 mm** is the biggest term and the
->    least trustworthy — it is four guesses multiplied together. The client
->    has the board with cards installed. **Ask for this measurement**;
->    procedure is in
->    [10 · Measurement protocol](../docs/10-measurement-protocol.md#1--underside-m2-stack).
->    A real figure here could move the total several mm in either direction.
-> 2. **Whether the fan stacks** — 12 mm, per [0.2](#02--resolve-whether-the-heatsink-and-fan-stack--blocking).
+> 1. **The front-face M.2 stack at 15.9 mm** is the largest soft term and the
+>    least trustworthy — four guesses multiplied together. The client has the
+>    board with cards installed, so **ask for this measurement**. Procedure:
+>    [10 · Measurement protocol](../docs/10-measurement-protocol.md#1--underside-m2-stack)
+> 2. **The clearance gap**, worth up to 3 mm, and a number nobody has set
+> 3. **The cooling stack itself at ~27 mm** is now the single biggest block
+>    and it is largely fixed. Shrinking it means a different heatsink or a
+>    thinner fan, which is a client decision, not a CAD one
 >
-> For scale: an original Game Boy was 32 mm deep. At 51 mm this is a
-> noticeably chunky object, and that is a product decision the client should
-> make knowingly rather than discover at first print.
+> For scale: an original Game Boy was 32 mm deep. At 51–57 mm this is a
+> substantially chunky object — a product decision worth making knowingly
+> rather than discovering at first print.
 
-**Width and height close fine.** Board 100 mm + 2 × 2 mm walls + clearance sits
-comfortably inside the proposed **110 mm** cap width. Board height 75 mm plus
-bottom header access puts the main case near **95 mm**, with the **60 mm** cap
-above it.
+**Width and height close fine.** Board 100 mm + 2 × 2 mm walls + clearance
+sits comfortably inside the proposed **110 mm** cap width. Board height 75 mm
+plus the foot puts the main case near **95 mm**, with the **60 mm** cap above.
 
 ### 0.4 · Confirm the OLED model
 
@@ -277,7 +283,7 @@ still matters for *that* clearance — just not for an external opening.
 ### Phase 0 exit criteria
 
 - [ ] Board mechanical drawing in hand, hole pattern extracted
-- [ ] Heatsink/fan stacking answered
+- [ ] Clearance-gap depth and vented-surface orientation answered
 - [ ] Real front-face M.2 stack measurement requested or received
 - [ ] Case depth agreed with the client, in writing
 - [ ] Display model chosen
@@ -308,9 +314,10 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
   holes**
 - Clearance on **both board faces** — one M.2 card per face, one of them on an
   adapter. Neither face is flat
-- **Cooling volume** for the heatsink and fan, with the fan mounted and
-  retained. **Reserve** inlet and exhaust surface area on different faces;
-  the actual vent pattern is [Phase 5](#phase-5--ventilation-and-airflow)
+- **Cooling volume** for the ~27 mm stack — fan over a clearance gap over the
+  heatsink, [per 0.2](#02--the-cooling-stack--resolved) — with the fan mounted
+  and retained. **Reserve** intake and exhaust surface area; the actual vent
+  pattern is [Phase 5](#phase-5--ventilation-and-airflow)
 - **OLED mounted to the front face**, window cut to its **active area**,
   bezel covering the module margin and the cable exit
 - **A stable foot at the bottom.** Closed — **no opening, no header access.**
@@ -402,7 +409,7 @@ receiving shoulders and insert bosses), **blank lid**, **rear service panel**,
 - [ ] Inserts install cleanly with straight tool access
 - [ ] Rear panel removes and refits without tools fouling
 - [ ] Display window aligns to the active area
-- [ ] Fan clears at 12 mm with pads fitted
+- [ ] Fan clears at 12 mm with pads fitted, over its clearance gap
 
 ---
 
@@ -417,7 +424,7 @@ reading in full. Summary of what matters:
 - **Hollow, open-bottom, closed-top cap**, nonmetallic, interior front and
   rear walls **flat and unobstructed**
 - Initial envelope **110 W × 60 H × 30 D**, 2 mm wall — **but match width and
-  depth to the Phase 1 case**, which [the budget](#03--run-the-depth-budget--it-does-not-currently-close)
+  depth to the Phase 1 case**, which [the budget](#03--run-the-depth-budget--it-does-not-close)
   says is deeper than 30 mm
 - **Locating skirt 4–5 mm deep**, 0.25–0.35 mm sliding clearance per mating
   side, lead-in edges, positive seating ledge
@@ -573,11 +580,14 @@ phases **reserve** vent surface and this one **cuts** it.
 
 ### What the vents have to do
 
-- **Give the fan a real path.** An inlet and an exhaust that are **not
-  adjacent**, so the fan does not recirculate its own air instead of moving it
-  across the heatsink
-- **Cross the heatsink**, not bypass it. The easy failure is air that takes a
-  short free path from inlet to outlet and leaves the fins untouched
+- **Feed the intake.** The fan draws through a vented surface directly above
+  it and pushes down into the fins — that surface needs enough open area not
+  to choke it, and it must not be blocked by the rear module or a hand
+- **Give the air somewhere to go.** Only the intake is specified. Exhaust
+  position is yours to propose, and it must not sit adjacent to the intake or
+  the fan recirculates its own air
+- **Cross the heatsink**, not bypass it. The easy failure is air taking a
+  short free path from intake to exhaust and leaving the fins untouched
 - **Keep warm air off the front face.** The OLED tolerates −40 to +70 °C so
   it is not the limiting part, but a hot front panel is still unpleasant to
   hold
@@ -595,7 +605,7 @@ phases **reserve** vent surface and this one **cuts** it.
 
 | From | What |
 |---|---|
-| [Phase 0.2](#02--resolve-whether-the-heatsink-and-fan-stack--blocking) | Whether the fan sits on the heatsink, and the real thermal block height |
+| [Phase 0.2](#02--the-cooling-stack--resolved) | The stack order, the gap, and which surface the fan draws through |
 | Phase 1 | Final internal layout and free volume |
 | Phase 4 | The rear module's footprint and standoff |
 | Client | A thermal measurement under sustained dual-radio load — **this does not exist yet** and is the honest gap in this phase |
@@ -622,7 +632,7 @@ the hardware on the desk.**
 | Don't guess | Why | Where |
 |---|---|---|
 | **The board's mounting holes and port positions** | The 100 × 75 mm outline tells you neither | [0.1](#01--retrieve-the-board-drawing--blocking) |
-| **Whether the fan stacks on the heatsink** | 12 mm swing in a 30 mm envelope | [0.2](#02--resolve-whether-the-heatsink-and-fan-stack--blocking) |
+| **The fan-to-heatsink clearance gap** | "Small" is not a number, and it is a depth-budget term | [0.2](#02--the-cooling-stack--resolved) |
 | **The installed M.2 stack height** | Currently four stacked guesses at 15.9 mm, and it is the largest term in the depth budget | [10 · Measurement protocol](../docs/10-measurement-protocol.md#1--underside-m2-stack) |
 | **Whether the header is exposed** | It is **not.** Internal only, for the display ribbon | [0.5](#05--the-40-pin-header-is-internal-only) |
 | **Antenna recess depth** | The datasheet has no thickness figure at all. Use the connector | [03](03-parts-and-dimensions.md#antennas) |
@@ -638,13 +648,14 @@ Batched so they can be answered in one go:
 
 1. Can you share the **Google Drive mechanical files** — is the link
    permissioned for me?
-2. Does the **fan mount on top of the 12.6 mm heatsink**, or is 12.6 mm the
-   whole cooling assembly?
+2. **How big is the fan-to-heatsink clearance gap**, and which surface is the
+   vented one the fan draws through — rear or top?
 3. Can you **measure the installed M.2 stack** on the board you have — adapter
    + card + mated antenna plugs + coax bend, from the board face to the lowest
    point?
-4. **~37–51 mm case depth** is where the budget lands against the 30 mm
-   placeholder. Is that acceptable, or should we hunt for depth?
+4. **~51–57 mm case depth** is where the budget lands against the 30 mm
+   placeholder — the cooling stack alone is ~27 mm. Is that acceptable, or
+   should we hunt for depth?
 5. Which **display model**, and bare panel + adapter board or integrated
    module?
 6. **Can you model the airflow and propose the vents**

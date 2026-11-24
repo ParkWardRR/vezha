@@ -35,7 +35,7 @@ antenna connection.** **Only 5 V power crosses the seam**, over USB-C.
 | **Radios** | AX210 in the native top-side E-key; second radio on a far-face M→E adapter |
 | **Antennas** | All elements in the **replaceable top cap** |
 | **Display** | **OLED** on the front face — output only |
-| **Cooling** | **Active** — Noctua NF-A4x10 5V plus a 50 × 46 × 12.6 mm heatsink |
+| **Cooling** | **Active** — Noctua NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack |
 | **Bottom** | **Closed, stable foot.** No opening, no header access |
 | **Rear** | Service panel, cap screw ears, and the power module |
 
@@ -51,7 +51,7 @@ is measured once, for both faces together.
 It leaves two things open. **How the board is retained** — an edge bracket, a
 slot in the band, or a carrier on one broad face — and **the depth budget**,
 which does not currently close:
-[handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
+[handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-close).
 
 ## No controls in v1
 
@@ -384,12 +384,10 @@ measurements to take, not values to look up — with one exception, below.
    On an [edge-mounted board](#what-on-edge-mounting-means) it sets case
    depth, and it is the largest untrusted term in that budget
 2. **Mated USB-C plug clearance** — plug *and* cable bend
-3. **The installed thermal envelope.** A
-   **50 × 46 × 12.6 mm** figure has been supplied for the heatsink, and a
-   **40 × 40 × 12 mm** fan sits somewhere against it.
-   Whether those two numbers are independent or one contains the other is
-   unknown, and it is the difference between a 12.6 mm and a 24.6 mm thermal
-   stack. [02 · Thermal](02-enclosure-a-upper.md#thermal)
+3. **The fan-to-heatsink clearance gap.** The stack is fan over gap over a
+   50 × 46 × 12.6 mm heatsink, ≈ 27 mm installed — but the gap itself is
+   specified only as "small", and it is a direct depth term.
+   [02 · Thermal](02-enclosure-a-upper.md#thermal)
 4. **The SBC's mechanical drawing.** A vendor mechanical
    reference exists and **has not been retrieved**:
    [Google Drive](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view).
@@ -428,8 +426,9 @@ measurements to take, not values to look up — with one exception, below.
 - **No controls and no PCB 1** — [why](#no-controls-in-v1)
 - **Taoglas FXP830.24.0100B flex dipoles in the replaceable top cap.** The
   part is **ordered**. [04 · The antenna cap](04-antennas.md#the-antenna-cap)
-- **Active cooling** — Noctua NF-A4x10 5V, 40 × 40 × **12 mm** installed, plus
-  a 50 × 46 × 12.6 mm heatsink. [02 · Thermal](02-enclosure-a-upper.md#thermal)
+- **Active cooling** — Noctua NF-A4x10 5V, 40 × 40 × **12 mm** installed,
+  mounted **above** a 50 × 46 × 12.6 mm heatsink across a clearance gap.
+  Intake/push. ≈ 27 mm block. [02 · Thermal](02-enclosure-a-upper.md#thermal)
 - **Opens as a perimeter band with both broad faces as separate plates.**
   [02 · How it opens](02-enclosure-a-upper.md#how-it-opens)
 
@@ -460,9 +459,9 @@ measurements to take, not values to look up — with one exception, below.
   at 5.0 V the budget is 25 mΩ round trip, and one USB-C mated pair is
   30–40 mΩ on its own.
   [06 · What is left to pull on](06-power-board-schematic.md#what-is-actually-left-to-pull-on)
-- **The Enclosure A depth budget**, which lands at ≈ 37–51 mm against a 30 mm
+- **The Enclosure A depth budget**, which lands at ≈ 51–57 mm against a 30 mm
   placeholder.
-  [Handoff](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close)
+  [Handoff](../handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 - **The SBC mechanical drawing**, never retrieved. Hole pattern and port
   positions both depend on it.
 
@@ -477,8 +476,8 @@ measurements to take, not values to look up — with one exception, below.
 - **How the on-edge board is retained**
 - **Rear-face allocation** — service panel, cap screw ears, fan exhaust and
   the power module all want the same surface
-- **Heatsink SKU.** The 50 × 46 × 12.6 mm figure is supplied, with no drawing,
-  and it is not known whether it includes the fan
+- **Heatsink SKU**, and **the fan-to-heatsink clearance gap**, which is
+  specified only as "small"
 - **Antenna element coordinates, spacing and port map.** The part is ordered
   but **the quantity was not recorded**
 - **Which SBC** — 5 Plus, or the Orange Pi 5 V1.3.2.

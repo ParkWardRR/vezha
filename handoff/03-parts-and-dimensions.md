@@ -60,6 +60,26 @@ Every number you need in one place, **each tagged with where it came from.**
 | Fan price | ~$16 USD | 🟠 Supplied | Client estimate, not a quote |
 | Fan input current | **Not retrieved** | 🔴 | Noctua's spec page rate-limited on 2026-11-23. Needed for the 5 V budget |
 
+### The stack
+
+Fan over a clearance gap over the heatsink, in **push/intake** configuration
+— the fan pulls outside air through a vented surface and forces it into the
+fins:
+
+```
+    vented surface → intake
+            ▼
+    FAN       40 × 40 × 12 mm
+            ▼
+    gap       "small" — not specified
+    HEATSINK  50 × 46 × 12.6 mm
+    ─────────────────────────────
+    Orange Pi 5 Plus
+```
+
+**Thermal block ≈ 27 mm** including the gap. That is the largest single block
+in the depth budget and it is largely fixed.
+
 > [!CAUTION]
 > **Two cooling traps.**
 >
@@ -68,13 +88,14 @@ Every number you need in one place, **each tagged with where it came from.**
 > the pads to recover 1 mm trades it for vibration straight into a printed
 > shell — in a handheld, that is the wrong trade.
 >
-> **2 · Nobody has said whether the heatsink and fan stack.** A 12.6 mm
-> heatsink with a 12 mm fan bolted to it is a **24.6 mm** thermal block. A
-> 12.6 mm assembly that already *includes* a fan is half that. **This is the
-> single largest uncertainty in the depth budget** —
-> [Phase 0](README.md#phase-0--inputs-and-sanity-checks).
+> **2 · The clearance gap has no number.** "Small" is the only specification.
+> Too small and the fan is choked against the fins; too large and it is depth
+> spent for nothing. Needs a figure before the pocket is cut.
 
----
+> [!NOTE]
+> **Only the intake is specified.** Air enters through a vented surface above
+> the fan. **Where it leaves is an open design question** —
+> [Phase 5](README.md#phase-5--ventilation-and-airflow).
 
 ## Display
 
