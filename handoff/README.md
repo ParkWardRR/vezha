@@ -69,11 +69,14 @@ foot at the bottom.** The power module mounts on the **back**, later.
                           ══════════════════════════  ← STABLE FOOT · no opening
 
         rear elevation:  ┌────────────────────────┐
-                         │  [o]              [o]  │  ← cap screw ears
+                         │  [o]              [o]  │  ← the 2 screws that
+                         │                        │    hold the antenna cap on
                          │   ┌────────────────┐   │
                          │   │  POWER MODULE  │   │  ← Phase 4, mounts HERE
                          │   │  (later)       │   │    on the back, detachable
                          │   └────────────────┘   │
+                         │   removable service    │
+                         │   panel                │
                          └────────────────────────┘
 ```
 
@@ -325,8 +328,7 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
   footprint and a low enough centre of mass that a tugged USB-C cable does not
   topple it
 - **Removable rear service panel**
-- **Reserve rear area for the Phase 4 power module** to mount against — see
-  the rear-face congestion warning below
+- **Reserve rear area for the Phase 4 power module** to mount against
 - **Reserve surface area for vents, but do not cut final vent geometry** —
   that is [Phase 5](#phase-5--ventilation-and-airflow)
 - **Port openings from the actual board CAD** — not from the 100 × 75 mm
@@ -367,34 +369,13 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 > is a ventilated box: dust ingress, acoustic leakage, and an airflow path
 > that has to actually cross the heatsink.
 
-> [!CAUTION]
-> **The rear face is getting crowded, and it is worth planning now.** With the
-> bottom closed as a foot, four things want the back:
->
-> 1. The **removable service panel**
-> 2. The **two cap screw ears** and their insert bosses, just below the seam
-> 3. **Fan exhaust**, if the airflow path runs front-to-back
-> 4. The **Phase 4 power module**, mounted flat against it
->
-> Items 3 and 4 are in direct conflict — a module bolted over the exhaust
-> blocks it. **Resolve the airflow direction and the module's mounting
-> footprint together**, not separately. Flag it early if the rear cannot carry
-> all four; venting may have to move to the sides or the top.
-
 > [!NOTE]
-> **Where does the USB-C power inlet go now?** The bottom used to be the
-> service and expansion edge; it is now a closed foot. The inlet has to move
-> to a side or the rear, and it must clear the **mated plug plus its cable
-> bend radius** — not the receptacle footprint. Size it so a plugged-in cable
-> does not lever the device over.
-
-> [!NOTE]
-> **No controls in this revision.** The front view reserves a control area
-> below the display. **Reserve the space; do not populate it.** Keys, a nav
-> wheel, a toggle and indicator LEDs were all specified and then cut —
-> [the scope cut](../docs/01-architecture.md#no-controls-in-v1) has the
-> reasoning, and [the retired front-panel work](../docs/retired/pcb-1-front-control.md)
-> is kept should they return.
+> **The USB-C power inlet is the port next to the Ethernet jacks.** It is
+> part of the board's existing port cluster, not a standalone hole — so it
+> comes out of the board drawing along with everything else on that edge, and
+> the opening is a cluster cutout. Size it around the **mated plug plus its
+> cable bend radius**, not the receptacle, and make sure a plugged-in cable
+> cannot lever the device over.
 
 ### Deliverables
 
@@ -520,10 +501,7 @@ It **mounts flat against the back of the main case** and is **detachable.**
 > telemetry, no 40-pin header — so the mechanical interface is just a mount
 > and a short cable run, and the module must come off without disturbing any
 > antenna or PCIe connection.
->
-> Note the knock-on: a module covering the rear face **competes with the fan
-> exhaust and the service panel.** See the rear-face warning in
-> [Phase 1](#watch-items).
+
 
 | | |
 |---|---|
@@ -591,8 +569,7 @@ phases **reserve** vent surface and this one **cuts** it.
 - **Keep warm air off the front face.** The OLED tolerates −40 to +70 °C so
   it is not the limiting part, but a hot front panel is still unpleasant to
   hold
-- **Not fight the rear module.** See the
-  [rear-face congestion warning](#watch-items)
+- **Work around the rear module**, which mounts flat against the back
 - **Not become an antenna problem.** Vents in or near the cap are fine
   mechanically but the chamber must stay free of metal; no metal mesh inserts
 - **Stay quiet.** The fan has **no PWM input** and may run flat out. Vent

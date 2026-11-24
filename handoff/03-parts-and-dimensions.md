@@ -27,6 +27,7 @@ Every number you need in one place, **each tagged with where it came from.**
 | PCB thickness | ~1.6 mm | 🔴 Guess | Typical FR4. Not confirmed for this board |
 | Mounting holes | **Not retrieved** | — | The brief says support the board by its *actual* mounting holes. Get them from the drawing below |
 | **Mechanical drawing** | [Google Drive](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view) | 🔴 **Not retrieved** | **Phase 0 blocker.** Authority for hole pattern, connector positions, component heights |
+| **USB-C power inlet** | The port **next to the Ethernet jacks** | 🟢 Specified | Part of the board's port cluster, not a standalone hole. Cut the cluster from the drawing |
 | Board orientation | **40-pin header at the bottom edge** | 🟢 Specified | Settles which edge faces the floor. [Brief](01-brief-upright-case.md) |
 | Header pin direction | **Unconfirmed** | 🔴 | The brief is explicit: a bottom access opening does **not** imply the stock pins point downward |
 

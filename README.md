@@ -224,7 +224,7 @@ out of the path.
 | | Document | For | Contents |
 |---|---|---|---|
 | **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, decision status. **Read first.** |
-| **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the on-edge board, the display, the fan, the antenna cap, USB-C inlet, thermal |
+| **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the on-edge board, the display, the fan, the antenna cap, power entry, thermal |
 | **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, wall openings |
 | **04** | [Antennas](docs/04-antennas.md) | RF + mechanical | The antenna cap, datasheet figures for the ordered part, candidates and gain, tri-band clarification, RF bench test |
 | **05** | [Power board — requirements](docs/05-power-board.md) | PCB | What the board must do: module interfaces, the rules that must survive layout, headroom, measurement plan |
@@ -256,7 +256,7 @@ edit it there, not here. The headlines:
 | **Settled · power** | **U3 = Pololu `D42V55F5` #5571** · RotoPD screw terminal removed · accessory port config A · RotoPD geometry 24.40 × 35.80 mm · Pico gates EN from the RotoPD aux rail · the OLED + encoder console stays on the power board |
 | **Ordered** | Taoglas **FXP830.24.0100B** flex dipoles |
 | **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 51–57 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
-| **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, rear-face allocation, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
+| **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
 
 > [!CAUTION]
 > **The seam is over budget as specified, and the regulator can no longer

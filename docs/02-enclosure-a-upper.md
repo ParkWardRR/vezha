@@ -13,8 +13,8 @@ top.
 | **Antennas** | All elements in the **replaceable top cap** |
 | **Cooling** | **Active** — Noctua NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack |
 | **Bottom** | **Closed, stable foot.** No opening, no header access |
-| **Rear** | Service panel, cap screw ears, and the power module later |
-| **Openings** | OLED window, fan inlet and exhaust, USB-C inlet |
+| **Rear** | Removable service panel, and the power module later |
+| **Openings** | OLED window, fan intake and exhaust, and the board's port cluster |
 
 Read [01-architecture.md](01-architecture.md) first.
 
@@ -71,9 +71,7 @@ opposite it and the display faces forward off a broad face.
 
 **The bottom is a closed, stable foot.** No opening, and **no 40-pin header
 access** — the header is internal only, carrying the display ribbon. **The
-power module mounts on the back**, which makes the rear face the congested
-one: service panel, cap screw ears, fan exhaust and the module all want it.
-[Handoff · rear-face congestion](../handoff/README.md#watch-items)
+power module mounts on the back**, alongside the removable service panel.
 
 > [!WARNING]
 > **The depth budget does not close.** The M.2 stack, the board, the ≈ 27 mm
@@ -139,9 +137,9 @@ instead be rendered on the panel — but see the size caveat under
 
 | Part | Carries | Opens? |
 |---|---|---|
-| **Perimeter band** | USB-C inlet, fan openings | No |
+| **Perimeter band** | The board's port cluster, fan openings | No |
 | **Front face** | The OLED window | Service only |
-| **Rear face** | Service panel, cap screw ears, the power module later | **Yes, for service** |
+| **Rear face** | Service panel, the power module later | **Yes, for service** |
 | **Top cap** | **Every antenna element** and their coax | **Yes, for antenna swaps** |
 | **Bottom** | Nothing — **closed stable foot** | No |
 
@@ -164,15 +162,23 @@ whole interface — no signal, no telemetry.
 Full rationale and the 3 A caveat:
 [01 · Crossing the seam](01-architecture.md#crossing-the-seam).
 
+**The inlet is the USB-C port next to the Ethernet jacks.** It is part of the
+board's existing port cluster, so it comes out of the
+[board drawing](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view)
+along with everything else on that edge — the opening is a cluster cutout,
+not a standalone hole.
+
 **Mechanical consequences for this shell:**
 
-- A **USB-C opening** positioned so the cable reaches the Orange Pi's power
-  input without a tight bend
-- **The enclosure latch retains the boxes**, not the cable
-- Size the case around the **mated plug and its bend radius**, not the
-  receptacle footprint
-- No contact array, no alignment features, no detect pin — the earlier
-  7-contact seam is removed
+- Cut the **port cluster opening** from the board drawing, not from the
+  100 × 75 mm outline
+- Size around the **mated plug and its bend radius**, not the receptacle
+  footprint — and check that a plugged-in cable cannot lever the device over
+  now that it stands on a foot
+- Route the cable from the power module on the rear round to that edge
+  without a tight bend
+- **The enclosure retains the boxes**, not the cable
+- No contact array, no alignment features, no detect pin
 
 **No RF crosses the seam** — the power box must come off without disturbing
 any PCIe or antenna connection.
@@ -405,8 +411,6 @@ carries the live version of most of these with phase gates attached.
 - **Fan speed control**, or the decision to run it flat out
 - **Vent pattern and airflow direction** — the
   [last design step](../handoff/README.md#phase-5--ventilation-and-airflow)
-- **Rear-face allocation.** Service panel, cap screw ears, fan exhaust and
-  the power module all want the same surface
 - Which M-key-to-E-key adapter, confirmed to route PCIe — the Sintech M-key
   to A/E-key card is the candidate. Routes PCIe ×1, carries USB 2.0 on a
   separate flying cable, installed size unmeasured.

@@ -15,10 +15,8 @@ Read [01-architecture.md](01-architecture.md) first.
 > same contents, and **still only 5 V over USB-C crosses between the two
 > boxes.** Every electrical decision in here stands.
 >
-> **What does change:** the seam cable route, the module's mounting interface,
-> and the fact that the rear face is now contested — the service panel, the
-> cap screw ears and the fan exhaust all want it too.
-> [Handoff · rear-face congestion](../handoff/README.md#watch-items)
+> **What does change:** the seam cable route and the module's mounting
+> interface to Enclosure A's rear face.
 
 > [!NOTE]
 > **This supersedes the earlier "battery box" framing.** The current

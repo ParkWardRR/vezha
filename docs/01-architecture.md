@@ -37,7 +37,7 @@ antenna connection.** **Only 5 V power crosses the seam**, over USB-C.
 | **Display** | **OLED** on the front face — output only |
 | **Cooling** | **Active** — Noctua NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack |
 | **Bottom** | **Closed, stable foot.** No opening, no header access |
-| **Rear** | Service panel, cap screw ears, and the power module |
+| **Rear** | Removable service panel, and the power module |
 
 Detail: [02 · Enclosure A](02-enclosure-a-upper.md). Build plan:
 [the handoff](../handoff/README.md).
@@ -474,8 +474,6 @@ measurements to take, not values to look up — with one exception, below.
 - **Vent pattern and airflow direction** — the
   [last design step](../handoff/README.md#phase-5--ventilation-and-airflow)
 - **How the on-edge board is retained**
-- **Rear-face allocation** — service panel, cap screw ears, fan exhaust and
-  the power module all want the same surface
 - **Heatsink SKU**, and **the fan-to-heatsink clearance gap**, which is
   specified only as "small"
 - **Antenna element coordinates, spacing and port map.** The part is ordered
