@@ -1,7 +1,7 @@
 # 07 · Bill of Materials
 
-Every part named across this repo, with its standing. **Nothing here has been
-ordered.**
+Every part named across this repo, with its standing. **One line item has been
+ordered** — the Taoglas antennas, on 2026-11-23. Everything else is unbought.
 
 > [!CAUTION]
 > **Status is the most important column.** "Candidate" means someone suggested
@@ -13,8 +13,10 @@ ordered.**
 | | Meaning |
 |---|---|
 | ✅ **On hand** | Physically owned |
+| 📦 **Ordered** | Bought, not yet in hand |
 | 🟡 **Chosen** | Decided, not purchased |
 | 🔵 **Candidate** | Proposed, not validated |
+| 🟠 **Named, no SKU** | A part is identified in words and has a supplied dimension, but no catalogue number or drawing |
 | 🔴 **Unresolved** | No part selected |
 | ⬜ **Dropped** | Previously considered, now superseded |
 
@@ -22,11 +24,12 @@ ordered.**
 
 | Part | PN | Status | Price | Notes |
 |---|---|---|---|---|
-| SBC | Orange Pi 5 Plus (RK3588) | 🟡 Chosen | — | 100 × 75 mm bare board. Clearance needed **both faces**. |
+| SBC | Orange Pi 5 Plus (RK3588) | ✅ **On hand** | — | 100 × 75 mm bare board, **mounted on edge**, 40-pin header at the bottom. Clearance needed **both faces**. A unit with Wi-Fi cards installed is on the desk, so installed figures are measurable on request. [Mechanical drawing](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view) — **not yet retrieved**. |
+| SBC alternate | Orange Pi **5**, rev **V1.3.2** | 🔵 Candidate | — | 100 × 62 mm published *model* footprint; **no revision-specific drawing verified**. ⚠️ **Probably not socket-compatible** — likely no native E-key, which would break the radio topology. [01](01-architecture.md#the-alternate-board-and-why-it-is-not-a-drop-in) |
 | Uplink radio | Intel AX210 | ✅ **On hand** | — | M.2 2230, 22 × 30 × 2.4 mm. Top-side E-key socket. |
 | AP radio | MediaTek MT7922 / AMD RZ616 | 🔵 Candidate | — | 2230 assumed, **height unconfirmed**. Verify antenna connector type and 5 GHz AP operation first. |
 | M.2 adapter | M-key → E-key | 🔴 **Unresolved** | — | Must **route PCIe**. Installed stack height unmeasured. |
-| Antennas ×4 | Taoglas FXP830.24.0100B | 🔵 Candidate | $7.31 ea · ~$29/4 | 42 × 7 mm, 100 mm MHF4 lead. Estimate, not a live quote. |
+| Antennas (×4 planned) | Taoglas FXP830.24.0100B | 📦 **Ordered 2026-11-23** | $7.31 ea · ~$29/4 | **Quantity ordered was not recorded.** 42 ± 0.4 × 7 ± 0.3 mm body · 100 ± 3 mm Ø0.81 mm coax · I-PEX MHF4 (HSC compatible) · **mated connector 2.1 ± 0.4 mm** · 3M 467 adhesive · −40 to +85 °C. **The datasheet gives no body thickness** — [why that is fine](04-antennas.md#the-part--datasheet-figures). Mount in the **top cap**. Price is an estimate, not a live quote. |
 | Antenna alt (uplink) | TE/Linx ANT-W63-WRT-MHF4 | 🔵 Candidate | $15.31 ea · ~$31/pr | Dome. **Gain figures quoted are the SMA variant's** — verify the MHF4 datasheet. |
 | Antenna alt | TE/Linx ANT-W63WS1-SMA | 🔵 Candidate | $12.27 ea | Blade, needs MHF4→SMA bulkheads. Not pocketable. |
 | Antenna alt | Octane SA-2400/5800 | 🔵 Candidate | ~$79 ea (GSA) | **No full 6 GHz coverage.** Not a verified retail price. |
@@ -35,8 +38,14 @@ ordered.**
 | RTC battery lead | 2-pin **1.25 mm pitch** pigtail (JST GH / PicoBlade-class) | 🔵 Candidate | ~$1 | Mates the Orange Pi's RTC header. **Verify pitch, housing and polarity against the board itself** — 1.25 mm is the published wiki figure, and the neighbouring 1.5 mm ZH-class housings will part-mate and mislead. |
 | RTC chip (on the SBC) | **HYM8563TS** | 🔵 **Unverified** | — | Named in one third-party spec listing, not confirmed against the board or schematic. Affects nothing to order; it decides the Linux driver and the `cat /proc/driver/rtc` check in [09](09-software-and-bringup.md#bring-up-order). |
 | UART header (Pi side) | — | ⬜ **Likely none needed** | — | The 5 Plus ships with its 40-pin header populated and usually has a separate debug UART header. **Verify before buying.** Do not use the console UART for telemetry — see [05](05-power-board.md#telemetry-header). |
-| Display | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | **v1 is headless** — [the scope cut](01-architecture.md#the-v1-scope-cut). Chosen 2026-11-17, cut 2026-11-18. Analysis kept in [10](retired/display-epaper.md). |
-| Heatsink | — | 🔴 Unresolved | — | Thermal case untested. |
+| **Display** | GooDisplay e-paper **3.7"** — model TBD | 🔴 **Unresolved — model** | — | **Reinstated 2026-11-23**, reversing the scope cut's display half. Three candidates below. Front panel, **output only**; no controls returned. [02](02-enclosure-a-upper.md#the-display--reinstated-2026-11-23) |
+| Display · option A ← default | [GDEY037T03](https://www.good-display.com/product/437.html) | 🔵 Candidate | — | 416 × 240 · active 81.54 × 47.04 · outline **92.99 × 53 × 1.0 mm** · B/W · **2 s full, 0.3 s partial** · **0–50 °C** · UC8253 · 18 mW refresh, 3 µW standby |
+| Display · option B | [GDEM037F36](https://www.good-display.com/product/505.html) | 🔵 Candidate | — | Same geometry, 4-colour BWRY · **20 s full update** · **0–40 °C**. Slow and narrower thermal range — poor fit for a warm box |
+| Display · option C | [GDEH037E01](https://www.good-display.com/product/991.html) | 🔵 Candidate | — | 480 × 720 · active 50.40 × 75.60 · outline 58.0 × 85.64 × 0.9 mm · Spectra 6 full colour · 0–50 °C · portrait |
+| Display driver board | [DESPI-C02](https://www.good-display.com/product/516.html) | 🔵 Candidate | — | **41 × 22 mm**, 24-pin 0.5 mm FPC, SPI, 3.3 V. Pairs with options A and B. *(Option C needs [DESPI-E01](https://www.good-display.com/product/1087.html), 35 × 20 mm.)* **Compare with the retired 4.26" panel's 107 × 64 mm driver board** — that size was a reason for the original cut and it is gone |
+| ~~Display~~ | Waveshare 4.26" e-Paper HAT, SKU `26376` | ⬜ **Dropped** | ~~$31.99~~ | Chosen 2026-11-17, cut 2026-11-18, **not revived** — the replacement is the 3.7" GooDisplay above. Analysis kept in [10](retired/display-epaper.md) and still applies to e-paper generally. |
+| **Fan** | Noctua **NF-A4x10 5V** (3-pin) | 🟡 **Chosen 2026-11-23** | ~$16 · **estimate** | **40 × 40 × 12 mm installed with pads** — 11 mm bare, 10 mm nominal. ⚠️ **Design to 12 mm, not the 10 mm in the model name.** 5 V · GND/5V/tach · **no PWM input**, so no PWM speed control. Input current **not retrieved** ([spec page](https://noctua.at/en/products/nf-a4x10-5v/specifications) rate-limited 2026-11-23) — needed for the 5 V budget. |
+| **Heatsink** | Orange Pi 5 Plus aluminium heatsink | 🟠 **Named, no SKU** | — | **50 × 46 × 12.6 mm.** Supplied figure, no drawing. ⚠️ **Unknown whether the fan stacks on it** — 12.6 mm vs 24.6 mm total, the largest open number in the box. Thermal case still untested. |
 
 ## PCB 1 — front control board ⬜ **Dropped entirely**
 
@@ -131,9 +140,22 @@ feeder fee — worth weighing against placing them at all.
 
 Outputs of design work, not catalogue items:
 
-- Enclosure A shell, with service access (3D printed) — **no faceplate in v1**
+- **Enclosure A main case** (3D printed) — upright board, display window, fan
+  openings, bottom header access, removable rear service panel
+- **Enclosure A antenna cap** (3D printed) — replaceable, hollow, nonmetallic
+- **Test coupons** — skirt fit, and heat-set insert
 - Enclosure B shell (3D printed)
-- **the power board** fabrication and assembly — the only board in v1
+- **the power board** fabrication and assembly — the only PCB in v1
+
+Scope, phasing and deliverables for the printed parts:
+[handoff](../handoff/README.md).
+
+### Fasteners and inserts — new 2026-11-23
+
+| Part | Status | Notes |
+|---|---|---|
+| Heat-set inserts, **M3** | 🔴 **Unresolved — SKU** | Two, in the main case below the cap seam. **Size the bore from the chosen insert's drawing, never from "M3" alone.** [Prusa guidance](https://www.prusa3d.com/product/heat-set-inserts-m3-standard-100-pcs/) |
+| Cap screws, **M3** | 🔴 **Unresolved** | Two, rear-access. Socket or button head with a flat bearing face — **not** countersunk into thin cap ears. Length from the assembled stack |
 
 ## Before ordering anything
 

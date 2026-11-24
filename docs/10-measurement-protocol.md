@@ -1,10 +1,14 @@
 # 10 · Measurement Protocol — the dimensions nobody should guess
 
-**Added 2026-11-18.** Three measurements gate every enclosure dimension, and
-all three need physical parts in hand. This document exists so that when the
-parts arrive, taking them is a short unambiguous job rather than a research
-exercise — and so whoever does the mechanical work is not guessing at what
-matters.
+**Added 2026-11-18, extended 2026-11-23.** A handful of figures gate every
+enclosure dimension. This document exists so that taking them is a short
+unambiguous job rather than a research exercise — and so whoever does the
+mechanical work is not guessing at what matters.
+
+**Two of them no longer need parts to arrive.** The Orange Pi is on the desk
+with its Wi-Fi cards installed, and the SBC's mechanical drawing is a link
+away. Those are the two blocking the
+[enclosure handoff](../handoff/README.md).
 
 > [!IMPORTANT]
 > **No measurement in this document has been taken.** It is the procedure,
@@ -19,12 +23,29 @@ discovered after a case has been printed or a board fabricated:
 
 | # | Dimension | Gates | Currently assumed |
 |---|---|---|---|
-| 1 | **Underside M.2 stack** — adapter + card + mated plugs + coax bend | Enclosure A thickness. [02 open questions](02-enclosure-a-upper.md#open-questions) calls it "now the only thing setting this box's thickness" | **15.9 mm**, from four stacked guesses |
+| 1 | **M.2 stack** — adapter + card + mated plugs + coax bend | **Enclosure A depth** (changed 2026-11-23 — it was thickness, before the board was stood [on edge](01-architecture.md#what-on-edge-mounting-changes)). The largest untrusted term in the depth budget | **15.9 mm**, from four stacked guesses |
 | ~~2~~ | ~~**RotoPD Pro envelope**~~ — **resolved 2026-11-18 from the vendor repo**, no measurement needed | — | **24.40 × 35.80 mm**, real [geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) |
 | 3 | **Mated USB-C plug + cable bend radius** | Every USB-C opening in both boxes | **25 mm** |
+| **4** | **Thermal stack** — does the fan bolt onto the heatsink? *(added 2026-11-23)* | Enclosure A depth, by 12 mm | **12.6 mm** heatsink; fan **unknown** whether additive |
+| **5** | **SBC hole pattern and port positions** — *not a measurement; a file to open* | Board retention, every port cutout | **Nothing.** [Drawing not retrieved](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view) |
 
 Everything else in [02](02-enclosure-a-upper.md) and
-[03](03-enclosure-b-lower.md) can be sized once these three are known.
+[03](03-enclosure-b-lower.md) can be sized once these are known.
+
+> [!IMPORTANT]
+> **Measurement 1 is now cheap and nobody has taken it.** An Orange Pi 5 Plus
+> **with the Wi-Fi cards installed is physically on hand** as of 2026-11-23.
+> The 15.9 mm figure is four stacked guesses and it is the biggest term in a
+> depth budget that currently **does not close** —
+> [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
+> This is the highest value-per-minute task in the project right now.
+
+> [!TIP]
+> **Measurement 5 is not a measurement at all, which is the point.** This
+> document already records the lesson from the RotoPD envelope: *check the
+> vendor's repository before scheduling a measurement.* A mechanical file for
+> the SBC exists and has never been opened. Do that before reaching for
+> calipers.
 
 ---
 
@@ -144,10 +165,16 @@ safety here — the clearance allowance is already a separate parameter
 
 > [!WARNING]
 > [02](02-enclosure-a-upper.md) is explicit that the published 100 × 75 mm
-> board size excludes the heatsink, the adapter and cable bends. While the
-> assembly is apart, also measure the **installed heatsink height**
-> (`A.heatsink_h`, currently a 15 mm guess) — it is free to take at this point
-> and it sets the other side of the Z stack.
+> board size excludes the heatsink, the fan, the adapter and cable bends.
+> While the assembly is apart, take these too — all three are free at this
+> point and all three land in the same depth budget:
+>
+> - **Installed heatsink height** (`A.heatsink_h`). The supplied figure is
+>   **12.6 mm**; the older guess was 15 mm. Confirm which is real.
+> - **Whether the fan mounts on top of the heatsink**, and the combined
+>   height if so — [measurement 4](#4--the-thermal-stack).
+> - **The opposite face's stack**, which on an edge-mounted board adds into
+>   the same axis as everything above.
 
 ## 2 · RotoPD Pro envelope — resolved, no measurement needed
 
@@ -191,6 +218,53 @@ plug and its bend radius, not the receptacle footprint."*
 4. Repeat for the seam cable in Enclosure B, which is short and therefore
    bends worse. Take the **worst** case.
 
+## 4 · The thermal stack
+
+**Added 2026-11-23.** **Feeds:** `A.heatsink_h`, `A.fan_h` → Enclosure A
+depth.
+
+The question is one line long and the answer is worth 12 mm:
+
+> **Does the Noctua NF-A4x10 5V bolt onto the 50 × 46 × 12.6 mm heatsink, or
+> is 12.6 mm already a finned assembly with a fan in it?**
+
+1. With the heatsink on the board, measure from the **board's top face** to
+   the **highest point of the heatsink**. Expect ~12.6 mm; confirm it.
+2. Offer the fan up in its intended position. Measure the **combined** height
+   the same way, from the board face.
+3. **Record both**, not just the total — the design needs to know whether the
+   fan can be deleted later without a reprint.
+4. Note how the fan is retained: long screws through the fins, a shroud, or
+   adhesive pads. That decides whether the case has to hold it.
+
+> [!WARNING]
+> **Measure the fan with its anti-vibration pads fitted.** The part is
+> 40 × 40 × **10 mm** by model name, **11 mm** bare and **12 mm** with pads.
+> The enclosure is being designed to 12 mm.
+
+## 5 · The SBC mechanical drawing — a file, not a measurement
+
+**Added 2026-11-23.** **Feeds:** board retention, every port cutout, the
+40-pin header position.
+
+**[Orange Pi 5 Plus mechanical files](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view)**
+— supplied, **never opened.**
+
+From it, extract and record:
+
+1. **Mounting hole pattern** — positions and diameter. The brief requires the
+   board be supported on its actual holes.
+2. **Port positions and heights** along every edge, so cutouts come from the
+   drawing rather than from the 100 × 75 mm outline.
+3. **The 40-pin header's position** on the bottom edge, its envelope, and —
+   if the drawing shows it — **pin direction.** If it does not, that stays an
+   open question for the client.
+4. **Component heights** on both faces, which feed the depth budget alongside
+   [measurement 1](#1--underside-m2-stack).
+
+If the link is permission-restricted, that is a request to make on day one —
+it blocks the whole mechanical phase.
+
 ---
 
 ## Recording results
@@ -206,10 +280,12 @@ by warning that their numbers are published figures for bare parts, and the
 three above are the ones where being wrong is only discovered after a case has
 been printed or a board fabricated.
 
-Two things to re-check after any of the three lands:
+Two things to re-check after any of these lands:
 
-- **Enclosure A's thickness** is set by the underside stack and nothing else.
-  A new figure there moves the whole box.
+- **Enclosure A's depth** is the sum of both M.2 stacks, the board, the
+  heatsink, the fan and the panel. A new figure in any of them moves the whole
+  box, and the budget is currently **over** the proposed envelope —
+  [handoff · depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
 - **Standoff height in Enclosure B** must still clear the Pololu's **1.4 mm
   below-board protrusion** ([06 · U3](06-power-board-schematic.md)) plus
   trimmed through-hole leads. That constraint is checkable without any
