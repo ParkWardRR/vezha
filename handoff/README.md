@@ -45,6 +45,8 @@ module's shape depends on the case it bolts to.
 | [01 · Brief — upright case](01-brief-upright-case.md) | The original brief, verbatim |
 | [02 · Brief — antenna cap](02-brief-antenna-cap.md) | The cap follow-up, verbatim |
 | [03 · Parts, dimensions and links](03-parts-and-dimensions.md) | **Every number, tagged with its provenance.** Your working reference |
+| [img/](img/) | Renders of the massing model, and where style reference photos go |
+| [render/](render/vezha-massing.py) | The Blender script that generates the renders from the documented dimensions |
 
 ---
 
@@ -53,6 +55,27 @@ module's shape depends on the case it bolts to.
 A Game Boy-style upright handheld. Display at the front, board standing on
 edge behind it, cooling behind that, antenna cap on top, stable foot at the
 bottom. The power module mounts on the back, later.
+
+![Vezha enclosure, front three-quarter: antenna cap on top, OLED window on the front face, grooved surface texture on the lower body, strap slot in the side, closed foot](img/vezha-exterior.jpg)
+
+> Massing model, rendered from the dimensions in this document.
+> **Not CAD** — no real fillet radii, wall drafts, boss positions or
+> connector cutouts. It exists to make the proportions legible. Source:
+> [`render/vezha-massing.py`](render/vezha-massing.py).
+
+### The depth stack
+
+![Exploded view, front to rear: OLED 6.0 mm, M.2 stack 15.9 mm, Orange Pi 1.6 mm, heatsink 12.6 mm, fan 12.0 mm, totalling about 56 mm against a 30 mm envelope](img/vezha-exploded.jpg)
+
+**This is the problem in one picture.** Five parts share one axis and they
+total ~56 mm before walls. [The budget](#03--run-the-depth-budget--it-does-not-close)
+has the arithmetic and the two levers.
+
+### Rear
+
+![Rear three-quarter: removable service panel, two cap retaining screws below the seam, fan vent slots](img/vezha-rear.jpg)
+
+### Line drawings
 
 **Front**
 
@@ -629,7 +652,6 @@ It **mounts flat against the back of the main case** and is **detachable.**
 > telemetry, no 40-pin header — so the mechanical interface is just a mount
 > and a short cable run, and the module must come off without disturbing any
 > antenna or PCIe connection.
-
 
 | | |
 |---|---|

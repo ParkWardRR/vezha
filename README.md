@@ -127,6 +127,13 @@ standing **on edge** behind it, cooling behind that, a **replaceable antenna
 cap** on top and a **closed stable foot** at the bottom. The power module
 mounts flat on the **back**.
 
+![Vezha enclosure massing render, front three-quarter view](handoff/img/vezha-exterior.jpg)
+
+*Massing model, not CAD — rendered from the documented dimensions by
+[`handoff/render/vezha-massing.py`](handoff/render/vezha-massing.py). More
+views, including the exploded depth stack:
+[the handoff](handoff/README.md#the-shape-of-the-thing).*
+
 | | Figure | Standing |
 |---|---|---|
 | **Width** | ~110 mm | Comfortable — board is 100 mm plus walls |

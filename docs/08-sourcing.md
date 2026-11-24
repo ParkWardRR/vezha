@@ -3,7 +3,6 @@
 How to check availability and price. Parts themselves are listed in
 [07-bom.md](07-bom.md).
 
-
 Notes on looking up component availability and price while building the BOM.
 
 ## JLCPCB component search endpoint
