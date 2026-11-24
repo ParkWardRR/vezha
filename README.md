@@ -193,7 +193,7 @@ These decide **whether the two boxes actually close.**
 > [!WARNING]
 > **The Enclosure A depth budget does not currently close.** Both M.2 stacks,
 > the board, the heatsink, the fan and the panel share one axis, landing at
-> **≈ 51–57 mm** against a 30 mm placeholder. Item 2 above is the biggest soft
+> **≈ 55–60 mm** against a 30 mm placeholder. Item 2 above is the biggest soft
 > term and **it is answerable today** — the board is on the desk with its
 > cards installed.
 > [Handoff · the depth budget](handoff/README.md#03--run-the-depth-budget--it-does-not-close)
@@ -255,7 +255,7 @@ edit it there, not here. The headlines:
 | **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom · **OLED front panel**, output only · all antennas in the **replaceable top cap** · **active cooling** (NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack) · **closed stable foot**, no header access · **power module mounts on the rear** |
 | **Settled · power** | **U3 = Pololu `D42V55F5` #5571** · RotoPD screw terminal removed · accessory port config A · RotoPD geometry 24.40 × 35.80 mm · Pico gates EN from the RotoPD aux rail · the OLED + encoder console stays on the power board |
 | **Ordered** | Taoglas **FXP830.24.0100B** flex dipoles |
-| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 51–57 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
+| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 55–60 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
 | **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
 
 > [!CAUTION]

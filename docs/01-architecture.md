@@ -459,7 +459,7 @@ measurements to take, not values to look up — with one exception, below.
   at 5.0 V the budget is 25 mΩ round trip, and one USB-C mated pair is
   30–40 mΩ on its own.
   [06 · What is left to pull on](06-power-board-schematic.md#what-is-actually-left-to-pull-on)
-- **The Enclosure A depth budget**, which lands at ≈ 51–57 mm against a 30 mm
+- **The Enclosure A depth budget**, which lands at ≈ 55–60 mm against a 30 mm
   placeholder.
   [Handoff](../handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 - **The SBC mechanical drawing**, never retrieved. Hole pattern and port

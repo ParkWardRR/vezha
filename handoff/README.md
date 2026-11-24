@@ -95,9 +95,9 @@ bottom. The power module mounts on the back, later.
         └────────────────────────────────────────┘
          ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  foot
 
-          3–5     15.9   1.6    12.6    2–5    12     mm
+          7–8     15.9   1.6    12.6    2–5    12     mm
           OLED    M.2    PCB   heatsink  gap   fan
-        │◄───────────── ~51–57 mm total ────────►│
+        │◄───────────── ~55–60 mm total ────────►│
 ```
 
 **Rear**
@@ -310,16 +310,16 @@ the rear, per the [side section](01-brief-upright-case.md).
 | Term | Low | High | Provenance |
 |---|---:|---:|---|
 | Front wall | 2.0 | 2.0 | 🟢 Spec |
-| OLED module + mount | 3.0 | 5.0 | 🔴 Allowance — model not chosen |
+| OLED breakout + mount | 7.0 | 8.0 | 🟡 6.0 mm board + standoff. **May nest — see below** |
 | **Front-face M.2 stack** (adapter + card + mated plugs + coax bend) | 15.9 | 15.9 | 🔴 **Four stacked guesses** |
 | Orange Pi PCB | 1.6 | 1.6 | 🔴 Typical FR4 |
 | **Heatsink** | 12.6 | 12.6 | 🟠 Supplied |
 | **Clearance gap** | 2.0 | 5.0 | 🔴 "Small" — not specified |
 | **Fan** | 12.0 | 12.0 | 🟠 Supplied, installed with pads |
 | Rear clearance + service panel | 2.0 | 3.0 | 🔴 Allowance |
-| **Total depth** | **≈ 51 mm** | **≈ 57 mm** | |
+| **Total depth** | **≈ 55 mm** | **≈ 60 mm** | |
 
-**The brief proposes 30 mm.** The budget says **51–57 mm** — roughly double.
+**The brief proposes 30 mm.** The budget says **55–60 mm** — roughly double.
 
 > [!IMPORTANT]
 > **This is not a reason to stop; it is a reason to agree the real number
@@ -333,12 +333,19 @@ the rear, per the [side section](01-brief-upright-case.md).
 >    least trustworthy — four guesses multiplied together. The client has the
 >    board with cards installed, so **ask for this measurement**. Procedure:
 >    [10 · Measurement protocol](../docs/10-measurement-protocol.md#1--underside-m2-stack)
-> 2. **The clearance gap**, worth up to 3 mm, and a number nobody has set
-> 3. **The cooling stack itself at ~27 mm** is now the single biggest block
+> 2. **Nesting the OLED, worth up to ~7 mm.** The breakout is only
+>    40.5 × 30.5 mm and the M.2 card in front of the board is only
+>    22 × 30 mm — **neither covers the 100 × 75 mm face.** If they are
+>    laterally offset, the OLED can sit *within* the same depth zone as the
+>    M.2 stack instead of in front of it, and most of the OLED term
+>    disappears. **This is yours to judge once the board drawing is in
+>    hand** — it is the one lever that costs nothing but layout care.
+> 3. **The clearance gap**, worth up to 3 mm, and a number nobody has set
+> 4. **The cooling stack itself at ~27 mm** is now the single biggest block
 >    and it is largely fixed. Shrinking it means a different heatsink or a
 >    thinner fan, which is a client decision, not a CAD one
 >
-> For scale: an original Game Boy was 32 mm deep. At 51–57 mm this is a
+> For scale: an original Game Boy was 32 mm deep. At 55–60 mm this is a
 > substantially chunky object — a product decision worth making knowingly
 > rather than discovering at first print.
 
@@ -348,25 +355,41 @@ plus the foot puts the main case near **95 mm**, with the **60 mm** cap above.
 
 ### 0.4 · Confirm the OLED model
 
-The front panel is an **OLED**, output only. The candidate is the **Adafruit
-5297** — already used as the power board's console, so the same part in both
-boxes means one driver and one spare.
+The front panel is an **OLED**, output only. The candidate is the
+**[Adafruit 5297](https://www.adafruit.com/product/5297)** — a monochrome
+1.12" 128 × 128 panel on a STEMMA QT breakout, already used as the power
+board's console, so the same part in both boxes means one driver and one
+spare.
 
-| | Adafruit 5297 |
+| | |
 |---|---|
-| Active area | **20.076 × 20.076 mm** |
-| Interface | **I²C**, 4-pin JST-SH STEMMA QT — 3.3 V, GND, SDA, SCL |
-| Operating temp | **−40 to +70 °C** |
+| Resolution | 128 × 128 monochrome |
+| **Active area** | **20.076 × 20.076 mm** ← the window |
+| **Breakout board** | **40.5 × 30.5 × 6.0 mm** ← what you mount |
+| Interface | I²C, 4-pin JST-SH STEMMA QT, 3.3 V |
+| Operating temp | −40 to +70 °C (polarizer 80 °C) |
+| Price | $17.50 |
 
 > [!WARNING]
+> **No mechanical drawing exists for this breakout.** Adafruit publishes no
+> STEP file, no hole pattern, and does not say whether 6.0 mm includes the
+> headers. **It needs measuring** before the window and standoffs are cut —
+> the client can do that, it is a desk job.
+
+> [!IMPORTANT]
 > **20 mm square is small for a front panel on a device this size, and that
-> is the open question.** A Wi-Fi join QR for a strong passphrase needs
+> is the real open question.** A Wi-Fi join QR for a strong passphrase needs
 > roughly **≥ 0.5 mm per module** to scan reliably, which is marginal at
 > 20.076 mm. **If the join QR has to render on the panel, a larger OLED is
 > needed** — and that moves the front-face geometry, so it has to be settled
 > before the window is cut.
+>
+> It is worth asking what the panel is actually *for* before sizing it. A
+> 20 mm square is fine for "uplink up / clients: 3 / 5.1 V"; it is not fine
+> for a scannable QR.
 
-You need from the client: **the chosen model and size.**
+You need from the client: **the chosen model and size**, and **what the
+panel has to display.**
 
 ### 0.5 · The 40-pin header is internal only
 
@@ -735,7 +758,7 @@ Batched so they can be answered in one go:
 3. Can you **measure the installed M.2 stack** on the board you have — adapter
    + card + mated antenna plugs + coax bend, from the board face to the lowest
    point?
-4. **~51–57 mm case depth** is where the budget lands against the 30 mm
+4. **~55–60 mm case depth** is where the budget lands against the 30 mm
    placeholder — the cooling stack alone is ~27 mm. Is that acceptable, or
    should we hunt for depth?
 5. Which **display model**, and bare panel + adapter board or integrated

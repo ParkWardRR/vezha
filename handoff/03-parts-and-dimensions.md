@@ -107,12 +107,27 @@ device.
 already used as the power board's console display — the same part in both
 boxes means one part number, one driver, one spare.
 
-| | Adafruit 5297 |
-|---|---|
-| Active area | **20.076 × 20.076 mm** |
-| Interface | **I²C**, 4-pin JST-SH STEMMA QT / Qwiic — 3.3 V, GND, SDA, SCL |
-| Operating temp | **−40 to +70 °C** |
-| Provenance | 🟡 Published; already specified for [the power board](../docs/05-power-board.md#adafruit-5297-oled) |
+**[Adafruit 5297](https://www.adafruit.com/product/5297)** — Monochrome
+1.12" 128 × 128 OLED, STEMMA QT / Qwiic.
+
+| | | Provenance |
+|---|---|---|
+| Resolution | **128 × 128** monochrome white | 🟡 Published |
+| Active area | **20.076 × 20.076 mm** | 🟢 Datasheet |
+| Bare panel | 25.90 × 30.10 × 1.20 mm incl. polarizer | 🟢 Datasheet |
+| **Breakout board** | **40.5 × 30.5 × 6.0 mm** ← **mount to this** | 🟡 Published |
+| Driver | SH1107 | 🟡 Published |
+| Interface | **I²C** or SPI · 4-pin JST-SH STEMMA QT | 🟡 Published |
+| Supply | 3.3 V in, 12 V from an onboard boost · ~35 mA | 🟡 Published |
+| **Operating temp** | **−40 to +70 °C**; storage −40 to +85 °C | 🟢 Datasheet |
+| Price | $17.50 at 1–9 | 🟡 Published |
+| Mounting holes | **Not published** | 🔴 Measure it |
+
+> [!WARNING]
+> **No mechanical drawing exists for this board.** Adafruit publishes no
+> STEP or outline file, no hole pattern, and does not say whether the 6.0 mm
+> height includes headers. **Measure the board** before cutting the window
+> and its standoffs. Everything else here is solid.
 
 > [!WARNING]
 > **20 mm square is small for a front panel, and that is the open question.**
