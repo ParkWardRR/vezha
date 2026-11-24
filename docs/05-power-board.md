@@ -401,7 +401,9 @@ INA226 defaults to `0x40` and is strappable across `0x40`–`0x4F`.
 | Pololu D42V55F5 | **6 A typical maximum** — unvalidated in enclosure |
 | RotoPD auxiliary | **0.4 A continuous** — Pico + OLED + encoder only |
 | Accessory port | **1.0 A proposed**, on its own regulator |
-| ~~PCB 1 indicators~~ | **0 mA** — [v1 is headless](01-architecture.md#no-controls-in-v1). Previously charged at ~240 mA, then ~120 mA once `REXT` was set for 10 mA/channel |
+| Enclosure A OLED | **~35 mA** in use, 5 µA asleep — drawn from the host, not this board |
+| Enclosure A fan | **Not retrieved.** Continuous, host-side. Fold into the peak-current measurement |
+| ~~PCB 1 indicators~~ | **0 mA** — there is no front control board. Previously charged at ~240 mA, then ~120 mA once `REXT` was set for 10 mA/channel |
 
 ## Measurement, before trusting any of this
 
@@ -427,22 +429,28 @@ device rather than its marketing copy.
 seam is USB-C, 5 V power only. The governing rule in
 [01](01-architecture.md) holds again as written.
 
-**2 · Two competing user interfaces** — **resolved twice over.** First by
-dropping telemetry: with no link across the seam, this board's OLED can only
-show power and PD state, so it could never substitute for a router UI. Then by
-[the v1 scope cut](01-architecture.md#no-controls-in-v1), which removed the
-competing interface altogether.
+**2 · Two user interfaces, with no overlap** — **resolved by dropping
+telemetry.** With no link across the seam, this board's OLED can only show
+power and PD state, so it cannot substitute for a router UI even in
+principle. The two panels report on different things and neither can speak
+for the other.
 
 | | Interface | Shows |
 |---|---|---|
-| **Enclosure A** | ⬜ **None — headless.** Web UI only | — |
-| **Enclosure B** | OLED + EC11 encoder — **the only panel in the product** | Input voltage, negotiated PD contract, rail status, fault reason |
+| **Enclosure A** | **OLED**, output only — no controls | Router state: uplink, clients, whatever the host chooses |
+| **Power module** | OLED + EC11 encoder | Input voltage, negotiated PD contract, rail status, fault reason |
 
 > [!IMPORTANT]
-> **This console is now the only thing that can tell you anything without a
-> network.** That raises its value and changes what belongs on it. Worth
-> revisiting what it shows on fault: when the router will not come up, this
-> display and the `PG` line are the entire diagnostic surface.
+> **This console is still the only thing that works when the router does
+> not.** The Enclosure A panel is driven by the Orange Pi, so a host that
+> fails to boot shows nothing — and the two boxes share no signal. When the
+> router will not come up, **this display and the `PG` line remain the entire
+> diagnostic surface.** That is what should drive its fault screens.
+
+> [!NOTE]
+> **Both panels are the same part.** Enclosure A's candidate is the same
+> Adafruit 5297 used here — one driver, one spare, two boxes.
+> [02 · The display](02-enclosure-a-upper.md#the-display)
 
 ## Open questions
 

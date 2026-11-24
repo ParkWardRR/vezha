@@ -2,7 +2,7 @@
 
 # Vezha — Fabrication Brief
 
-### Handheld travel router · two enclosures · one PCB
+### Upright handheld travel router · replaceable antenna cap · two enclosures, one PCB
 
 **This repo is a design brief, not a product.**
 It exists so a mechanical designer and a PCB designer can build the
@@ -16,7 +16,7 @@ there isn't one yet.
 [![Handoff](https://img.shields.io/badge/enclosure-handoff%20in%20progress-success?style=flat-square)](handoff/)
 [![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
 [![Enclosure A](https://img.shields.io/badge/enclosure%20A-upright%20%2B%20antenna%20cap-informational?style=flat-square)](docs/02-enclosure-a-upper.md)
-[![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%20RotoPD%20envelope-red?style=flat-square)](docs/03-enclosure-b-lower.md)
+[![Enclosure B](https://img.shields.io/badge/power%20module-rear--mounted-informational?style=flat-square)](docs/03-enclosure-b-lower.md)
 [![Front panel](https://img.shields.io/badge/front%20panel-OLED-success?style=flat-square)](docs/02-enclosure-a-upper.md#the-display)
 [![Power board](https://img.shields.io/badge/power%20board-spec%20ready-success?style=flat-square)](docs/05-power-board.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
@@ -32,8 +32,9 @@ there isn't one yet.
 [![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-power-board.md)
 [![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-power-board.md)
 [![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-power-board.md)
-[![UI](https://img.shields.io/badge/router%20UI-web%20only-795548?style=flat-square)](docs/01-architecture.md#no-controls-in-v1)
-[![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20box-FF6F00?style=flat-square)](docs/05-power-board.md)
+[![UI](https://img.shields.io/badge/router%20UI-web%20·%20OLED%20status%20only-795548?style=flat-square)](docs/01-architecture.md#no-controls-in-v1)
+[![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20module-FF6F00?style=flat-square)](docs/05-power-board.md)
+[![Depth](https://img.shields.io/badge/depth%20budget-~55–60%20mm%20·%20over-red?style=flat-square)](handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 [![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/07-bom.md)
 
 [![Last commit](https://img.shields.io/github/last-commit/ParkWardRR/vezha?style=flat-square)](https://github.com/ParkWardRR/vezha/commits/main)
@@ -96,9 +97,11 @@ flowchart LR
         PI["<b>Orange Pi 5 Plus</b><br/>RK3588 · <b>on edge</b>"]:::core
         RAD["<b>AX210</b> · top-side E-key<br/><i>hotel uplink</i><br/><b>MT7922</b> · far face, via M→E adapter<br/><i>private AP</i>"]:::rf
         EPD["<b>OLED</b> · front panel<br/><i>output only — no controls, no PCB 1</i>"]:::ctl
+        COOL["<b>heatsink + 40 mm fan</b><br/>intake/push · ≈ 27 mm stack"]:::th
         PI === RAD
         RAD -.->|"100 mm MHF4"| CAP
         PI --- EPD
+        PI --- COOL
     end
 
     CHG ==>|USB-C| PCB2
@@ -109,12 +112,44 @@ flowchart LR
     classDef ctl  fill:#dcfce7,stroke:#16a34a,color:#0f172a
     classDef core fill:#dbeafe,stroke:#2563eb,color:#0f172a
     classDef rf   fill:#ffedd5,stroke:#ea580c,color:#0f172a
+    classDef th   fill:#e0f2fe,stroke:#0284c7,color:#0f172a
     classDef ghost fill:#f8fafc,stroke:#cbd5e1,color:#64748b
 ```
 
 Everything that transmits lives in **A**. **B** only makes 5 V and hands it
 over. Detail — including the double-sided radio stack — is in
 [01-architecture.md](docs/01-architecture.md).
+
+## Physical form
+
+An upright, Game Boy-shaped handheld. Display at the front, the Orange Pi
+standing **on edge** behind it, cooling behind that, a **replaceable antenna
+cap** on top and a **closed stable foot** at the bottom. The power module
+mounts flat on the **back**.
+
+| | Figure | Standing |
+|---|---|---|
+| **Width** | ~110 mm | Comfortable — board is 100 mm plus walls |
+| **Height** | ~95 mm body + 60 mm cap | Board is 75 mm on edge, plus the foot |
+| **Depth** | **~55–60 mm** | ⚠️ **Over budget** — the brief placed it at 30 mm |
+
+> [!WARNING]
+> **The depth budget does not close.** Both M.2 card stacks, the board, the
+> **≈ 27 mm cooling block** and the OLED all share one axis. For scale, an
+> original Game Boy was 32 mm deep. The two levers — a real M.2 stack
+> measurement, and nesting the OLED beside the M.2 zone rather than in front
+> of it — are in
+> [the depth budget](handoff/README.md#03--run-the-depth-budget--it-does-not-close).
+
+**Openings:** OLED window, fan intake and exhaust, the board's port cluster,
+and a removable rear service panel. **No bottom opening and no 40-pin header
+access** — the header is internal, carrying the display. The USB-C power
+inlet is the port **next to the Ethernet jacks**.
+
+**Look and feel** is part of the brief, not an afterthought: curved features,
+strap slots, textured surface lines, and a clean front face with no visible
+fasteners. Reference and intent:
+[Aesthetics and design](handoff/README.md#aesthetics-and-design).
 
 ## The hard requirement
 
@@ -146,7 +181,7 @@ external USB-C charger
   → RotoPD Pro        PD negotiation, switched output
   → Pololu D42V55F5   regulated 5 V
   → USB-C seam        5 V power only
-  → Orange Pi         dedicated USB-C power input
+  → Orange Pi         the USB-C port next to the Ethernet jacks
 ```
 
 The **Pico 2 sits beside that path, not in it** — it controls the RotoPD Pro
@@ -189,13 +224,15 @@ These decide **whether the two boxes actually close.**
 4. **The fan-to-heatsink clearance gap** — "small" is the only spec, and it is a depth term — *Enclosure A*
 5. **The SBC's mechanical drawing** — hole pattern and port positions. **Not a
    measurement; a [file nobody has opened](https://drive.google.com/file/d/1rW0tlabPHQ-_rhFcBBpHRGK9TQmT1JEP/view)**
+6. **The OLED breakout's outline and hole pattern** — Adafruit publishes no
+   STEP file or drawing for the 5297 — *Enclosure A*
 
 > [!WARNING]
-> **The Enclosure A depth budget does not currently close.** Both M.2 stacks,
-> the board, the heatsink, the fan and the panel share one axis, landing at
-> **≈ 55–60 mm** against a 30 mm placeholder. Item 2 above is the biggest soft
-> term and **it is answerable today** — the board is on the desk with its
-> cards installed.
+> **The Enclosure A depth budget does not close.** Both M.2 stacks, the
+> board, the ≈ 27 mm cooling block and the OLED share one axis, landing at
+> **≈ 55–60 mm** against a 30 mm placeholder. Item 2 is the biggest soft term
+> and **it is answerable today** — the board is on the desk with its cards
+> installed.
 > [Handoff · the depth budget](handoff/README.md#03--run-the-depth-budget--it-does-not-close)
 
 Canonical copy, with the reasoning:
@@ -252,11 +289,11 @@ edit it there, not here. The headlines:
 | | |
 |---|---|
 | **Settled · system** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on a far-face M→E adapter. Power-only seam over USB-C. |
-| **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom · **OLED front panel**, output only · all antennas in the **replaceable top cap** · **active cooling** (NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm stack) · **closed stable foot**, no header access · **power module mounts on the rear** |
+| **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom and internal only · **OLED front panel** (Adafruit 5297 candidate), output only · all antennas in the **replaceable top cap** · **active cooling** (NF-A4x10 5V over a 50 × 46 × 12.6 mm heatsink, ≈ 27 mm intake/push stack) · **closed stable foot** · **USB-C inlet in the Ethernet port cluster** · **power module mounts on the rear** · vents designed last |
 | **Settled · power** | **U3 = Pololu `D42V55F5` #5571** · RotoPD screw terminal removed · accessory port config A · RotoPD geometry 24.40 × 35.80 mm · Pico gates EN from the RotoPD aux rail · the OLED + encoder console stays on the power board |
 | **Ordered** | Taoglas **FXP830.24.0100B** flex dipoles |
 | **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 55–60 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
-| **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
+| **Open** | **OLED size** (20 mm is marginal for a join QR) and what it displays, panel-to-host wiring, fan speed control, fan-to-heatsink gap, vent pattern, how the on-edge board is retained, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
 
 > [!CAUTION]
 > **The seam is over budget as specified, and the regulator can no longer

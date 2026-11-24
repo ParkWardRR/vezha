@@ -204,7 +204,7 @@ external USB-C charger
    → RotoPD Pro (negotiates PD, switched output)
       → Pololu D42V55F5 (regulated 5 V)
          → USB-C cable across the enclosure seam
-            → Orange Pi dedicated USB-C power input
+            → Orange Pi — the USB-C port next to the Ethernet jacks
 ```
 
 The **Pico 2 sits beside that path, not in it.** It controls the RotoPD Pro
@@ -419,10 +419,16 @@ measurements to take, not values to look up — with one exception, below.
 *Enclosure A*
 - **The SBC mounts on edge**, 40-pin header at the bottom.
   [What that means](#what-on-edge-mounting-means)
-- **The bottom is a closed, stable foot** — no opening, no header access
+- **The bottom is a closed, stable foot** — no opening, no header access. The
+  40-pin header is internal, carrying the display
+- **The USB-C power inlet is the port next to the Ethernet jacks**, cut as
+  part of the board's port cluster
+- **Ventilation is the last design step**, after the internal layout and the
+  rear module are settled
 - **The power module mounts on Enclosure A's rear face**
-- **An OLED front panel**, output only. Model not fixed; Adafruit 5297 is the
-  candidate. [02 · The display](02-enclosure-a-upper.md#the-display)
+- **An OLED front panel**, output only. Candidate is the **Adafruit 5297** —
+  the same part as the power module console. **Size is the open question**,
+  not the technology. [02 · The display](02-enclosure-a-upper.md#the-display)
 - **No controls and no PCB 1** — [why](#no-controls-in-v1)
 - **Taoglas FXP830.24.0100B flex dipoles in the replaceable top cap.** The
   part is **ordered**. [04 · The antenna cap](04-antennas.md#the-antenna-cap)
@@ -466,9 +472,12 @@ measurements to take, not values to look up — with one exception, below.
   positions both depend on it.
 
 *Enclosure A*
-- **OLED model and size**, driven by whether a Wi-Fi join QR must render on it
+- **OLED size**, driven by whether a Wi-Fi join QR must render on it. The
+  5297's active area is 20.076 mm square, which is marginal for a scannable
+  QR — and a larger panel moves the front-face geometry
 - **How the panel reaches the host** — I²C plus 3.3 V off the 40-pin header;
-  no pin map specified
+  no pin map, bus address or cable length specified
+- **What the panel displays.** Decides whether 20 mm is enough
 - **Where the fan connects, and whether its speed can be controlled.** 3-pin
   with a tachometer and **no PWM input**
 - **Vent pattern and airflow direction** — the

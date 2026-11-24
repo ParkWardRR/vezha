@@ -42,18 +42,54 @@ it is recorded here so it is not quietly forgotten.
 > for restarting the hotel-login workflow** — including changing the uplink MAC
 > for a fresh login.
 >
-> **v1 does not meet that.** [Enclosure A is
-> headless](01-architecture.md#no-controls-in-v1); every one of those actions
-> moves to the web UI. There is also **no at-rest status of any kind** and **no
-> home for the Wi-Fi join QR code.**
+> **v1 does not meet that.** Enclosure A has a display but
+> [no controls](01-architecture.md#no-controls-in-v1); every one of those
+> actions moves to the web UI.
 
 That paragraph is the reason a front panel was specified in the first place.
 Re-read it before v2 — the finished design is preserved in
 [retired/](retired/pcb-1-front-control.md).
 
-The only hardware panel in v1 is the power board's OLED and encoder, in the
-power box, and it can show **power and PD state only** — it has no link to the
-router. See [05](05-power-board.md).
+**What the display does and does not recover.** Enclosure A's OLED gives back
+*status*, not *control* — it can show uplink state, client count and the
+Wi-Fi join details, which the headless revision could not. It does **not**
+give back any way to act on what it shows. And because it is driven by the
+Orange Pi, **a host that fails to boot shows nothing**: the panel reports on
+the router, so it cannot report that the router is dead.
+
+There are two panels and they see different things:
+
+| | Driven by | Shows | Live when |
+|---|---|---|---|
+| **Enclosure A OLED** | The Orange Pi | Router state | The host has booted |
+| **Power module OLED + encoder** | The Pico 2 | Power and PD state only | Always — the Pico boots first |
+
+Neither can speak for the other: **no signal crosses between the boxes.**
+See [05](05-power-board.md).
+
+## Software this adds
+
+Three host-side jobs that did not exist in the headless revision. None is
+implemented.
+
+- **Drive the OLED.** [Adafruit 5297](https://www.adafruit.com/product/5297),
+  SH1107 over **I²C** on the 40-pin header. The pin map, the 3.3 V supply and
+  the bus address are all unspecified.
+- **Mitigate burn-in.** A status panel is a static image, which is the OLED
+  failure mode. A screensaver, periodic pixel shift or timeout is cheaper to
+  plan for than to retrofit — the module datasheet says afterimage clears if
+  the display is left unused for a while, so a timeout may be enough.
+- **Read the fan tachometer.** The fan is 3-pin with a tach output and **no
+  PWM input**, so there is no speed control to write — but the tach is the
+  only way to know the fan still turns inside a closed box, and the OLED is
+  somewhere to report it. Whether the fan is switched at all is
+  [an open hardware question](02-enclosure-a-upper.md#thermal).
+
+**What to show is not decided.** Uplink state, client count, rail voltage and
+the Wi-Fi join details are the obvious candidates. Worth settling early: it
+decides whether the 20 mm panel is big enough, because a scannable join QR is
+marginal at that size and a larger OLED moves the front-face geometry.
+[02 · The display](02-enclosure-a-upper.md#the-display)
 
 ## Software direction
 
