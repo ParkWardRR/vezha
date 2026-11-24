@@ -20,8 +20,8 @@
 
 Vezha is a **two-piece handheld travel router**. This folder is the handoff for
 the physical design: an **upright Orange Pi 5 Plus enclosure with a front
-display and a replaceable antenna cap**, and later a **detachable power module**
-that mates at the bottom.
+display and a replaceable antenna cap**, and later a **detachable power module
+that mounts on the back.**
 
 **You are picking up the mechanical work first.** The PCB work is real and
 specified, but it is [Phase 4](#phase-4--the-lower-power-module-and-its-pcb) —
@@ -50,26 +50,43 @@ module's shape depends on the case it bolts to.
 ## The shape of the thing
 
 A Game Boy-style upright handheld. Display at the front, board standing
-vertically behind it, cooling behind that, antenna cap on top, power module
-later at the bottom.
+vertically behind it, cooling behind that, antenna cap on top, and a **stable
+foot at the bottom.** The power module mounts on the **back**, later.
 
 ```
-        ┌────────────────────────┐
-        │   ANTENNA CAP          │  ← hollow, replaceable, nonmetallic
-        │   (lift off, 2 × M3)   │     Phase 2
-        ╞════════════════════════╡  ← cap seam · cable passage
-        │   ┌────────────────┐   │
-        │   │                │   │
-        │   │    DISPLAY     │   │  ← 3.7" e-paper, front face
-        │   │                │   │     behind it: Orange Pi on edge,
-        │   └────────────────┘   │     40-pin header at the bottom,
-        │                        │     heatsink + fan to the rear
-        │   space reserved       │
-        ╞════════════════════════╡  ← bottom opening, header access
-        │   POWER MODULE         │     Phase 4
-        │   (later, detachable)  │
-        └────────────────────────┘
+                         ┌────────────────────────┐
+                         │   ANTENNA CAP          │  ← hollow, replaceable,
+                         │   (lift off, 2 × M3)   │    nonmetallic · Phase 2
+                         ╞════════════════════════╡  ← cap seam · cable passage
+                         │   ┌────────────────┐   │
+                         │   │                │   │
+                         │   │    DISPLAY     │   │  ← 3.7" e-paper, front face
+                         │   │                │   │
+                         │   └────────────────┘   │    behind it: Orange Pi on
+                         │                        │    edge, heatsink + fan aft
+                         │   space reserved       │
+                         └────────────────────────┘
+                          ══════════════════════════  ← STABLE FOOT · no opening
+
+        rear elevation:  ┌────────────────────────┐
+                         │  [o]              [o]  │  ← cap screw ears
+                         │   ┌────────────────┐   │
+                         │   │  POWER MODULE  │   │  ← Phase 4, mounts HERE
+                         │   │  (later)       │   │    on the back, detachable
+                         │   └────────────────┘   │
+                         └────────────────────────┘
 ```
+
+> [!IMPORTANT]
+> **Two things the written brief shows that are now cancelled.** The brief's
+> diagrams predate this and were not redrawn — [01](01-brief-upright-case.md)
+> carries a correction banner saying the same thing.
+>
+> | Brief shows | Actual |
+> |---|---|
+> | `OPENING TO LOWER MODULE` at the bottom | **No bottom opening.** The bottom is a **stable foot** |
+> | `40-PIN HEADER ACCESS OPENING` | **No header access opening.** Do not expose the header |
+> | Power module mating at the bottom | Power module mounts on the **back** |
 
 **Style reference:** the
 [Lilygo T-Beam SUPREME TS1 case by Alley Cat](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat)
@@ -83,26 +100,32 @@ lines.** A visual language reference, not a geometry one.
 ```mermaid
 flowchart TB
     P0["<b>PHASE 0</b> · Inputs and sanity checks<br/><i>no CAD — unblock the numbers</i>"]:::gate
-    P1["<b>PHASE 1</b> · Main case + blank lid<br/><i>upright board, display, cooling, bottom access</i>"]:::work
+    P1["<b>PHASE 1</b> · Main case + blank lid<br/><i>upright board, display, cooling, foot</i>"]:::work
     P2["<b>PHASE 2</b> · Replaceable antenna cap<br/><i>swaps in for the blank lid</i>"]:::work
     P3["<b>PHASE 3</b> · Antenna placement + RF<br/><i>client-led bench test</i>"]:::test
-    P4["<b>PHASE 4</b> · Power module + its PCB<br/><i>the electronics work</i>"]:::pcb
+    P4["<b>PHASE 4</b> · Power module + its PCB<br/><i>rear-mounted, detachable</i>"]:::pcb
+    P5["<b>PHASE 5</b> · Ventilation and airflow<br/><i>the last step — vents cut here</i>"]:::vent
 
     P0 -->|"depth budget agreed"| P1
     P1 -->|"test print fits the real board"| P2
     P2 -->|"cap lifts clear, no cable tension"| P3
     P1 -.->|"case geometry frozen"| P4
     P3 -.->|"may move cap walls"| P2
+    P3 --> P5
+    P4 -.->|"rear face finalised"| P5
 
     classDef gate fill:#fee2e2,stroke:#dc2626,color:#0f172a
     classDef work fill:#dbeafe,stroke:#2563eb,color:#0f172a
     classDef test fill:#ffedd5,stroke:#ea580c,color:#0f172a
     classDef pcb  fill:#dcfce7,stroke:#16a34a,color:#0f172a
+    classDef vent fill:#e0f2fe,stroke:#0284c7,color:#0f172a
 ```
 
 **Phases 1 and 4 can overlap** once the case geometry is frozen. Phase 3 can
 send you back to Phase 2 — that is expected, and it is why the cap is a
-separate replaceable part in the first place.
+separate replaceable part in the first place. **Phase 5 is deliberately last**:
+vent geometry depends on the final internal layout and on where the rear
+module ends up.
 
 ---
 
@@ -227,13 +250,28 @@ You need from the client: **the chosen model**, and whether they want a bare
 panel plus a [DESPI-C02](https://www.good-display.com/product/516.html)
 adapter board (41 × 22 mm) or an integrated module.
 
-### 0.5 · Confirm the 40-pin header's pin direction
+### 0.5 · The 40-pin header is internal only
 
-The brief is explicit that a bottom access opening **does not imply the stock
-pins point downward.** Mating direction decides whether the future power
-module needs a ribbon, a right-angle adapter, or a direct connector — and it
-changes the bottom opening's geometry. **Confirm before Phase 1 closes**, not
-before it starts.
+**Cancelled: the header access opening.** The brief's bottom view shows a
+`40-PIN HEADER ACCESS OPENING`. **There is no header access and no bottom
+opening** — the bottom is a closed, stable foot.
+
+The header does not go unused, though. **The e-paper panel needs SPI off it**
+([0.4](#04--confirm-the-display-model)), so it becomes an **internal**
+resource: the ribbon from the display's driver board lands on it inside the
+case. That is a reason to keep it *unexposed*, not a reason to open the
+bottom.
+
+**What this means for you:** route and strain-relieve a display ribbon from
+the front panel down to the bottom board edge, inside the shell. Pin
+direction still matters for *that* clearance — just not for an external
+opening.
+
+> [!NOTE]
+> **The power module does not use the header either.** Only **5 V over
+> USB-C** crosses between the two boxes — no signal, no telemetry. That is a
+> deliberate architectural rule, not an omission.
+> [01 · Crossing the seam](../docs/01-architecture.md#crossing-the-seam)
 
 ### Phase 0 exit criteria
 
@@ -264,18 +302,25 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 ### Scope
 
 **Main case**
-- Orange Pi 5 Plus **standing vertically**, 40-pin header at the bottom edge,
-  supported on its **actual mounting holes**
+- Orange Pi 5 Plus **standing vertically**, 40-pin header at the bottom edge
+  (**internal use only — not exposed**), supported on its **actual mounting
+  holes**
 - Clearance on **both board faces** — one M.2 card per face, one of them on an
   adapter. Neither face is flat
-- **Cooling volume** for the heatsink and fan, with ventilation. Needs an
-  **inlet and an exhaust on different faces** so the fan does not
-  short-circuit its own airflow
+- **Cooling volume** for the heatsink and fan, with the fan mounted and
+  retained. **Reserve** inlet and exhaust surface area on different faces;
+  the actual vent pattern is [Phase 5](#phase-5--ventilation-and-airflow)
 - **Display mounted to the front face**, window cut to the **active area**
   (81.54 × 47.04 mm), bezel covering the margin and the flex tail
-- **Bottom opening** for 40-pin header access and mating-connector clearance,
-  kept clear for the future power module
+- **A stable foot at the bottom.** Closed — **no opening, no header access.**
+  The device stands on its own on a desk or hotel nightstand; give it enough
+  footprint and a low enough centre of mass that a tugged USB-C cable does not
+  topple it
 - **Removable rear service panel**
+- **Reserve rear area for the Phase 4 power module** to mount against — see
+  the rear-face congestion warning below
+- **Reserve surface area for vents, but do not cut final vent geometry** —
+  that is [Phase 5](#phase-5--ventilation-and-airflow)
 - **Port openings from the actual board CAD** — not from the 100 × 75 mm
   outline
 - Two **reinforced rear shoulder pockets** below the cap seam carrying the M3
@@ -314,6 +359,27 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 > treated the box as a closed form broken only by a power inlet. With a fan it
 > is a ventilated box: dust ingress, acoustic leakage, and an airflow path
 > that has to actually cross the heatsink.
+
+> [!CAUTION]
+> **The rear face is getting crowded, and it is worth planning now.** With the
+> bottom closed as a foot, four things want the back:
+>
+> 1. The **removable service panel**
+> 2. The **two cap screw ears** and their insert bosses, just below the seam
+> 3. **Fan exhaust**, if the airflow path runs front-to-back
+> 4. The **Phase 4 power module**, mounted flat against it
+>
+> Items 3 and 4 are in direct conflict — a module bolted over the exhaust
+> blocks it. **Resolve the airflow direction and the module's mounting
+> footprint together**, not separately. Flag it early if the rear cannot carry
+> all four; venting may have to move to the sides or the top.
+
+> [!NOTE]
+> **Where does the USB-C power inlet go now?** The bottom used to be the
+> service and expansion edge; it is now a closed foot. The inlet has to move
+> to a side or the rear, and it must clear the **mated plug plus its cable
+> bend radius** — not the receptacle footprint. Size it so a plugged-in cable
+> does not lever the device over.
 
 > [!NOTE]
 > **No controls in this revision.** The front view reserves a control area
@@ -438,7 +504,19 @@ for the architecture.
 ## Phase 4 · The lower power module and its PCB
 
 **This is where the PCB work is**, and it is specified in detail already.
-It mates at the bottom opening and is **detachable**.
+It **mounts flat against the back of the main case** and is **detachable.**
+
+> [!IMPORTANT]
+> **Rear-mounted, not bottom-mounted.** Earlier drafts and the written brief
+> put this module under the device. It goes on the **back.** Nothing crosses
+> between the two but **5 V over a short USB-C cable** — no signal, no
+> telemetry, no 40-pin header — so the mechanical interface is just a mount
+> and a short cable run, and the module must come off without disturbing any
+> antenna or PCIe connection.
+>
+> Note the knock-on: a module covering the rear face **competes with the fan
+> exhaust and the service panel.** See the rear-face warning in
+> [Phase 1](#watch-items).
 
 | | |
 |---|---|
@@ -472,6 +550,69 @@ product's only controls: an OLED and a push encoder.
 
 ---
 
+## Phase 5 · Ventilation and airflow
+
+**The last step, deliberately.** Vent geometry depends on the final internal
+layout, the real thermal load and where the rear module lands — so the earlier
+phases **reserve** vent surface and this one **cuts** it.
+
+### The open question for you
+
+> [!IMPORTANT]
+> **Can you model the airflow and propose the vent design yourself, or would
+> you rather the vent pattern and positions were specified for you?**
+>
+> Either is fine — we just need to know which. If you can run even a rough CFD
+> or a reasoned airflow study and come back with a proposal, that is the
+> preferred route, because you will have the full internal geometry in CAD and
+> nobody else will. If you would rather not, say so and a vent layout will be
+> specified for you to implement.
+>
+> **Please answer this one early**, even though the phase is last — it changes
+> how much surface Phase 1 needs to keep clear.
+
+### What the vents have to do
+
+- **Give the fan a real path.** An inlet and an exhaust that are **not
+  adjacent**, so the fan does not recirculate its own air instead of moving it
+  across the heatsink
+- **Cross the heatsink**, not bypass it. The easy failure is air that takes a
+  short free path from inlet to outlet and leaves the fins untouched
+- **Keep warm air off the display.** The e-paper is rated **0–50 °C**, lower
+  than the SoC, the radios or the antennas — it is the most heat-sensitive
+  part in the box and it is on the front face
+- **Not fight the rear module.** See the
+  [rear-face congestion warning](#watch-items)
+- **Not become an antenna problem.** Vents in or near the cap are fine
+  mechanically but the chamber must stay free of metal; no metal mesh inserts
+- **Stay quiet.** The fan has **no PWM input** and may run flat out. Vent
+  geometry is one of the few remaining levers on perceived noise, and this
+  device gets used in hotel rooms at night
+- **Resist pocket lint and desk dust** at least passively — no filter is
+  specified, but tiny slots clog faster than fewer larger ones
+
+### Inputs you will have by then
+
+| From | What |
+|---|---|
+| [Phase 0.2](#02--resolve-whether-the-heatsink-and-fan-stack--blocking) | Whether the fan sits on the heatsink, and the real thermal block height |
+| Phase 1 | Final internal layout and free volume |
+| Phase 4 | The rear module's footprint and standoff |
+| Client | A thermal measurement under sustained dual-radio load — **this does not exist yet** and is the honest gap in this phase |
+
+> [!WARNING]
+> **Nobody has measured this box's thermal behaviour.** The fan is *planned*,
+> not validated, and the case that justified it — two Wi-Fi 6E radios under
+> simultaneous sustained load — has never been run. Treat any airflow model as
+> a design aid, not a proof, and expect the vent design to be revisited once
+> there is a real temperature curve.
+
+### Deliverables
+
+Updated main case and cap with final vent geometry; a short note on the
+intended airflow path and the reasoning behind the pattern; if modelled, the
+study itself.
+
 ## What not to guess
 
 A short list of things where a wrong assumption is only discovered after a
@@ -483,7 +624,7 @@ the hardware on the desk.**
 | **The board's mounting holes and port positions** | The 100 × 75 mm outline tells you neither | [0.1](#01--retrieve-the-board-drawing--blocking) |
 | **Whether the fan stacks on the heatsink** | 12 mm swing in a 30 mm envelope | [0.2](#02--resolve-whether-the-heatsink-and-fan-stack--blocking) |
 | **The installed M.2 stack height** | Currently four stacked guesses at 15.9 mm, and it is the largest term in the depth budget | [10 · Measurement protocol](../docs/10-measurement-protocol.md#1--underside-m2-stack) |
-| **The 40-pin header's pin direction** | Decides the whole lower-module interface | [0.5](#05--confirm-the-40-pin-headers-pin-direction) |
+| **Whether the header is exposed** | It is **not.** Internal only, for the display ribbon | [0.5](#05--the-40-pin-header-is-internal-only) |
 | **Antenna recess depth** | The datasheet has no thickness figure at all. Use the connector | [03](03-parts-and-dimensions.md#antennas) |
 | **Heat-set insert bore size** | "M3" does not specify a bore. Use the chosen insert's drawing | [Prusa guidance](https://www.prusa3d.com/product/heat-set-inserts-m3-standard-100-pcs/) |
 | **Mated USB-C plug clearance** | Plug body *and* cable bend radius, measured with the cable actually being used | [10 · Measurement protocol](../docs/10-measurement-protocol.md#3--mated-usb-c-plug-and-bend-radius) |
@@ -506,11 +647,15 @@ Batched so they can be answered in one go:
    placeholder. Is that acceptable, or should we hunt for depth?
 5. Which **display model**, and bare panel + adapter board or integrated
    module?
-6. Which way do the **40-pin header pins** face?
+6. **Can you model the airflow and propose the vents**
+   ([Phase 5](#phase-5--ventilation-and-airflow)), or should a vent layout be
+   specified for you? Worth answering early even though the phase is last.
 7. How many **antennas were actually ordered**? The plan says four; the order
    quantity was not recorded.
 8. Any constraint on **print material** — the inserts and the case temperature
    both bear on it, and no case temperature has been measured yet.
+9. Roughly **how big should the foot be**? It is a styling and stability call
+   as much as a mechanical one, and the strap slots interact with it.
 
 ---
 

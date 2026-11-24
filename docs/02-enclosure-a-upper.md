@@ -108,10 +108,16 @@ in procedure, only in which box dimension it feeds.
 > [handoff · the depth budget](../handoff/README.md#03--run-the-depth-budget--it-does-not-currently-close).
 
 **The rotation is settled: the 40-pin header faces the floor.** Fixed
-2026-11-23 by the [enclosure brief](../handoff/01-brief-upright-case.md). That
-one choice resolves a lot — the antenna cap goes on the edge *opposite* the
-header, the display faces forward off a broad face, and the bottom becomes the
-service and expansion edge where the power module later mates.
+2026-11-23 by the [enclosure brief](../handoff/01-brief-upright-case.md). The
+antenna cap goes on the edge *opposite* the header and the display faces
+forward off a broad face.
+
+**The bottom is a closed, stable foot.** No opening, and **no 40-pin header
+access** — the header is an internal resource only, carrying the display
+ribbon. **The power module mounts on the back**, not underneath, which makes
+the rear face the congested one: service panel, cap screw ears, fan exhaust
+and the module all want it.
+[Handoff · rear-face congestion](../handoff/README.md#watch-items)
 
 ## Antenna zones — moved to the top cap
 

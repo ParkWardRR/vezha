@@ -1,15 +1,27 @@
 # 01 · Brief — Upright Orange Pi 5 Plus Enclosure
 
-> [!NOTE]
-> **Source document, reproduced verbatim.** This is the original brief as
-> written, kept unedited so there is a stable reference for what was asked.
-> Where it conflicts with [the plan](README.md), the plan says so explicitly
-> and explains why — it does not silently overwrite this.
+> [!CAUTION]
+> **Read this before the brief. Three things below are cancelled.**
 >
-> **Two figures in here are known to be wrong or incomplete.** See
-> [Phase 0 · Sanity checks](README.md#phase-0--inputs-and-sanity-checks)
-> before cutting CAD: the fan is **not** 10 mm installed, and the 30 mm cap
-> depth does not survive the depth budget.
+> | The brief says | Actual |
+> |---|---|
+> | `OPENING TO LOWER MODULE` at the bottom | ❌ **No bottom opening.** The bottom is a **closed, stable foot** |
+> | `40-PIN HEADER ACCESS OPENING`, and *"provide bottom access and mating-connector clearance"* | ❌ **No header access.** The header is **internal only**, carrying the display ribbon — [0.5](README.md#05--the-40-pin-header-is-internal-only) |
+> | *"Keep the lower header area available for a future module"* | ❌ The power module mounts on the **back**, not underneath |
+>
+> **Two figures are also wrong or incomplete** —
+> [Phase 0](README.md#phase-0--inputs-and-sanity-checks) has both: the fan is
+> **not** 10 mm installed (it is 12 mm with pads), and the 30 mm cap depth
+> does not survive the depth budget.
+>
+> **One addition:** ventilation is now an explicit final phase —
+> [Phase 5](README.md#phase-5--ventilation-and-airflow).
+
+> [!NOTE]
+> **Source document, reproduced verbatim.** Kept unedited so there is a
+> stable reference for what was originally asked, including the ASCII
+> diagrams — which were **not** redrawn after the corrections above. Where it
+> conflicts with [the plan](README.md), the plan wins and says why.
 
 ---
 
@@ -179,7 +191,7 @@ These came in alongside the brief and are part of the same ask:
   the 40-pin header**, which is **later replaced by the antenna cap.**
 - **Make room for** the Orange Pi 5 Plus aluminium heatsink at
   **50 × 46 × 12.6 mm** and a **Noctua NF-A4x10 5V** fan, 3-pin, ~$16 USD.
-- **A charging module box comes later** and mates at the bottom — that is
+- **A charging module box comes later** and mounts on the **back** — that is
   [Enclosure B](../docs/03-enclosure-b-lower.md) in the main repo.
 - A board **with the Wi-Fi cards installed is physically on hand**, so
   installed dimensions can be measured on request rather than guessed.

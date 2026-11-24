@@ -1,9 +1,24 @@
-# 03 · Enclosure B — Lower Power Box
+# 03 · Enclosure B — Power Module
 
 Detachable. Holds **the power board** and nothing else of consequence: the power chain
 that turns an external USB-C PD supply into regulated 5 V for the router.
 
 Read [01-architecture.md](01-architecture.md) first.
+
+> [!IMPORTANT]
+> **It mounts on the back, not underneath — changed 2026-11-23.** This
+> document still calls it the "lower" box throughout, and the filename still
+> says so. **Enclosure A's bottom is now a closed, stable foot**, so the
+> module moved to Enclosure A's **rear face**.
+>
+> **What does not change:** it is still detachable, still carries exactly the
+> same contents, and **still only 5 V over USB-C crosses between the two
+> boxes.** Every electrical decision in here stands.
+>
+> **What does change:** the seam cable route, the module's mounting interface,
+> and the fact that the rear face is now contested — the service panel, the
+> cap screw ears and the fan exhaust all want it too.
+> [Handoff · rear-face congestion](../handoff/README.md#watch-items)
 
 > [!NOTE]
 > **This supersedes the earlier "battery box" framing.** The current

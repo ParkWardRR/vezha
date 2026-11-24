@@ -14,7 +14,7 @@ A compact **two-piece** travel router.
 |  | Enclosure | Holds | Detachable? |
 | --- | --- | --- | --- |
 | **A** | **Upper router box** | Orange Pi 5 Plus **mounted on edge**, both Wi-Fi radios, the M-key→E-key adapter, storage, a **40 mm fan**, a **3.7" GooDisplay e-paper front panel**, and a **replaceable antenna cap on top** carrying all the antenna elements | No — this is the router |
-| **B** | **Lower power box** | Power board: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
+| **B** | **Power module** — **rear-mounted** (changed 2026-11-23; it was a lower box, but Enclosure A's bottom is now a closed foot) | Power board: Raspberry Pi Pico 2, CentyLab RotoPD Pro, Pololu 5 V regulator, OLED console, push encoder, accessory USB-C out | **Yes** |
 
 **The governing rule:** both radios and all antennas stay in the upper
 enclosure, so **the power box comes off without disturbing any PCIe or
@@ -42,6 +42,8 @@ this section and anything later in the repo disagree, **this section wins.**
 | **3** | **All antenna elements move into the replaceable top cap**, above the SBC | The four narrow-wall positions in [04](04-antennas.md) |
 | **4** | **Active cooling is planned** — a Noctua NF-A4x10 5V | "whether active cooling is needed" as an open question |
 | **5** | **The Taoglas FXP830.24.0100B is ordered** | Its 🔵 Candidate status in [07](07-bom.md) |
+| **6** | **Enclosure A's bottom is a closed, stable foot** — no opening, **no 40-pin header access.** The **power module moves to the rear face** | The bottom-mating assumption in [03](03-enclosure-b-lower.md) |
+| **7** | **Ventilation is an explicit final design step**, after the internal layout and rear module are settled | Vents as an afterthought of the shell |
 
 **What did *not* change.** The controls stayed cut — no keys, no nav wheel, no
 toggle, no RGB indicators, **no PCB 1.** The product is still **two enclosures
@@ -144,7 +146,7 @@ are summarised in the banner at the top of each.
 flowchart TB
     CHG([External USB-C<br/>PD charger / bank]):::ext
 
-    subgraph B["ENCLOSURE B — lower power box (detachable)"]
+    subgraph B["ENCLOSURE B — power module (rear-mounted, detachable)"]
         direction TB
         ROTO["<b>CentyLab RotoPD Pro</b><br/>PD negotiation + switched output"]:::pwr
         PICO["<b>Raspberry Pi Pico 2</b><br/>controller"]:::ctl
@@ -597,7 +599,7 @@ measurements to take, not values to look up — with one exception, below.
 | You are doing | Read |
 | --- | --- |
 | Upper enclosure | [02](02-enclosure-a-upper.md) · [06](04-antennas.md) |
-| Lower enclosure | [03](03-enclosure-b-lower.md) · [05](05-power-board.md) |
+| Power module | [03](03-enclosure-b-lower.md) · [05](05-power-board.md) |
 | Power board — **the only PCB in v1** | [05](05-power-board.md) — requirements · [11](06-power-board-schematic.md) — schematic |
 | Ordering parts | [07](07-bom.md) · [08](08-sourcing.md) |
 | Project context | [09](09-software-and-bringup.md) |

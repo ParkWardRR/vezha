@@ -66,7 +66,7 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 | | Deliverable | Contents | Status |
 |---|---|---|---|
 | **A** | **Upper router box** | Orange Pi 5 Plus **on edge**, both Wi-Fi radios, M→E adapter, storage, **40 mm fan**, **3.7" e-paper front panel**, **replaceable antenna cap** | **In design** — [handoff](handoff/) |
-| **B** | **Lower power box** | Power board **plus the OLED + encoder console** — detachable | Ready to design |
+| **B** | **Power module** — mounts on **Enclosure A's rear face** | Power board **plus the OLED + encoder console** — detachable | Ready to design |
 | **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
 | ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#the-v1-scope-cut) | Design complete, not built |
 
@@ -89,7 +89,7 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 flowchart LR
     CHG([external USB-C<br/>PD charger or bank]):::ext
 
-    subgraph B["ENCLOSURE B · lower power box — detachable"]
+    subgraph B["ENCLOSURE B · power module — rear-mounted, detachable"]
         PCB2["<b>Power board</b><br/>RotoPD Pro → Pico 2 → Pololu<br/>OLED + encoder console<br/>accessory USB-C out"]:::pwr
     end
 
