@@ -60,7 +60,7 @@ foot at the bottom.** The power module mounts on the **back**, later.
                          ╞════════════════════════╡  ← cap seam · cable passage
                          │   ┌────────────────┐   │
                          │   │                │   │
-                         │   │    DISPLAY     │   │  ← 3.7" e-paper, front face
+                         │   │     DISPLAY    │   │  ← OLED, front face
                          │   │                │   │
                          │   └────────────────┘   │    behind it: Orange Pi on
                          │                        │    edge, heatsink + fan aft
@@ -78,15 +78,10 @@ foot at the bottom.** The power module mounts on the **back**, later.
 ```
 
 > [!IMPORTANT]
-> **Two things the written brief shows that are now cancelled.** The brief's
-> diagrams predate this and were not redrawn — [01](01-brief-upright-case.md)
-> carries a correction banner saying the same thing.
->
-> | Brief shows | Actual |
-> |---|---|
-> | `OPENING TO LOWER MODULE` at the bottom | **No bottom opening.** The bottom is a **stable foot** |
-> | `40-PIN HEADER ACCESS OPENING` | **No header access opening.** Do not expose the header |
-> | Power module mating at the bottom | Power module mounts on the **back** |
+> **The written brief's diagrams are out of date** and were not redrawn.
+> [01](01-brief-upright-case.md) carries the corrections at the top: no
+> bottom opening, no 40-pin header access, and the power module mounts on the
+> back.
 
 **Style reference:** the
 [Lilygo T-Beam SUPREME TS1 case by Alley Cat](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat)
@@ -198,8 +193,8 @@ is at the front and the cooling at the rear, per the
 | Term | Low case | High case | Provenance |
 |---|---:|---:|---|
 | Front wall | 2.0 | 2.0 | 🟢 Spec |
-| Display panel | 1.0 | 1.0 | 🟡 GDEY037T03 outline |
-| Panel mount + air gap | 2.0 | 3.0 | 🔴 Allowance |
+| Display module | 2.0 | 3.0 | 🔴 Allowance — OLED module + carrier |
+| Panel mount + air gap | 1.0 | 2.0 | 🔴 Allowance |
 | **Front-face M.2 stack** (adapter + card + mated plugs + coax bend) | 15.9 | 15.9 | 🔴 **Four stacked guesses** |
 | Orange Pi PCB | 1.6 | 1.6 | 🔴 Typical FR4 |
 | **Heatsink** | 12.6 | 12.6 | 🟠 Supplied |
@@ -236,19 +231,27 @@ comfortably inside the proposed **110 mm** cap width. Board height 75 mm plus
 bottom header access puts the main case near **95 mm**, with the **60 mm** cap
 above it.
 
-### 0.4 · Confirm the display model
+### 0.4 · Confirm the OLED model
 
-Three candidates, all 3.7" GooDisplay e-paper, all SPI on a 24-pin 0.5 mm FPC.
-Full table in [03](03-parts-and-dimensions.md#display).
+The front panel is an **OLED**, output only. The candidate is the **Adafruit
+5297** — already used as the power board's console, so the same part in both
+boxes means one driver and one spare.
 
-**[GDEY037T03](https://www.good-display.com/product/437.html) is the
-defensible default** — mono, 416 × 240, 2 s full refresh, **0–50 °C**. The
-four-colour option drops to **0–40 °C** and 20 s refresh, which is a bad trade
-inside a warm box.
+| | Adafruit 5297 |
+|---|---|
+| Active area | **20.076 × 20.076 mm** |
+| Interface | **I²C**, 4-pin JST-SH STEMMA QT — 3.3 V, GND, SDA, SCL |
+| Operating temp | **−40 to +70 °C** |
 
-You need from the client: **the chosen model**, and whether they want a bare
-panel plus a [DESPI-C02](https://www.good-display.com/product/516.html)
-adapter board (41 × 22 mm) or an integrated module.
+> [!WARNING]
+> **20 mm square is small for a front panel on a device this size, and that
+> is the open question.** A Wi-Fi join QR for a strong passphrase needs
+> roughly **≥ 0.5 mm per module** to scan reliably, which is marginal at
+> 20.076 mm. **If the join QR has to render on the panel, a larger OLED is
+> needed** — and that moves the front-face geometry, so it has to be settled
+> before the window is cut.
+
+You need from the client: **the chosen model and size.**
 
 ### 0.5 · The 40-pin header is internal only
 
@@ -256,16 +259,14 @@ adapter board (41 × 22 mm) or an integrated module.
 `40-PIN HEADER ACCESS OPENING`. **There is no header access and no bottom
 opening** — the bottom is a closed, stable foot.
 
-The header does not go unused, though. **The e-paper panel needs SPI off it**
-([0.4](#04--confirm-the-display-model)), so it becomes an **internal**
-resource: the ribbon from the display's driver board lands on it inside the
-case. That is a reason to keep it *unexposed*, not a reason to open the
+The header does not go unused, though. **The OLED hangs off it** — I²C plus
+3.3 V ([0.4](#04--confirm-the-oled-model)) — so it becomes an **internal**
+resource. That is a reason to keep it *unexposed*, not a reason to open the
 bottom.
 
-**What this means for you:** route and strain-relieve a display ribbon from
-the front panel down to the bottom board edge, inside the shell. Pin
-direction still matters for *that* clearance — just not for an external
-opening.
+**What this means for you:** route and strain-relieve a short cable from the
+front panel down to the bottom board edge, inside the shell. Pin direction
+still matters for *that* clearance — just not for an external opening.
 
 > [!NOTE]
 > **The power module does not use the header either.** Only **5 V over
@@ -310,8 +311,8 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 - **Cooling volume** for the heatsink and fan, with the fan mounted and
   retained. **Reserve** inlet and exhaust surface area on different faces;
   the actual vent pattern is [Phase 5](#phase-5--ventilation-and-airflow)
-- **Display mounted to the front face**, window cut to the **active area**
-  (81.54 × 47.04 mm), bezel covering the margin and the flex tail
+- **OLED mounted to the front face**, window cut to its **active area**,
+  bezel covering the module margin and the cable exit
 - **A stable foot at the bottom.** Closed — **no opening, no header access.**
   The device stands on its own on a desk or hotel nightstand; give it enough
   footprint and a low enough centre of mass that a tugged USB-C cable does not
@@ -347,12 +348,11 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 > to recover 1 mm puts vibration straight into a printed shell held in the
 > hand.
 
-> [!WARNING]
-> **The display is the most heat-sensitive part in the box.** It is rated
-> **0–50 °C** — below the SoC, the radios and the antennas (−40 to +85 °C).
-> It sits on the front face with a heatsink and fan behind it. **Route the
-> exhaust away from the panel**, and do not make the display cavity the path
-> of least resistance for warm air.
+> [!NOTE]
+> **The OLED is not a thermal weak point**, which is part of why it was
+> chosen over e-paper — it is rated **−40 to +70 °C** against e-paper's
+> typical 0–50 °C. Still route exhaust away from the front face, but the
+> panel is no longer the limiting component.
 
 > [!NOTE]
 > **The sealed-shell assumption is gone.** Earlier revisions of this project
@@ -385,7 +385,7 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
 > **No controls in this revision.** The front view reserves a control area
 > below the display. **Reserve the space; do not populate it.** Keys, a nav
 > wheel, a toggle and indicator LEDs were all specified and then cut —
-> [the scope cut](../docs/01-architecture.md#the-v1-scope-cut) has the
+> [the scope cut](../docs/01-architecture.md#no-controls-in-v1) has the
 > reasoning, and [the retired front-panel work](../docs/retired/pcb-1-front-control.md)
 > is kept should they return.
 
@@ -578,9 +578,9 @@ phases **reserve** vent surface and this one **cuts** it.
   across the heatsink
 - **Cross the heatsink**, not bypass it. The easy failure is air that takes a
   short free path from inlet to outlet and leaves the fins untouched
-- **Keep warm air off the display.** The e-paper is rated **0–50 °C**, lower
-  than the SoC, the radios or the antennas — it is the most heat-sensitive
-  part in the box and it is on the front face
+- **Keep warm air off the front face.** The OLED tolerates −40 to +70 °C so
+  it is not the limiting part, but a hot front panel is still unpleasant to
+  hold
 - **Not fight the rear module.** See the
   [rear-face congestion warning](#watch-items)
 - **Not become an antenna problem.** Vents in or near the cap are fine

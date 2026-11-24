@@ -3,7 +3,7 @@
 > [!CAUTION]
 > **Retired 2026-11-18. PCB 1 is not built in v1.** Enclosure A is fully
 > headless and this board has no contents left to carry. See
-> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut) and the
+> [01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1) and the
 > requirements document it came from, [04](pcb-1-front-control.md).
 >
 > The design is **complete and believed correct** — it was cut for scope, not

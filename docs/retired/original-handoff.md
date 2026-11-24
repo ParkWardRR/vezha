@@ -14,7 +14,7 @@
 > | Power is a 5 V / 5 A bench-supply target, converter undecided | [01](../01-architecture.md) · [05](../05-power-board.md) — RotoPD Pro → Pololu → Pico-gated rail |
 > | Radio fit and slot topology undetermined | [01](../01-architecture.md) · [02](../02-enclosure-a-upper.md) — AX210 top-side E-key, second radio on an underside adapter |
 > | A battery lives in the portable build | [03](../03-enclosure-b-lower.md) — external USB-C source; internal cell is an open question |
-> | A touchscreen, then an e-paper panel, then physical controls | [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut) — **v1 is headless** |
+> | A touchscreen, then an e-paper panel, then physical controls | [01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1) — **v1 is headless** |
 > | Repo owner, URL and creation status unverified | Repo exists and is public |
 > | Software direction, captive portal, VPN, bring-up order | **[09 · Software and bring-up](../09-software-and-bringup.md)** — carried forward live |
 >
@@ -54,7 +54,7 @@ and fallback policy have not been selected.
 
 The complete build needs to power the SBC, two radios, storage, and some
 USB peripheral load. A touchscreen may add to that budget. *(Moot as of
-2026-11-18 — [v1 has no display at all](../01-architecture.md#the-v1-scope-cut),
+2026-11-18 — [v1 has no display at all](../01-architecture.md#no-controls-in-v1),
 so nothing in Enclosure A draws power except the SBC and its peripherals.)*
 
 The previous bench supply target was a regulated 5 V / 5 A. This is a
@@ -118,7 +118,7 @@ has **no display and no physical controls.** The original ask above, "physical
 controls for radio enable/disable and restarting the hotel-login workflow,"
 is **not met in v1**; both move to the web UI. That is the one place the v1
 scope cut departs from the original brief rather than merely simplifying it —
-see [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut). Worth
+see [01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1). Worth
 re-reading before v2, because this paragraph is the reason a front panel was
 specified in the first place.
 

@@ -17,7 +17,7 @@ there isn't one yet.
 [![Architecture](https://img.shields.io/badge/architecture-settled-success?style=flat-square)](docs/01-architecture.md)
 [![Enclosure A](https://img.shields.io/badge/enclosure%20A-upright%20%2B%20antenna%20cap-informational?style=flat-square)](docs/02-enclosure-a-upper.md)
 [![Enclosure B](https://img.shields.io/badge/enclosure%20B-blocked%20on%20RotoPD%20envelope-red?style=flat-square)](docs/03-enclosure-b-lower.md)
-[![Front panel](https://img.shields.io/badge/front%20panel-3.7%22%20e--paper-success?style=flat-square)](docs/02-enclosure-a-upper.md#the-display--reinstated-2026-11-23)
+[![Front panel](https://img.shields.io/badge/front%20panel-OLED-success?style=flat-square)](docs/02-enclosure-a-upper.md#the-display)
 [![Power board](https://img.shields.io/badge/power%20board-spec%20ready-success?style=flat-square)](docs/05-power-board.md)
 [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-0F766E?style=flat-square)](LICENSE.md)
 
@@ -27,12 +27,12 @@ there isn't one yet.
 [![AP](https://img.shields.io/badge/AP-MT7922%20·%20M%E2%86%92E%20adapter-EC1C24?style=flat-square)](docs/01-architecture.md#radio-topology)
 [![Bands](https://img.shields.io/badge/5%20GHz-simultaneous%20up%20%2B%20down-success?style=flat-square)](#the-hard-requirement)
 [![Antennas](https://img.shields.io/badge/antennas-Taoglas%20FXP830%20·%20ordered-blueviolet?style=flat-square)](docs/04-antennas.md)
-[![Cooling](https://img.shields.io/badge/cooling-active%20·%20NF--A4x10%205V-00843D?style=flat-square)](docs/02-enclosure-a-upper.md#thermal--active-cooling-planned-2026-11-23)
+[![Cooling](https://img.shields.io/badge/cooling-active%20·%20NF--A4x10%205V-00843D?style=flat-square)](docs/02-enclosure-a-upper.md#thermal)
 
 [![PD](https://img.shields.io/badge/PD-CentyLab%20RotoPD%20Pro-333333?style=flat-square)](docs/05-power-board.md)
 [![Controller](https://img.shields.io/badge/controller-Pi%20Pico%202-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](docs/05-power-board.md)
 [![Regulator](https://img.shields.io/badge/5%20V-Pololu%20D42V55F5-00843D?style=flat-square)](docs/05-power-board.md)
-[![UI](https://img.shields.io/badge/router%20UI-web%20only-795548?style=flat-square)](docs/01-architecture.md#the-v1-scope-cut)
+[![UI](https://img.shields.io/badge/router%20UI-web%20only-795548?style=flat-square)](docs/01-architecture.md#no-controls-in-v1)
 [![Console](https://img.shields.io/badge/console-OLED%20%2B%20encoder%20·%20power%20box-FF6F00?style=flat-square)](docs/05-power-board.md)
 [![Assembly](https://img.shields.io/badge/assembly-JLCPCB-2E7D32?style=flat-square)](docs/07-bom.md)
 
@@ -65,19 +65,17 @@ A **two-piece** handheld router: two enclosures, one PCB, designed together.
 
 | | Deliverable | Contents | Status |
 |---|---|---|---|
-| **A** | **Upper router box** | Orange Pi 5 Plus **on edge**, both Wi-Fi radios, M→E adapter, storage, **40 mm fan**, **3.7" e-paper front panel**, **replaceable antenna cap** | **In design** — [handoff](handoff/) |
+| **A** | **Upper router box** | Orange Pi 5 Plus **on edge**, both Wi-Fi radios, M→E adapter, storage, **40 mm fan**, **OLED front panel**, **replaceable antenna cap**, closed foot | **In design** — [handoff](handoff/) |
 | **B** | **Power module** — mounts on **Enclosure A's rear face** | Power board **plus the OLED + encoder console** — detachable | Ready to design |
 | **2** | **Power board** | Carrier for RotoPD Pro + Pico 2 + Pololu regulator | Spec ready |
-| ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#the-v1-scope-cut) | Design complete, not built |
+| ~~**1**~~ | ~~Front control board~~ | **Retired in v1** — [the scope cut](docs/01-architecture.md#no-controls-in-v1) | Design complete, not built |
 
 > [!NOTE]
-> **v1 has a display but no controls in the router box.** The e-paper panel
-> was cut on 2026-11-18 and **reinstated on 2026-11-23** as a 3.7" GooDisplay
-> panel — but the three keys, nav wheel, toggle and RGB indicators stayed cut,
-> and **PCB 1 is not built.** The panel is an **output surface only**;
-> configuration is still the **web UI**. The power box keeps its OLED and
-> encoder, showing **power and PD state only.**
-> [01 · The 2026-11-23 revision](docs/01-architecture.md#the-2026-11-23-revision)
+> **v1 has a display but no controls in the router box.** An **OLED** on the
+> front face, output only — no keys, nav wheel, toggle or RGB indicators, and
+> **no front control board.** Configuration is the **web UI**. The power
+> module keeps its own OLED and encoder, showing **power and PD state only.**
+> [01 · No controls in v1](docs/01-architecture.md#no-controls-in-v1)
 
 **The governing rule:** both radios and all antennas stay in Enclosure A, so
 **the power box detaches without disturbing any PCIe or antenna connection.**
@@ -97,7 +95,7 @@ flowchart LR
         CAP["<b>antenna cap</b> · replaceable<br/>4 × Taoglas flex dipoles"]:::rf
         PI["<b>Orange Pi 5 Plus</b><br/>RK3588 · <b>on edge</b>"]:::core
         RAD["<b>AX210</b> · top-side E-key<br/><i>hotel uplink</i><br/><b>MT7922</b> · far face, via M→E adapter<br/><i>private AP</i>"]:::rf
-        EPD["<b>3.7-inch e-paper</b> · front panel<br/><i>output only — no controls, no PCB 1</i>"]:::ctl
+        EPD["<b>OLED</b> · front panel<br/><i>output only — no controls, no PCB 1</i>"]:::ctl
         PI === RAD
         RAD -.->|"100 mm MHF4"| CAP
         PI --- EPD
@@ -177,7 +175,7 @@ reaches 48 V.
 
 *PCB 1's block schematic (`docs/img/pcb-1-block-schematic.svg`) and its
 documents are retired with the board — see
-[the v1 scope cut](docs/01-architecture.md#the-v1-scope-cut).*
+[the v1 scope cut](docs/01-architecture.md#no-controls-in-v1).*
 
 ## The dimensions nobody should guess
 
@@ -225,7 +223,7 @@ out of the path.
 
 | | Document | For | Contents |
 |---|---|---|---|
-| **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, the v1 scope cut, decision status. **Read first.** |
+| **01** | **[Architecture](docs/01-architecture.md)** | **Everyone** | The split, radio topology, power path, decision status. **Read first.** |
 | **02** | [Enclosure A — upper](docs/02-enclosure-a-upper.md) | Mechanical | Contents and mounting, the on-edge board, the display, the fan, the antenna cap, USB-C inlet, thermal |
 | **03** | [Enclosure B — lower](docs/03-enclosure-b-lower.md) | Mechanical | Power box contents, Pico mounting options, sizing, wall openings |
 | **04** | [Antennas](docs/04-antennas.md) | RF + mechanical | The antenna cap, datasheet figures for the ordered part, candidates and gain, tri-band clarification, RF bench test |
@@ -234,7 +232,7 @@ out of the path.
 | **07** | [BOM](docs/07-bom.md) | Procurement | Every part with status, JLCPCB codes, and what is unresolved |
 | **08** | [Sourcing](docs/08-sourcing.md) | Procurement | JLCPCB/LCSC lookup method |
 | **09** | [Software & bring-up](docs/09-software-and-bringup.md) | **Software** | The only live software doc — captive portal, VPN, uplink recovery, and the bring-up order. **Nothing implemented** |
-| **10** | [Measurement protocol](docs/10-measurement-protocol.md) | Mechanical | The dimensions still unknown, how to take them, the thermal-stack and drawing-retrieval items added 2026-11-23, and the M.2 adapter assessment that gates the first |
+| **10** | [Measurement protocol](docs/10-measurement-protocol.md) | Mechanical | The dimensions still unknown, how to take them, the thermal-stack and drawing-retrieval items, and the M.2 adapter assessment |
 
 **[docs/retired/](docs/retired/)** — the display, PCB 1 requirements, the PCB 1
 schematic, and the original project handoff. Complete work, kept so a v2 panel
@@ -253,17 +251,12 @@ edit it there, not here. The headlines:
 
 | | |
 |---|---|
-| **Settled** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on a far-face M→E adapter. RotoPD Pro → Pololu → USB-C seam → Orange Pi, with the Pico beside that path gating EN. **Enclosure B keeps the OLED + encoder.** |
-| **Settled 2026-11-18** | **U3 = Pololu `D42V55F5` #5571** (the 5.0 V part) · **RotoPD screw terminal removed** · **accessory port config A** · **RotoPD geometry resolved** from the vendor repo, 24.40 × 35.80 mm |
-| **Settled 2026-11-23** | **SBC mounts on edge**, 40-pin header at the bottom · **3.7" GooDisplay e-paper front panel returns** (output only — controls stay cut) · **all antennas move into the replaceable top cap** · **active cooling**, Noctua NF-A4x10 5V · **Taoglas FXP830.24.0100B ordered** |
-| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see the caution below) · **the Enclosure A depth budget**, which does not close · **the SBC mechanical drawing**, never retrieved |
-| **Open** | Display model, panel-to-host interface, fan speed control, how the on-edge board is retained, heatsink SKU, second radio part and height, antenna connector type, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
-
-> [!IMPORTANT]
-> **Three decisions recorded as settled were reversed on 2026-11-23**, and
-> the reasoning that closed them no longer holds. Read
-> [01 · The 2026-11-23 revision](docs/01-architecture.md#the-2026-11-23-revision)
-> before trusting any "settled" entry in Enclosure A's documents.
+| **Settled · system** | Two enclosures, one PCB. Both radios and all antennas in Enclosure A. AX210 top-side E-key, second radio on a far-face M→E adapter. Power-only seam over USB-C. |
+| **Settled · Enclosure A** | SBC **on edge**, 40-pin header at the bottom · **OLED front panel**, output only · all antennas in the **replaceable top cap** · **active cooling** (Noctua NF-A4x10 5V + 50 × 46 × 12.6 mm heatsink) · **closed stable foot**, no header access · **power module mounts on the rear** |
+| **Settled · power** | **U3 = Pololu `D42V55F5` #5571** · RotoPD screw terminal removed · accessory port config A · RotoPD geometry 24.40 × 35.80 mm · Pico gates EN from the RotoPD aux rail · the OLED + encoder console stays on the power board |
+| **Ordered** | Taoglas **FXP830.24.0100B** flex dipoles |
+| **Blocking** | **The seam loop resistance** (a decision, not a measurement — see below) · **the Enclosure A depth budget**, at ≈ 37–51 mm against a 30 mm placeholder · **the SBC mechanical drawing**, never retrieved |
+| **Open** | OLED model and size, panel-to-host wiring, fan speed control, vent pattern, how the on-edge board is retained, rear-face allocation, heatsink SKU, second radio part, antenna coordinates and port map, seam USB-C receptacle and cable, Pico mounting, power source |
 
 > [!CAUTION]
 > **The seam is over budget as specified, and the regulator can no longer

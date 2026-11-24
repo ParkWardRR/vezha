@@ -401,7 +401,7 @@ INA226 defaults to `0x40` and is strappable across `0x40`–`0x4F`.
 | Pololu D42V55F5 | **6 A typical maximum** — unvalidated in enclosure |
 | RotoPD auxiliary | **0.4 A continuous** — Pico + OLED + encoder only |
 | Accessory port | **1.0 A proposed**, on its own regulator |
-| ~~PCB 1 indicators~~ | **0 mA** — [v1 is headless](01-architecture.md#the-v1-scope-cut). Previously charged at ~240 mA, then ~120 mA once `REXT` was set for 10 mA/channel |
+| ~~PCB 1 indicators~~ | **0 mA** — [v1 is headless](01-architecture.md#no-controls-in-v1). Previously charged at ~240 mA, then ~120 mA once `REXT` was set for 10 mA/channel |
 
 ## Measurement, before trusting any of this
 
@@ -430,7 +430,7 @@ seam is USB-C, 5 V power only. The governing rule in
 **2 · Two competing user interfaces** — **resolved twice over.** First by
 dropping telemetry: with no link across the seam, this board's OLED can only
 show power and PD state, so it could never substitute for a router UI. Then by
-[the v1 scope cut](01-architecture.md#the-v1-scope-cut), which removed the
+[the v1 scope cut](01-architecture.md#no-controls-in-v1), which removed the
 competing interface altogether.
 
 | | Interface | Shows |

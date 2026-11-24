@@ -23,7 +23,7 @@ discovered after a case has been printed or a board fabricated:
 
 | # | Dimension | Gates | Currently assumed |
 |---|---|---|---|
-| 1 | **M.2 stack** — adapter + card + mated plugs + coax bend | **Enclosure A depth** (changed 2026-11-23 — it was thickness, before the board was stood [on edge](01-architecture.md#what-on-edge-mounting-changes)). The largest untrusted term in the depth budget | **15.9 mm**, from four stacked guesses |
+| 1 | **M.2 stack** — adapter + card + mated plugs + coax bend | **Enclosure A depth** (changed 2026-11-23 — it was thickness, before the board was stood [on edge](01-architecture.md#what-on-edge-mounting-means)). The largest untrusted term in the depth budget | **15.9 mm**, from four stacked guesses |
 | ~~2~~ | ~~**RotoPD Pro envelope**~~ — **resolved 2026-11-18 from the vendor repo**, no measurement needed | — | **24.40 × 35.80 mm**, real [geometry](06-power-board-schematic.md#u1--rotopd-pro-mechanical--resolved-from-the-vendor-repo) |
 | 3 | **Mated USB-C plug + cable bend radius** | Every USB-C opening in both boxes | **25 mm** |
 | **4** | **Thermal stack** — does the fan bolt onto the heatsink? *(added 2026-11-23)* | Enclosure A depth, by 12 mm | **12.6 mm** heatsink; fan **unknown** whether additive |

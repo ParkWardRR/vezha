@@ -3,18 +3,11 @@
 Four internal flex antennas, **two per radio**, in the **replaceable antenna
 cap** on top of [Enclosure A](02-enclosure-a-upper.md).
 
-> [!IMPORTANT]
-> **Placement changed on 2026-11-23.** The four narrow-wall positions below
-> are **withdrawn**; all elements now mount inside the top cap. The part is
-> **ordered**, and its datasheet figures have been read and are reproduced
-> here rather than quoted from a catalog. The cap's mechanical spec is in
-> [handoff · Phase 2](../handoff/README.md#phase-2--the-replaceable-antenna-cap).
-
 Status: **the part is ordered; nothing is measured or bench-tested.** The
-placement is proposed and **not RF-validated.** Prices are as discussed on
-2026-11-17 and unverified against a live retail quote.
+placement is proposed and **not RF-validated.** The cap's mechanical spec is
+in [handoff · Phase 2](../handoff/README.md#phase-2--the-replaceable-antenna-cap).
 
-## The antenna cap — decided 2026-11-23
+## The antenna cap
 
 All elements mount to the **inside face of a nonmetallic, replaceable cap**
 above the SBC, on the board edge **opposite the 40-pin header.**
@@ -33,16 +26,11 @@ above the SBC, on the board edge **opposite the 40-pin header.**
 ### What this placement has to prove
 
 > [!WARNING]
-> **Concentrating all four elements in one cap is the specific risk.** The
-> withdrawn layout deliberately spread them around the walls to keep the two
-> radios physically separated — this document's own words were that it did so
-> "rather than crowding all four elements under the top cap for easier
-> routing." **Crowding them under the top cap is now the plan.**
->
-> **Inter-radio isolation is what could fail**, and
+> **Concentrating all four elements in one small chamber is the risk this
+> design takes on.** Inter-radio isolation is what could fail, and
 > [the hard requirement](01-architecture.md#radio-topology) is two 5 GHz
 > radios transmitting at once. The [bench test](#bench-test-before-committing)
-> is no longer a formality.
+> is not a formality.
 
 Verification list, none of it done:
 
@@ -53,7 +41,7 @@ Verification list, none of it done:
    is a routine action, not a service-only one
 4. **RF performance with the cap installed**, not open
 
-### Why the cap is the right place for them anyway
+### Why the cap
 
 - **The cap is cheap and replaceable.** Reprinting a cap to move an element
   5 mm costs a few hours of print time; moving a wall-mounted element means
@@ -65,8 +53,8 @@ Verification list, none of it done:
 - **The elements come out with the cap**, so an antenna swap disturbs nothing
   else — the hedge this architecture was built around.
 
-The cost is routing: **the leads got longer, not shorter**, and they now run
-up past the cooling stack.
+The cost is routing: the leads run from both board faces up past the cooling
+stack to the cap, and they are only 100 mm.
 
 ## The part — datasheet figures
 
@@ -128,7 +116,7 @@ free space, not performance in this enclosure.
 
 | Antenna | Gain 2.4 / 5 / 6 GHz | Mount and connector | Approx. USD | Role |
 |---|---|---|---|---|
-| **Taoglas FXP830.24.0100B** | 2.14 / 5.33 / 6.49 free space; 3.46 / 6.86 / 8.09 on 2 mm ABS | 42 × 7 mm internal adhesive strip, 100 mm Ø0.81 mm MHF4 lead | $7.31 ea, ~$29 for four | ✅ **Ordered 2026-11-23.** No holes, no pigtails, no protrusions. Gain figures above are now confirmed against the datasheet. |
+| **Taoglas FXP830.24.0100B** | 2.14 / 5.33 / 6.49 free space; 3.46 / 6.86 / 8.09 on 2 mm ABS | 42 × 7 mm internal adhesive strip, 100 mm Ø0.81 mm MHF4 lead | $7.31 ea, ~$29 for four | ✅ **Ordered.** No holes, no pigtails, no protrusions. Gain figures above are now confirmed against the datasheet. |
 | TE/Linx ANT-W63-WRT-MHF4 | 4.5 / 4.5 / 6.4 — **these are the WRT SMA variant's numbers; confirm the MHF4 datasheet before treating them as identical** | Fixed panel-mount dome, direct MHF4 lead. SMA version listed at 27.8 mm max height. | $15.31 ea, ~$31/pair | **Swap-in for the uplink** if grip or battery compromise the internal pair. |
 | TE/Linx ANT-W63WS1-SMA | 7.7 / 5.8 / 4.7 | 85.5 mm tilting blade, SMA male → needs MHF4-to-SMA bulkheads | $12.27 ea, ~$25/pair before pigtails | Better for tabletop use with adjustable orientation. Not pocketable. |
 | Octane SA-2400/5800 | 2.2 @ 2.45 GHz / 4.4 @ 5.65 GHz / **no full 6 GHz coverage** (spec stops at 6.0 GHz) | 67 mm rigid stub, SMA bulkhead → needs MHF4-to-SMA bulkheads | ~$79 ea on a GSA schedule; **not a verified retail price** | Ruggedness only. No demonstrated gain advantage and poor value here. |
@@ -162,47 +150,6 @@ and your hand — not because its catalog gain is higher.
 | Keep clear of | Metal of any kind, the heatsink, the PCB, the RTC cell. **No carbon-filled filament, foil liner, conductive coating or metal trim** in the cap. |
 | Cable routing | Mock up all four **100 ± 3 mm** leads **before** fixing board and cap geometry. The two radios sit on **opposite faces** of a board standing on edge, so the far-face lead must cross the board thickness *and* reach the cap. Avoid tight bends and loops. **Check the cap lifts without tugging on the MHF4 connectors** — it is designed to come off. |
 | Strain relief | **Below the seam**, accessible, and never clamping or sharply bending the micro-coax. |
-
-### The withdrawn narrow-wall layout
-
-> [!NOTE]
-> **Superseded 2026-11-23 by [the cap](#the-antenna-cap--decided-2026-11-23).**
-> Kept because the reasoning still describes the trade being made, and
-> because the bench test is partly designed to find out whether abandoning it
-> was a mistake.
-
-Viewed from the screen side, each radio got **one horizontal strip and one
-vertical strip**, inside the narrow plastic walls, with the broad faces clear:
-
-| Radio | Placement | Orientation |
-|---|---|---|
-| **Intel AX210** — hotel uplink | Inside the **top wall**, toward the upper-left corner | Long axis **across the top** |
-| **Intel AX210** — hotel uplink | Inside the **upper-right sidewall** | Long axis **down the side** |
-| **MT7922** — private AP | Inside the **lower-left sidewall** | Long axis **down the side** |
-| **MT7922** — private AP | Inside the **bottom wall** | Long axis **across the bottom** |
-
-[Antenna layout sketch](antenna-layout.excalidraw "width=820 height=560")
-*(draws the withdrawn layout)*
-
-**Why it was arranged that way**, and what is lost by moving to the cap:
-
-- **The top pair stayed above the normal grip** — that is the hotel uplink,
-  the link most likely to be marginal. **The cap keeps this property and
-  improves it**; the cap is higher than the top wall was.
-- **The lower pair kept the two radios physically separated** rather than
-  crowding all four elements under the top cap. **This property is lost.** It
-  is the one the bench test has to re-earn through spacing and orientation
-  inside the cap.
-- **The crossed orientations** were a starting point for a device that gets
-  picked up and rotated. **Still available** — orientation within the cap is
-  explicitly open.
-
-> [!WARNING]
-> **Grip sensitivity was the reason the lower pair sat where it did.** With
-> every element in the cap, grip loading changes character: the hand is now
-> *always* below all four elements rather than over one pair. That is
-> plausibly better, and it is **not** established. Test in **both hands**
-> before bonding anything.
 
 ## Tri-band: what it changes and what it doesn't
 
@@ -275,8 +222,7 @@ figures were taken in free space, not on a handheld.
 - **Element coordinates, spacing and orientation inside the cap** — none are
   set, and they are the main Phase 3 output.
   [Handoff · Phase 3](../handoff/README.md#phase-3--antenna-placement-and-rf-validation)
-- **Which element feeds which radio.** The port map is undecided; the
-  withdrawn layout had assigned it and that assignment is void.
+- **Which element feeds which radio.** The port map is undecided.
 - **Quantity ordered.** Four is the plan; the order quantity was not recorded.
 - **Inter-radio isolation with all four elements in one cap** — the specific
   risk this placement takes on.

@@ -4,7 +4,7 @@
 > **Retired 2026-11-18. Vezha v1 has no display.** Enclosure A is fully
 > headless: no panel, no keys, no wheel, no indicators, no front PCB. The
 > entire user interface is the web UI. See
-> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut).
+> [01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1).
 >
 > **Nothing in this document is a build instruction.** It is kept because the
 > analysis below is the reason the display went away, and because a v2 that
@@ -20,7 +20,7 @@
 | Leaving the panel powered in a static state destroys it — the `PWR` pin must be driven, and an unclean shutdown is a dead-display failure mode | [Refresh discipline](#refresh-discipline-is-a-hard-requirement) |
 
 A later comparison against monochrome OLED, run before the headless decision,
-is summarised in [the v1 scope cut](../01-architecture.md#the-v1-scope-cut).
+is summarised in [the v1 scope cut](../01-architecture.md#no-controls-in-v1).
 
 ---
 

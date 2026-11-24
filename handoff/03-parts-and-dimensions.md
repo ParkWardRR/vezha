@@ -78,43 +78,36 @@ Every number you need in one place, **each tagged with where it came from.**
 
 ## Display
 
-**3.7" GooDisplay e-paper. Family and size fixed; exact model not chosen.**
-Output only — there are no controls in this revision.
+**An OLED on the front face, output only.** No controls anywhere on the
+device.
 
-| Model | Resolution · active area | Outline | Colour | Refresh | Operating temp |
-|---|---|---|---|---|---|
-| **[GDEY037T03](https://www.good-display.com/product/437.html)** ← suggested default | 416 × 240 · 81.54 × 47.04 mm | **92.99 × 53 × 1.0 mm** | B/W (4-level grey on request) | **2 s full · 0.3 s partial** | **0–50 °C** |
-| [GDEM037F36](https://www.good-display.com/product/505.html) | 416 × 240 · 81.54 × 47.04 mm | 92.99 × 53 × 1.0 mm | Black/white/red/yellow | 20 s full · 12 s fast | **0–40 °C** |
-| [GDEH037E01](https://www.good-display.com/product/991.html) | 480 × 720 · 50.40 × 75.60 mm | 58.0 × 85.64 × 0.9 mm | Spectra 6 full colour | Not published | 0–50 °C |
+**The exact model is not fixed.** The candidate is the **Adafruit 5297**,
+already used as the power board's console display — the same part in both
+boxes means one part number, one driver, one spare.
 
-All 🟡 Published by Good Display; **none verified against a part in hand.**
-All three use **SPI on a 24-pin 0.5 mm-pitch FPC.**
-
-**Driver boards** — the panel is bare and needs one:
-
-| Board | Size | For |
-|---|---|---|
-| **[DESPI-C02](https://www.good-display.com/product/516.html)** | **41 × 22 mm** | Generic 24-pin SPI, covers the 416 × 240 panels |
-| [DESPI-E01](https://www.good-display.com/product/1087.html) | 35 × 20 mm | Spectra 6 panel only |
-
-> [!NOTE]
-> **The display does not drive the enclosure footprint, which is new.** The
-> previously-considered 4.26" panel was dropped partly because its
-> **107 × 64 mm** driver board set the faceplate minimum. At
-> **92.99 × 53 mm** panel and **41 × 22 mm** driver board, both are smaller
-> than the board's 100 mm edge. The window is cut to the **active area**
-> (81.54 × 47.04 mm), not the outline — the bezel hides the margin and the
-> flex tail.
+| | Adafruit 5297 |
+|---|---|
+| Active area | **20.076 × 20.076 mm** |
+| Interface | **I²C**, 4-pin JST-SH STEMMA QT / Qwiic — 3.3 V, GND, SDA, SCL |
+| Operating temp | **−40 to +70 °C** |
+| Provenance | 🟡 Published; already specified for [the power board](../docs/05-power-board.md#adafruit-5297-oled) |
 
 > [!WARNING]
-> **Operating temperature is the deciding spec, not resolution or colour.**
-> **0–50 °C** puts the panel below the SoC, the radios and the antennas — it
-> is **the most heat-sensitive part in the box**, and it is mounted on the
-> front face directly in front of a heatsink and fan. Route exhaust away from
-> it. The four-colour option narrows this to **0–40 °C** and takes 20 s to
-> refresh; that is a poor trade for a status panel in a warm box.
+> **20 mm square is small for a front panel, and that is the open question.**
+> A Wi-Fi join QR for a strong passphrase needs roughly **≥ 0.5 mm per
+> module** to scan reliably, which is marginal at 20.076 mm. **If the join QR
+> has to render on the panel, a larger OLED is needed** — and that moves the
+> front-face geometry. Settle it before cutting the window.
 
----
+> [!NOTE]
+> **The display does not drive the enclosure footprint.** It is far smaller
+> than the board's 100 mm edge. It is also **not** a thermal weak point —
+> −40 to +70 °C is wider than e-paper's typical 0–50 °C, which is part of why
+> OLED was chosen.
+>
+> What OLED gives up: **no status at rest.** It shows nothing with the power
+> off, where e-paper holds its last image. And **static images burn in**, so
+> a status panel needs a screensaver, pixel shift or timeout in firmware.
 
 ## Antennas
 
@@ -217,8 +210,7 @@ Treat it as a visual language reference, not a geometry reference.
 **Datasheets and vendors**
 - [Noctua NF-A4x10 5V specifications](https://noctua.at/en/products/nf-a4x10-5v/specifications)
 - [Taoglas FXP830.24.0100B datasheet (PDF)](https://www.taoglas.com/datasheets/FXP830.24.0100B.pdf)
-- [Good Display GDEY037T03](https://www.good-display.com/product/437.html) · [GDEM037F36](https://www.good-display.com/product/505.html) · [GDEH037E01](https://www.good-display.com/product/991.html)
-- [Good Display DESPI-C02 driver board](https://www.good-display.com/product/516.html) · [DESPI-E01](https://www.good-display.com/product/1087.html)
+- [Adafruit 5297 OLED](https://www.adafruit.com/product/5297)
 - [Prusa M3 heat-set inserts](https://www.prusa3d.com/product/heat-set-inserts-m3-standard-100-pcs/)
 - [CentyLab RotoPD Pro repository](https://github.com/CentyLab/RotoPD_Pro) — for the later power module
 

@@ -4,7 +4,7 @@
 > **Retired 2026-11-18. PCB 1 does not exist in v1.** Enclosure A is fully
 > headless — no display, no keys, no wheel, no toggle, no indicators, no front
 > board at all. Vezha v1 ships **two enclosures and one PCB.** See
-> [01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut).
+> [01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1).
 >
 > **Do not order parts from this document** and do not lay the board out. The
 > schematic that followed from it, [12](pcb-1-schematic.md), is retired with

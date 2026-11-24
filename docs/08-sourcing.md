@@ -63,7 +63,7 @@ re-check before ordering.
 > [!NOTE]
 > **Most of this table is now historical.** The LED driver, both switch
 > families, the toggle, the keycaps and the RGB LED all belonged to PCB 1,
-> which is [not built in v1](01-architecture.md#the-v1-scope-cut). **Only the
+> which is [not built in v1](01-architecture.md#no-controls-in-v1). **Only the
 > GCT USB-C receptacle and the two hand-mounted modules are live parts.**
 >
 > The table is kept because the *method* is the point — and because the

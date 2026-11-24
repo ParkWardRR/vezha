@@ -1,27 +1,21 @@
 # 01 · Brief — Upright Orange Pi 5 Plus Enclosure
 
 > [!CAUTION]
-> **Read this before the brief. Three things below are cancelled.**
+> **Corrections to the brief below — read these first.**
 >
 > | The brief says | Actual |
 > |---|---|
-> | `OPENING TO LOWER MODULE` at the bottom | ❌ **No bottom opening.** The bottom is a **closed, stable foot** |
-> | `40-PIN HEADER ACCESS OPENING`, and *"provide bottom access and mating-connector clearance"* | ❌ **No header access.** The header is **internal only**, carrying the display ribbon — [0.5](README.md#05--the-40-pin-header-is-internal-only) |
-> | *"Keep the lower header area available for a future module"* | ❌ The power module mounts on the **back**, not underneath |
+> | `OPENING TO LOWER MODULE` at the bottom | **No bottom opening.** The bottom is a **closed, stable foot** |
+> | `40-PIN HEADER ACCESS OPENING`, and *"provide bottom access"* | **No header access.** The header is **internal only** — [0.5](README.md#05--the-40-pin-header-is-internal-only) |
+> | *"Keep the lower header area available for a future module"* | The power module mounts on the **back** |
+> | Fan at 40 × 40 × 10 mm | **12 mm installed** with its anti-vibration pads |
+> | 30 mm cap depth | Does not survive [the depth budget](README.md#03--run-the-depth-budget--it-does-not-currently-close) |
 >
-> **Two figures are also wrong or incomplete** —
-> [Phase 0](README.md#phase-0--inputs-and-sanity-checks) has both: the fan is
-> **not** 10 mm installed (it is 12 mm with pads), and the 30 mm cap depth
-> does not survive the depth budget.
+> The display is an **OLED**, not e-paper. Ventilation is an explicit final
+> phase — [Phase 5](README.md#phase-5--ventilation-and-airflow).
 >
-> **One addition:** ventilation is now an explicit final phase —
-> [Phase 5](README.md#phase-5--ventilation-and-airflow).
-
-> [!NOTE]
-> **Source document, reproduced verbatim.** Kept unedited so there is a
-> stable reference for what was originally asked, including the ASCII
-> diagrams — which were **not** redrawn after the corrections above. Where it
-> conflicts with [the plan](README.md), the plan wins and says why.
+> **The ASCII diagrams below were not redrawn.** This file is the verbatim
+> source brief; [the plan](README.md) is what to build from.
 
 ---
 

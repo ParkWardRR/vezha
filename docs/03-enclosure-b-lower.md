@@ -79,7 +79,7 @@ Micro-USB port** — and bring it to a wall opening or it is access in name only
 **Decided 2026-11-18: Enclosure B keeps the OLED and the push encoder.**
 
 This was a live contradiction, not just an unknown.
-[01](01-architecture.md#the-v1-scope-cut) asserts that B "carries the only
+[01](01-architecture.md#no-controls-in-v1) asserts that B "carries the only
 panel" and treats the console as settled by the v1 scope cut, while this
 document and [06](06-power-board-schematic.md) both still listed it as open
 and **blocking**. It is resolved in favour of 01.

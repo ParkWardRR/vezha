@@ -43,7 +43,7 @@ it is recorded here so it is not quietly forgotten.
 > for a fresh login.
 >
 > **v1 does not meet that.** [Enclosure A is
-> headless](01-architecture.md#the-v1-scope-cut); every one of those actions
+> headless](01-architecture.md#no-controls-in-v1); every one of those actions
 > moves to the web UI. There is also **no at-rest status of any kind** and **no
 > home for the Wi-Fi join QR code.**
 

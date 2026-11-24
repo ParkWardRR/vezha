@@ -12,7 +12,7 @@ simulated and in one case fully drawn.
 inherits it rather than rediscovering it.
 
 Reasoning for the cut, and what it bought:
-[01 · The v1 scope cut](../01-architecture.md#the-v1-scope-cut).
+[01 · The v1 scope cut](../01-architecture.md#no-controls-in-v1).
 
 ## What is here
 
