@@ -212,14 +212,12 @@ unless noted.
 
 ## Style reference
 
-[**Lilygo T-Beam SUPREME TS1 Case by Alley Cat**](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat)
-— the specific things wanted from it:
-
-- **Curved features** rather than a hard rectangular box
-- **Slots for a strap**
-- **Textured surface lines**
-
-Treat it as a visual language reference, not a geometry reference.
+Covered in full under
+[Aesthetics and design](README.md#aesthetics-and-design) — the short version
+is the
+[Lilygo T-Beam SUPREME TS1 Case by Alley Cat](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat),
+for its **curved features, strap slots and textured surface lines.** Visual
+language, not geometry.
 
 ---
 

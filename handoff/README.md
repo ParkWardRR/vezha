@@ -9,7 +9,8 @@
 [![Phase 1](https://img.shields.io/badge/phase%201-main%20case-0F766E?style=flat-square)](#phase-1--main-case-and-blank-lid)
 [![Phase 2](https://img.shields.io/badge/phase%202-antenna%20cap-0F766E?style=flat-square)](#phase-2--the-replaceable-antenna-cap)
 [![Phase 3](https://img.shields.io/badge/phase%203-antenna%20placement-orange?style=flat-square)](#phase-3--antenna-placement-and-rf-validation)
-[![Phase 4](https://img.shields.io/badge/phase%204-power%20module%20%2B%20PCB-informational?style=flat-square)](#phase-4--the-lower-power-module-and-its-pcb)
+[![Phase 4](https://img.shields.io/badge/phase%204-power%20module%20%2B%20PCB-informational?style=flat-square)](#phase-4--the-rear-power-module-and-its-pcb)
+[![Style](https://img.shields.io/badge/style-Game%20Boy%20upright-8B5CF6?style=flat-square)](#aesthetics-and-design)
 [![Blocker](https://img.shields.io/badge/blocking-board%20drawing%20not%20retrieved-red?style=flat-square)](#phase-0--inputs-and-sanity-checks)
 
 </div>
@@ -24,7 +25,7 @@ display and a replaceable antenna cap**, and later a **detachable power module
 that mounts on the back.**
 
 **You are picking up the mechanical work first.** The PCB work is real and
-specified, but it is [Phase 4](#phase-4--the-lower-power-module-and-its-pcb) —
+specified, but it is [Phase 4](#phase-4--the-rear-power-module-and-its-pcb) —
 the case comes first because the client has the board in hand and the power
 module's shape depends on the case it bolts to.
 
@@ -49,49 +50,154 @@ module's shape depends on the case it bolts to.
 
 ## The shape of the thing
 
-A Game Boy-style upright handheld. Display at the front, board standing
-vertically behind it, cooling behind that, antenna cap on top, and a **stable
-foot at the bottom.** The power module mounts on the **back**, later.
+A Game Boy-style upright handheld. Display at the front, board standing on
+edge behind it, cooling behind that, antenna cap on top, stable foot at the
+bottom. The power module mounts on the back, later.
+
+**Front**
 
 ```
-                         ┌────────────────────────┐
-                         │   ANTENNA CAP          │  ← hollow, replaceable,
-                         │   (lift off, 2 × M3)   │    nonmetallic · Phase 2
-                         ╞════════════════════════╡  ← cap seam · cable passage
-                         │   ┌────────────────┐   │
-                         │   │                │   │
-                         │   │     DISPLAY    │   │  ← OLED, front face
-                         │   │                │   │
-                         │   └────────────────┘   │    behind it: Orange Pi on
-                         │                        │    edge, heatsink + fan aft
-                         │   space reserved       │
-                         └────────────────────────┘
-                          ══════════════════════════  ← STABLE FOOT · no opening
-
-        rear elevation:  ┌────────────────────────┐
-                         │  [o]              [o]  │  ← the 2 screws that
-                         │                        │    hold the antenna cap on
-                         │   ┌────────────────┐   │
-                         │   │  POWER MODULE  │   │  ← Phase 4, mounts HERE
-                         │   │  (later)       │   │    on the back, detachable
-                         │   └────────────────┘   │
-                         │   removable service    │
-                         │   panel                │
-                         └────────────────────────┘
+        ┌──────────────────────────────┐
+        │                              │
+        │        ANTENNA  CAP          │   lifts off · nonmetallic
+        │                              │   carries all 4 antennas
+        ╞══════════════════════════════╡ ← cap seam
+        │                              │
+        │         ┌──────────┐         │
+        │         │   OLED   │         │   output only
+        │         └──────────┘         │
+        │                              │
+        │      (space reserved)        │   no controls in v1
+        │                              │
+        └──────────────────────────────┘
+         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ← stable foot · closed, no opening
+        │◄─────────  ~110 mm  ────────►│
 ```
+
+**Side section** — the depth stack, which is the hard part
+
+```
+   front ◄────────────────────────────────────────► rear
+
+        ┌────────────────────────────────────────┐
+        │                                        │
+        │              ANTENNA CAP               │
+        │                                        │
+        ╞════════════════════════════════════════╡ ← cap seam ·
+        │ ┌───┐  ┌────┐ ║ ┌────────┐ ┌─────────┐ │   cable passage
+        │ │   │  │M.2 │ ║ │  HEAT  │ │   FAN   │ │
+        │ │OLE│  │card│ ║ │  SINK  │ │         │ │ ◄── intake air
+        │ │ D │  │ +  │ ║ │        │ │         │ │
+        │ │   │  │adpt│ ║ │        │ │         │ │
+        │ └───┘  └────┘ ║ └────────┘ └─────────┘ │
+        │               ║      ▲  gap ▲          │
+        │        Orange Pi 5 Plus, on edge       │
+        └────────────────────────────────────────┘
+         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  foot
+
+          3–5     15.9   1.6    12.6    2–5    12     mm
+          OLED    M.2    PCB   heatsink  gap   fan
+        │◄───────────── ~51–57 mm total ────────►│
+```
+
+**Rear**
+
+```
+        ┌──────────────────────────────┐
+        │                              │
+        │        ANTENNA  CAP          │
+        │                              │
+        ╞═══[o]══════════════════[o]═══╡ ← 2 × M3, rear-access,
+        │                              │   these hold the cap on
+        │    ┌────────────────────┐    │
+        │    │                    │    │
+        │    │    POWER MODULE    │    │   Phase 4 · detachable
+        │    │   (mounts here)    │    │
+        │    └────────────────────┘    │
+        │                              │
+        │   removable service panel    │
+        └──────────────────────────────┘
+```
+
+The **USB-C power inlet is the port next to the Ethernet jacks**, so it comes
+out of the board's port cluster on whichever edge that lands — cut from the
+drawing, not placed by eye.
+
+## Aesthetics and design
+
+**This is not a project where the enclosure just has to close.** The look is
+part of the brief, and there is a specific reference.
+
+### The reference
+
+> **[Lilygo T-Beam SUPREME TS1 Case by Alley Cat](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat)** — on Printables
+
+<!-- Reference photos: save screenshots from the Printables listing into
+     handoff/img/ as style-01.jpg, style-02.jpg, style-03.jpg, then delete
+     these comment markers to publish them.
+
+![Reference: curved body and strap slots](img/style-01.jpg)
+![Reference: textured surface lines](img/style-02.jpg)
+![Reference: overall proportions](img/style-03.jpg)
+
+-->
+
+*(Photos are not committed yet — see [img/](img/). Printables blocks
+automated downloads, and the model's license has not been checked, so the
+author's photos should not be republished here until someone has looked at
+it. Open the link above in the meantime.)*
+
+### What to take from it
+
+Three things, specifically:
+
+| | |
+|---|---|
+| **Curved features** | Not a hard rectangular box. Softened edges and radiused transitions, the way a handheld object should feel in the palm |
+| **Slots for a strap** | Real, usable strap slots moulded into the body — this is a thing you carry to a hotel, not a thing that lives on a desk |
+| **Textured surface lines** | The fine ridged/lined surface treatment that breaks up large flat faces and hides layer lines |
 
 > [!IMPORTANT]
-> **The written brief's diagrams are out of date** and were not redrawn.
-> [01](01-brief-upright-case.md) carries the corrections at the top: no
-> bottom opening, no 40-pin header access, and the power module mounts on the
-> back.
+> **It is a visual language reference, not a geometry reference.** Do not
+> take dimensions, wall sections or internal layout from it — that case holds
+> a completely different board. Take the *character*.
 
-**Style reference:** the
-[Lilygo T-Beam SUPREME TS1 case by Alley Cat](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat)
-— specifically its **curved features, strap slots and textured surface
-lines.** A visual language reference, not a geometry one.
+### Design intent beyond the reference
 
----
+Things that follow from the rest of this plan, worth stating as styling
+constraints rather than leaving implicit:
+
+- **Keep the front face clean.** No visible fasteners. Every screw is
+  rear-access — that is why the antenna cap is retained by two M3s through
+  the back rather than from the front.
+- **The cap seam is a visible feature, not a defect.** It runs the full width
+  of the device and the eye will land on it. Make it a deliberate, crisp line
+  with a consistent gap, rather than something to disguise.
+- **The foot is part of the silhouette.** It is a closed surface now, so it
+  reads as a base. It needs enough footprint that a tugged USB-C cable does
+  not topple the device, and it is a natural place for the curved language to
+  resolve.
+- **Vents will be seen.** The device is actively cooled, so there is open
+  area on at least two surfaces. Treat the vent pattern as part of the
+  styling, not a hole array added at the end — it is the
+  [last phase](#phase-5--ventilation-and-airflow) partly for that reason.
+- **Strap slot placement is open.** Nobody has specified where they go.
+  Propose something that works with how the device is actually held and does
+  not cut into the antenna cap or a vent path.
+
+### Material and finish
+
+- **Plain thermoplastic compatible with heat-set inserts.** Confirm the choice
+  against real case temperature — which has not been measured yet, and the box
+  is actively cooled for a reason.
+- **No carbon-filled filament anywhere.** Not in the cap, not in the body. It
+  is conductive enough to matter to the antennas.
+- **No metal in or near the antenna cap** — no foil liner, no conductive
+  coating, no metallic decorative trim.
+- **Print orientation drives the surface texture**, so it interacts directly
+  with the lined finish above. Worth deciding deliberately rather than letting
+  the slicer settle it.
+- No waterproofing or ingress rating is asked for.
 
 ## Phases at a glance
 
@@ -335,9 +441,8 @@ the Orange Pi 5 Plus with a **plain removable lid** on the edge opposite the
   outline
 - Two **reinforced rear shoulder pockets** below the cap seam carrying the M3
   heat-set inserts, with straight soldering-iron access while the case is bare
-- Styling per the
-  [reference](https://www.printables.com/model/705817-lilygo-t-beam-supreme-ts1-case-by-alley-cat):
-  curves, **strap slots**, textured lines
+- Styling per [Aesthetics and design](#aesthetics-and-design) — curved
+  features, **strap slots**, textured surface lines, clean front face
 
 **Blank lid**
 - Same locating skirt, seam ledge and two M3 ears the cap will use
@@ -489,7 +594,7 @@ for the architecture.
 
 ---
 
-## Phase 4 · The lower power module and its PCB
+## Phase 4 · The rear power module and its PCB
 
 **This is where the PCB work is**, and it is specified in detail already.
 It **mounts flat against the back of the main case** and is **detachable.**
